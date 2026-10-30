@@ -77,10 +77,10 @@ Quand les parties ne contiennent aucun texte, ces règles renvoient « contrôle
 | 30/10/2026 | Node 24 LTS, installé avec nvm ; `.node-version` = 24 pour Cloudflare Pages | Vitest 5 ne prend pas en charge Node 23. Homebrew ne peut plus compiler Node 24 sur macOS 12 ; le binaire officiel, que nvm télécharge, fonctionne |
 | 30/10/2026 | Le champ `police` garde le nom PostScript sans préfixe de sous-ensemble (`LiberationSans-Bold`, `Carlito-Regular`) | Le rapprochement avec une famille (Arial, substituts) relève de R05 |
 | 30/10/2026 | Aucune police web embarquée pour l'instant (pile système, Inter si installée localement) | Inter est sous OFL-1.1, licence absente de la liste de CLAUDE.md |
-| 30/10/2026 | R05 : la police majoritaire décide ; toute autre police utilisée sur du texte donne un avertissement ; les polices de puces (Symbol, Wingdings, OpenSymbol…) sont ignorées ; l'italique d'Arial est accepté | Lecture de SPEC (« police majoritaire ») sans laisser passer un passage dans une autre police, et sans fausse alerte sur les listes à puces |
-| 30/10/2026 | R05 : une police non nommée dans le PDF donne un avertissement, pas une erreur | Mesure incertaine (CLAUDE.md, règle 5) |
+| 30/10/2026 | R05 : la police majoritaire décide ; toute autre police utilisée sur du texte donne un avertissement ; les polices de puces (Symbol, Wingdings, OpenSymbol…) sont ignorées ; l'italique d'Arial est accepté ; Arial Narrow et Arial Black donnent une erreur (validé) | Lecture de SPEC (« police majoritaire ») sans laisser passer un passage dans une autre police, et sans fausse alerte sur les listes à puces |
+| 30/10/2026 | R05 : une police non nommée dans le PDF donne un avertissement, pas une erreur (validé) | Mesure incertaine (CLAUDE.md, règle 5) |
 | 30/10/2026 | R06 : avertissement aussi pour le texte plus petit que le corps (notes, passages réduits) ; fragments de 3 caractères ou moins ignorés (exposants, appels de note, numéros) | Les jurys sanctionnent la police réduite pour gagner de la place |
-| 30/10/2026 | Seuils de calibration (`measure.ts`) : retrait « récurrent » = 2 paragraphes ; texte « en couleur » si écart RVB ≥ 40 ; interligne mesuré sur au moins 5 écarts, sinon « info » ; ligne « pleine » à 80 % de la largeur | SPEC ne chiffre pas ces seuils ; les règles concernées restent en avertissement |
+| 30/10/2026 | Seuils de calibration (`measure.ts`) : retrait « récurrent » = 2 paragraphes ; texte « en couleur » si écart RVB ≥ 40 ; interligne mesuré sur au moins 5 écarts, sinon « info » ; ligne « pleine » à 80 % de la largeur (validés) | SPEC ne chiffre pas ces seuils ; les règles concernées restent en avertissement. À réviser si de vrais dossiers montrent de fausses alertes |
 | 30/10/2026 | R08 et R09 mesurent tout le texte des pages des parties, en-tête et pied de page compris | Les marges et la distance au bord s'appliquent à toute la page |
 
 **Couleurs ajustées**
@@ -96,7 +96,6 @@ Quand les parties ne contiennent aucun texte, ces règles renvoient « contrôle
 
 - Police du site : embarquer Inter (OFL-1.1) ou rester sur la police système. À trancher à l'étape de la page d'accueil.
 - Page d'essai temporaire `/essai` (dépôt d'un PDF, découpage saisi à la main, résultats bruts) pour tester les règles sur de vrais dossiers : proposée, pas encore validée.
-- Seuils de calibration de l'étape 2 à confirmer sur de vrais dossiers (voir les décisions).
 
 **Fixtures à ajouter** (voir `tests/fixtures/README.md`)
 
