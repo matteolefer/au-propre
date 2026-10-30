@@ -113,10 +113,75 @@ export function pageStandard(numero: number, options: OptionsPage = {}): PageMod
   return { numero, largeur: A4.largeur, hauteur: A4.hauteur, rotation: 0, blocs, liens: [], images: [] };
 }
 
-/** Dossier de 11 pages (découpage DECOUPAGE_SYNTHETIQUE) ; `pages` modifie certaines pages. */
+/** Dossier de 11 pages (découpage DECOUPAGE_SYNTHETIQUE), couverture en page 1 ; `pages` modifie certaines pages. */
 export function documentStandard(pages: Record<number, OptionsPage> = {}, communes: OptionsPage = {}): ModeleDocument {
   return {
-    pages: Array.from({ length: 11 }, (_, i) => pageStandard(i + 1, { ...communes, ...pages[i + 1] })),
+    pages: Array.from({ length: 11 }, (_, i) =>
+      i === 0 ? pageCouverture() : pageStandard(i + 1, { ...communes, ...pages[i + 1] }),
+    ),
     contientTexte: true,
   };
+}
+
+// --- Pages écrites ligne par ligne ---------------------------------------------
+
+/** Une ligne : un texte (un seul bloc, largeur proportionnelle à sa longueur) ou plusieurs blocs. */
+export type LigneSynthetique = string | readonly { texte: string; x?: number; largeur?: number }[];
+
+const GAUCHE = 2.5 * PT_PAR_CM;
+const DROITE = A4.largeur - 2.5 * PT_PAR_CM;
+
+/**
+ * Page dont on choisit chaque ligne. Une chaîne vide laisse une ligne blanche.
+ * Une ligne d'environ 90 caractères ou plus occupe toute la largeur du texte.
+ */
+export function pageDeLignes(numero: number, lignes: readonly LigneSynthetique[], pied: string | null = String(numero)): PageModele {
+  const taille = 11;
+  const blocs: BlocTexte[] = [];
+  let y = 2.5 * PT_PAR_CM;
+  for (const ligne of lignes) {
+    if (typeof ligne === 'string') {
+      if (ligne !== '') {
+        blocs.push(bloc(ligne, GAUCHE, y, Math.min(DROITE - GAUCHE, ligne.length * taille * 0.46), taille, 'ArialMT', '#000000'));
+      }
+    } else {
+      for (const morceau of ligne) {
+        const largeur = morceau.largeur ?? morceau.texte.length * taille * 0.5;
+        blocs.push(bloc(morceau.texte, morceau.x ?? GAUCHE, y, largeur, taille, 'ArialMT', '#000000'));
+      }
+    }
+    y += 1.15 * taille;
+  }
+  if (pied !== null) {
+    const bas = A4.hauteur - 1.25 * PT_PAR_CM;
+    blocs.push(bloc(pied, A4.largeur / 2 - 5, bas - taille * HAUTEUR_BOITE, 10, taille, 'ArialMT', '#000000'));
+  }
+  return { numero, largeur: A4.largeur, hauteur: A4.hauteur, rotation: 0, blocs, liens: [], images: [] };
+}
+
+/** Bloc aligné sur la marge droite, pour un numéro de page dans un sommaire. */
+export function aDroite(texte: string): { texte: string; x: number; largeur: number } {
+  return { texte, x: DROITE - texte.length * 5.5, largeur: texte.length * 5.5 };
+}
+
+/** Couverture synthétique, avec les mots du formulaire. */
+export function pageCouverture(session = 2027): PageModele {
+  return pageDeLignes(
+    1,
+    [
+      'PAGE DE COUVERTURE',
+      `Concours : CAPES interne – Section : Lettres modernes – Session ${session}`,
+      'Dossier de reconnaissance des acquis de l’expérience professionnelle (RAEP)',
+      'Nom : CANDIDAT',
+      'Prénom : Test',
+      'J’atteste sur l’honneur l’authenticité de toutes les informations figurant dans ce dossier.',
+      'Signature du candidat :',
+    ],
+    null,
+  );
+}
+
+/** Remplace une page d'un dossier synthétique. */
+export function avecPage(document: ModeleDocument, page: PageModele): ModeleDocument {
+  return { ...document, pages: document.pages.map((p) => (p.numero === page.numero ? page : p)) };
 }

@@ -1,6 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { extraireDocument } from '../../src/checker/extract';
-import type { Decoupage, ModeleDocument } from '../../src/checker/types';
+import type { Decoupage, ModeleDocument, ParametresDossier } from '../../src/checker/types';
+
+/** Discipline et nom de fichier inconnus : R18 et R19 ne s'appliquent pas. */
+export const PARAMETRES_INCONNUS: ParametresDossier = { discipline: null, nomFichier: null };
 
 const DECOUPAGE_STANDARD: Decoupage = {
   couverture: { debut: 1, fin: 1 },

@@ -1,12 +1,12 @@
 /**
  * Le tableau « Résultats attendus » de tests/fixtures/README.md : chaque
  * fixture déclenche les règles attendues, et seulement elles (SPEC §8).
- * R01 (« à confirmer » dans le README) n'est pas encore implémentée.
+ * R01 donne une simple information sur ces couvertures fictives (« à confirmer »).
  */
 import { describe, expect, it } from 'vitest';
 import { REGLES, verifierLisibilite } from '../src/checker/rules';
 import type { Gravite } from '../src/checker/types';
-import { chargerFixture, DECOUPAGES, fixtureDisponible, type FixtureTexte } from './helpers/fixtures';
+import { chargerFixture, DECOUPAGES, fixtureDisponible, PARAMETRES_INCONNUS, type FixtureTexte } from './helpers/fixtures';
 
 type Attendus = Partial<Record<string, Gravite>>;
 
@@ -24,7 +24,7 @@ const ATTENDUS: Record<FixtureTexte, Attendus> = {
 /** Règles signalées (ni conformes ni simple information), avec leur gravité la plus forte. */
 async function signalees(nom: FixtureTexte): Promise<Attendus> {
   const document = await chargerFixture(nom);
-  const resultats = REGLES.flatMap((regle) => regle.verifier(document, DECOUPAGES[nom]));
+  const resultats = REGLES.flatMap((regle) => regle.verifier(document, DECOUPAGES[nom], PARAMETRES_INCONNUS));
   const ordre: Gravite[] = ['bloquant', 'erreur', 'avertissement'];
   const parRegle: Attendus = {};
   for (const resultat of resultats) {

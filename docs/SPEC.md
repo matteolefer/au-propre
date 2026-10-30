@@ -35,14 +35,14 @@ Le produit **ne rédige jamais** le dossier (voir `CLAUDE.md`, règle absolue n�
 
 ## 5. Règles de conformité automatisées (V1)
 
-Les mesures se font sur les pages de la partie 1 et de la partie 2, sauf mention contraire. La page de couverture et les annexes ne sont pas soumises aux règles de police et de marges.
+Les mesures se font sur les pages de la partie 1 et de la partie 2, sauf mention contraire. La page de couverture et les annexes ne sont pas soumises aux règles de police et de marges. Les règles de contenu R14 à R17 portent sur toutes les pages sauf la couverture, annexes comprises.
 
 Unités : 1 cm = 28,3465 pt. A4 = 595,28 × 841,89 pt. Tolérance par défaut : 2 pt.
 
 | ID | Règle | Seuil ou méthode | Gravité | Source |
 | --- | --- | --- | --- | --- |
 | R00 | PDF lisible | Si aucune couche texte n'est trouvée (scan), arrêter l'analyse et expliquer pourquoi | Bloquant | — |
-| R01 | Page de couverture présente | Heuristique sur la page 1 (mots-clés du formulaire Cyclades, à calibrer sur un vrai formulaire) + confirmation manuelle | Avertissement | S2, S3 |
+| R01 | Page de couverture présente | Heuristique sur la page 1 (mots-clés du formulaire Cyclades, à calibrer sur un vrai formulaire) + confirmation manuelle. Avertissement si la page 1 est sans texte (scan), commence par « Première partie », ne contient aucun mot-clé de couverture (concours, session, RAEP, nom, prénom, attestation sur l'honneur, signature…) ou mentionne une autre session que celle attendue (`SESSION_ATTENDUE`, 2027). Sinon info : « Couverture détectée : vérifiez dans la checklist qu'il s'agit du formulaire 2027 téléchargé dans Cyclades. » | Avertissement ou info | S2, S3, S5 |
 | R02 | Partie 1 : 2 pages maximum | Nombre de pages de la partie 1 > 2 | Erreur | S1, S2 |
 | R03 | Partie 2 : 6 pages maximum | Nombre de pages de la partie 2 > 6 | Erreur | S1, S2 |
 | R04 | Annexes : 10 pages maximum | Nombre de pages d'annexes > 10 | Erreur | S1, S2 |
@@ -55,11 +55,11 @@ Unités : 1 cm = 28,3465 pt. A4 = 595,28 × 841,89 pt. Tolérance par défaut : 
 | R11 | Format A4 | Taille de page différente de l'A4 au-delà de la tolérance → erreur | Erreur | S1, S2 |
 | R12 | Pagination | Aucun numéro de page détecté dans les parties → avertissement | Avertissement | S8 |
 | R13 | Texte en noir | Texte coloré dans les parties → avertissement | Avertissement | S7 |
-| R14 | Pas de sommaire | Mots « Sommaire » ou « Table des matières » → avertissement | Avertissement | S5, S7 |
-| R15 | Pas de CV | « Curriculum vitae » ou titre « CV » → avertissement | Avertissement | S5, S7 |
-| R16 | Pas de lettre de recommandation ni de rapport d'inspection | « lettre de recommandation », « rapport d'inspection », « visite-conseil » → erreur | Erreur | S9 |
+| R14 | Pas de sommaire | Titre « Sommaire » ou « Table des matières » (ligne courte qui commence par le mot), ou au moins 3 lignes courtes consécutives terminées par un numéro de page croissant, avec points de suite ou tabulation → avertissement. Le mot cité dans une phrase est ignoré | Avertissement | S5, S7 |
+| R15 | Pas de CV | « CV » ou « Curriculum vitae » en titre → avertissement. Cité dans une phrase → info : « Citer un curriculum vitae dans le texte est possible. En revanche, les jurys demandent de ne pas joindre de CV au dossier. » | Avertissement ou info | S5, S7 |
+| R16 | Pas de lettre de recommandation ni de rapport d'inspection | « lettre de recommandation », « rapport d'inspection », « visite-conseil » en titre, dans les annexes ou en tête d'un bloc (document probablement joint) → erreur. Cité dans le texte des parties 1 et 2 → info : « Mentionner une visite ou une inspection est possible. En revanche, joindre un rapport d'inspection, de visite-conseil ou une lettre de recommandation écarte le dossier. » | Erreur ou info | S9 |
 | R17 | Liens et QR codes non lus | URL dans le texte ou annotations de lien → avertissement | Avertissement | S6 |
-| R18 | HGGSP en histoire-géographie | Si discipline = histoire-géographie et « HGGSP » présent → avertissement | Avertissement | S5 |
+| R18 | HGGSP en histoire-géographie | Si discipline = histoire-géographie et « HGGSP » présent dans la partie 2 ou les annexes → avertissement. Une mention dans la partie 1 (parcours) est ignorée | Avertissement | S5 |
 | R19 | Nom du fichier | Ne ressemble pas à NOM_Prénom.pdf → avertissement | Avertissement | S4 |
 
 Les seuils marqués « approximatif » doivent être calibrés sur les fichiers de test réels avant la mise en ligne. En cas de doute sur la fiabilité d'une mesure, la règle reste en avertissement.

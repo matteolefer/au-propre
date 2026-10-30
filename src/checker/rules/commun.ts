@@ -1,6 +1,6 @@
 import { SANS_TEXTE } from '../../content/rules.fr';
 import { contientDuTexte, pagesDesParties, pagesDuDocument } from '../texte';
-import type { BlocTexte, Decoupage, ModeleDocument, PageModele, ResultatRegle, Source } from '../types';
+import type { BlocTexte, Decoupage, ModeleDocument, PageModele, Plage, ResultatRegle, Source } from '../types';
 
 /** Pages des parties 1 et 2, où portent les règles de mise en page (SPEC §5). */
 export function pagesMesurees(document: ModeleDocument, decoupage: Decoupage): PageModele[] {
@@ -26,4 +26,14 @@ export function ajouterPage(groupes: Map<string, Set<number>>, cle: string, page
 
 export function enGroupes(groupes: Map<string, Set<number>>): { libelle: string; pages: number[] }[] {
   return [...groupes.entries()].map(([libelle, pages]) => ({ libelle, pages: [...pages].sort((a, b) => a - b) }));
+}
+
+/** Toutes les pages sauf la couverture : portée des règles de contenu R14 à R17. */
+export function pagesSaufCouverture(document: ModeleDocument, decoupage: Decoupage): PageModele[] {
+  const couverture = decoupage.couverture;
+  return document.pages.filter((page) => !couverture || page.numero < couverture.debut || page.numero > couverture.fin);
+}
+
+export function estDansPlage(numero: number, plage: Plage | null): boolean {
+  return plage !== null && numero >= plage.debut && numero <= plage.fin;
 }

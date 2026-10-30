@@ -80,3 +80,11 @@ export interface ResultatRegle {
   /** Sources officielles de la règle (vide pour R00, qui n'est pas une règle officielle). */
   sources: Source[];
 }
+
+/** Informations fournies par le candidat en plus du PDF. */
+export interface ParametresDossier {
+  /** Identifiant de la discipline choisie à l'inscription (ex. « histoire-geographie »), si connue. */
+  discipline: string | null;
+  /** Nom du fichier déposé, si connu. */
+  nomFichier: string | null;
+}

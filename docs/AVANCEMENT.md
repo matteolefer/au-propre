@@ -65,6 +65,32 @@ Quand les parties ne contiennent aucun texte, ces règles renvoient « contrôle
 
 **Tests** : 243 tests Vitest (3 ignorés : exports Word absents). `tests/fixtures-attendues.test.ts` vérifie le tableau du README : chaque fixture déclenche les règles attendues, et seulement elles. Les cas d'erreur sans fixture (titres en 14 pt, interligne 1,5, retraits, pied de page à 1 cm, texte rouge, absence de numéro…) sont testés sur un dossier synthétique conforme modifié une chose à la fois.
 
+## Étape 3 : terminée
+
+Règles de contenu R14 à R19 et couverture R01. Les 19 règles de SPEC sont désormais implémentées (R00 à R19).
+
+**Socle**
+
+- `ParametresDossier` (`types.ts`) : discipline et nom du fichier fournis par le candidat. Le registre appelle chaque règle avec `(document, decoupage, parametres)`.
+- `src/checker/recherche.ts` : texte normalisé (sans accents ni majuscules) de chaque page, recherche d'expressions même coupées en fin de ligne, détection des titres (ligne courte en début de paragraphe, sans point final) et des débuts de paragraphe.
+- `measure.ts` : `SESSION_ATTENDUE = 2027` (à changer pour la session 2028), et trois seuils de calibration : `LONGUEUR_TITRE_MAX` (60 caractères), `LIGNES_SOMMAIRE_MIN` (3), `MOTS_CLES_COUVERTURE_MIN` (1).
+
+**Règles**
+
+| Règle | Contrôle | Gravité | Résultat sur les fixtures |
+| --- | --- | --- | --- |
+| R01 | Couverture : page 1 sans texte, commençant par « Première partie », sans mot-clé de couverture ou d'une autre session → avertissement ; sinon info « à confirmer dans la checklist » | avertissement, info | Info (couverture fictive détectée) |
+| R14 | Sommaire : titre « Sommaire » ou « Table des matières », ou lignes terminées par un numéro de page croissant | avertissement | Conforme |
+| R15 | CV : « CV » ou « Curriculum vitae » en titre → avertissement ; cité dans une phrase → info | avertissement, info | Conforme |
+| R16 | Lettre de recommandation, rapport d'inspection, visite-conseil : en titre, en annexe ou en tête de bloc → erreur ; cité dans le texte des parties 1 et 2 → info | erreur, info | Conforme |
+| R17 | Adresses web dans le texte et liens cliquables vers le web | avertissement | Conforme |
+| R18 | HGGSP dans la partie 2 ou les annexes, si la discipline est l'histoire-géographie | avertissement | Conforme (discipline histoire-géographie simulée) |
+| R19 | Nom du fichier de la forme `NOM_Prénom.pdf` | avertissement | Avertissement pour les noms des fixtures (`01_conforme.pdf`…), comme attendu |
+
+R14 à R17 portent sur toutes les pages sauf la couverture, annexes comprises ; R18 sur la partie 2 et les annexes. R18 et R19 ne s'appliquent pas quand la discipline ou le nom du fichier sont inconnus.
+
+**Tests** : 359 tests Vitest, aucun ignoré. Les quatre exports Word sont désormais présents : le tableau du README est vérifié en entier sur les deux séries. Les cas d'alerte de R14 à R19 et de R01 sont testés sur des pages synthétiques (titres, sommaire à points de suite ou à tabulation, CV en annexe, rapport d'inspection en titre ou cité dans une phrase, adresses web, e-mail ignoré, couverture 2026, page 1 scannée…).
+
 ## Décisions prises
 
 | Date | Décision | Raison |
@@ -82,6 +108,12 @@ Quand les parties ne contiennent aucun texte, ces règles renvoient « contrôle
 | 30/10/2026 | R06 : avertissement aussi pour le texte plus petit que le corps (notes, passages réduits) ; fragments de 3 caractères ou moins ignorés (exposants, appels de note, numéros) | Les jurys sanctionnent la police réduite pour gagner de la place |
 | 30/10/2026 | Seuils de calibration (`measure.ts`) : retrait « récurrent » = 2 paragraphes ; texte « en couleur » si écart RVB ≥ 40 ; interligne mesuré sur au moins 5 écarts, sinon « info » ; ligne « pleine » à 80 % de la largeur (validés) | SPEC ne chiffre pas ces seuils ; les règles concernées restent en avertissement. À réviser si de vrais dossiers montrent de fausses alertes |
 | 30/10/2026 | R08 et R09 mesurent tout le texte des pages des parties, en-tête et pied de page compris | Les marges et la distance au bord s'appliquent à toute la page |
+| 30/10/2026 | R01 : avertissement seulement si la page 1 est sans texte, commence par « Première partie », n'a aucun mot-clé de couverture ou mentionne une autre session ; sinon info « Couverture détectée : vérifiez dans la checklist… ». Session attendue réglable (`SESSION_ATTENDUE`). Source S5 ajoutée | Sans vrai formulaire Cyclades, l'outil ne peut pas certifier la couverture ; un avertissement permanent sur un dossier conforme serait du bruit. Une couverture d'une autre année rend le dossier hors norme (S5) |
+| 30/10/2026 | R14 : seulement le titre « Sommaire » ou « Table des matières », ou la forme d'une table des matières (au moins 3 lignes terminées par un numéro de page croissant, avec points de suite ou tabulation) | « Le sommaire du manuel » dans une analyse n'est pas un sommaire du dossier |
+| 30/10/2026 | R15 : « CV » ou « Curriculum vitae » en titre → avertissement ; cité dans une phrase → info | « J'ai actualisé mon curriculum vitae » est légitime |
+| 30/10/2026 | R16 : erreur si l'expression est un titre, figure en annexe ou ouvre un bloc ; info si elle est citée dans les parties 1 et 2 (« Mentionner une visite ou une inspection est possible… ») | Évoquer une visite-conseil dans son parcours est légitime ; joindre le rapport écarte le dossier (S9) |
+| 30/10/2026 | Portée : R14 à R17 sur toutes les pages sauf la couverture ; R18 sur la partie 2 et les annexes | Les jurys relèvent CV et lettres de recommandation en annexe ; avoir enseigné l'HGGSP (partie 1) est légitime |
+| 30/10/2026 | R17 : les QR codes ne sont pas détectés, et le résultat le dit | Les détecter demanderait une dépendance de décodage d'image |
 
 **Couleurs ajustées**
 
@@ -99,14 +131,15 @@ Quand les parties ne contiennent aucun texte, ces règles renvoient « contrôle
 
 **Fixtures à ajouter** (voir `tests/fixtures/README.md`)
 
-- Exports Word manquants : `02_partie1_3pages_word.pdf` et `04_marges_2cm_word.pdf` (01 et 03 sont présents). Les tests les prendront en compte dès leur ajout.
 - Cas limites : partie 2 sur 7 pages, annexes de 11 pages, police en 10 pt, titres en 14 pt, interligne 1,5, retrait de première ligne, texte en couleur, pied de page trop proche du bord, dossier sans pagination, puces, mot « Sommaire », URL dans le texte, export Google Docs. R03, R04, R06, R07, R09, R10, R11, R12 et R13 ne sont testées en erreur ou en avertissement que sur des documents synthétiques.
-- Le vrai formulaire de couverture Cyclades 2027, pour calibrer R01.
+- Le vrai formulaire de couverture Cyclades 2027, pour calibrer R01 : avec lui, une couverture reconnue pourrait passer de « info » à « conforme ».
+- Cas limites des règles de contenu sur de vrais PDF : sommaire généré par Word, CV ou lettre de recommandation scannés en annexe, adresses web en note de bas de page.
 
 **Limites techniques connues**
 
 - Couleur des blocs de texte : obtenue en alignant les opérateurs de dessin sur le texte extrait. Si l'alignement échoue, la couleur vaut `null` (R13 donne alors « info »). Validé sur les exports LibreOffice et Word.
 - Un PDF partiellement scanné (quelques pages sans texte dans les parties) n'est pas encore traité : R00 ne bloque que si le document entier est sans texte, et les règles de mise en page ne disent « contrôle impossible » que si toutes les pages des parties sont sans texte.
+- R16 et R15 ne lisent que le texte : un rapport ou un CV joint sous forme d'image (scan) n'est pas détecté. R17 ne détecte pas les QR codes.
 - R12 ne reconnaît que les numéros en chiffres arabes, seuls ou avec « Page », « - n - », « n/N » ou « n sur N », sur la première ou la dernière ligne de la page.
 - Le Worker n'est testé dans un navigateur que par un essai manuel ; le test automatisé viendra avec Playwright.
 - Le build Cloudflare Pages avec Node 24 reste à vérifier au premier déploiement.
@@ -118,15 +151,14 @@ Quand les parties ne contiennent aucun texte, ces règles renvoient « contrôle
 
 ## Étape suivante prévue
 
-**Étape 3 (proposée, à valider en mode Plan) : règles de contenu R14 à R19 et R01**
+**Étape 4 (à planifier en mode Plan) : l'interface complète**
 
-- R14 pas de sommaire, R15 pas de CV, R16 pas de lettre de recommandation ni de rapport d'inspection (erreur), R17 liens et QR codes, R18 HGGSP en histoire-géographie, R19 nom du fichier, R01 page de couverture (heuristique + confirmation).
-- R18 et R19 demandent des paramètres que le modèle actuel n'a pas (discipline choisie, nom du fichier) : à prévoir dans la signature des règles.
-- Le vrai formulaire de couverture Cyclades 2027 est nécessaire pour calibrer R01.
+- Dépôt du PDF ; choix du concours et de la discipline (liste, avec l'identifiant `histoire-geographie` attendu par R18) ; nom du fichier transmis à R19.
+- `split.ts` : découpage proposé d'après les titres, puis confirmé ou corrigé par l'utilisateur ; rien n'est analysé avant la confirmation.
+- `report.ts` et rapport : résumé, groupes « À corriger », « À vérifier », « Conforme », informations, sources sous chaque contrôle, checklist manuelle (SPEC §6), impression.
+- Tests Playwright de bout en bout, dont le cas du message « ready » envoyé par pdf.js dans le Worker, et la vérification qu'aucune requête ne transmet le PDF.
 
-**Ensuite, dans l'ordre**
+**Ensuite**
 
-1. `split.ts` (découpage proposé) et `report.ts` (agrégation et tri par gravité).
-2. Îlot React du vérificateur : dépôt du fichier, confirmation du découpage, rapport, checklist manuelle, impression.
-3. Pages Accueil, Règles officielles, Confidentialité, Mentions légales.
-4. Parcours de bout en bout avec Playwright, vérification qu'aucune requête ne transmet le PDF, Lighthouse accessibilité ≥ 95, déploiement sur Cloudflare Pages.
+1. Pages Accueil, Règles officielles, Confidentialité, Mentions légales.
+2. Lighthouse accessibilité ≥ 95, déploiement sur Cloudflare Pages.

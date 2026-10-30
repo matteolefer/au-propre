@@ -79,3 +79,17 @@ export const RETRAITS_RECURRENTS_MIN = 2;
 
 /** R13 : écart minimal entre composantes RVB (0 à 255) pour qu'un texte soit « en couleur ». */
 export const ECART_RVB_COULEUR_MIN = 40;
+
+// --- Règles de contenu (étape 3) ---------------------------------------------
+
+/** R01 : session attendue sur la page de couverture. À changer pour la session 2028. */
+export const SESSION_ATTENDUE = 2027;
+
+/** R01 : nombre minimal de mots-clés de couverture sur la page 1 (calibration, faute de vrai formulaire). */
+export const MOTS_CLES_COUVERTURE_MIN = 1;
+
+/** R14, R15, R16 : longueur maximale d'une ligne de titre, en caractères (calibration). */
+export const LONGUEUR_TITRE_MAX = 60;
+
+/** R14 : nombre minimal de lignes consécutives terminées par un numéro de page pour reconnaître un sommaire (calibration). */
+export const LIGNES_SOMMAIRE_MIN = 3;

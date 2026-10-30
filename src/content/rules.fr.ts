@@ -392,3 +392,134 @@ export const SANS_TEXTE = {
   titre: `Contrôle impossible${ESP}: les parties 1 et 2 ne contiennent pas de texte`,
   detail: `Aucun texte sélectionnable n’a été trouvé dans les pages des parties 1 et 2 (pages scannées${FINE}?). Ce contrôle ne peut pas être fait.`,
 };
+
+// --- Règles de contenu (étape 3) ---------------------------------------------
+
+const COUVERTURE_A_PLACER = (session: number) =>
+  `Placez en page 1 le formulaire de couverture de la session ${session} téléchargé dans votre espace Cyclades, puis exportez de nouveau en PDF.`;
+
+export const R01 = {
+  libelle: 'Page de couverture',
+  detectee: {
+    titre: 'Couverture détectée',
+    detail: (session: number) =>
+      `Couverture détectée${ESP}: vérifiez dans la checklist qu’il s’agit du formulaire ${session} téléchargé dans Cyclades.`,
+  },
+  sansTexte: {
+    titre: 'La page 1 ne contient pas de texte',
+    detail:
+      'La page 1 est une image (couverture imprimée puis scannée, par exemple). L’outil ne peut pas la lire.',
+    correction: (session: number) =>
+      `Vérifiez qu’il s’agit bien du formulaire de couverture de la session ${session} téléchargé dans votre espace Cyclades, rempli et signé.`,
+  },
+  absente: {
+    titre: 'La couverture semble absente',
+    detail: `La page 1 commence par « Première partie »${ESP}: la page de couverture devrait la précéder.`,
+    correction: COUVERTURE_A_PLACER,
+  },
+  sansMotCle: {
+    titre: 'La page 1 ne ressemble pas à la couverture',
+    detail:
+      'Aucun des mots attendus sur le formulaire de couverture (concours, session, nom, prénom, attestation sur l’honneur, signature…) n’a été trouvé en page 1.',
+    correction: COUVERTURE_A_PLACER,
+  },
+  autreSession: {
+    titre: (session: number) => `La couverture mentionne une autre session que ${session}`,
+    detail: (annees: readonly number[]) =>
+      `La page 1 mentionne la session ${annees.join(', ')}. Une couverture d’une autre année rend le dossier hors norme.`,
+    correction: (session: number) =>
+      `Téléchargez le formulaire de couverture de la session ${session} dans votre espace Cyclades et remplacez la page 1.`,
+  },
+  sources: [SOURCES.S2, SOURCES.S3, SOURCES.S5],
+};
+
+export const R14 = {
+  libelle: 'Pas de sommaire',
+  conforme: { titre: 'Pas de sommaire', detail: 'Aucun sommaire ni table des matières n’a été trouvé.' },
+  avertissement: {
+    titre: 'Le dossier semble contenir un sommaire',
+    detail: (pages: readonly number[]) =>
+      `Un sommaire ou une table des matières a été repéré (${listePages(pages)}).`,
+    correction: `Supprimez le sommaire${ESP}: les jurys ne l’attendent pas et il occupe une place comptée dans les 8${ESP}pages.`,
+  },
+  sources: [SOURCES.S5, SOURCES.S7],
+};
+
+export const R15 = {
+  libelle: 'Pas de CV',
+  conforme: { titre: 'Pas de CV', detail: 'Aucun curriculum vitae n’a été trouvé.' },
+  avertissement: {
+    titre: 'Le dossier semble contenir un CV',
+    detail: (pages: readonly number[]) => `Un titre « CV » ou « Curriculum vitae » a été trouvé (${listePages(pages)}).`,
+    correction:
+      'Retirez le CV et présentez votre parcours de façon rédigée dans la première partie, en montrant les compétences construites.',
+  },
+  mention: {
+    titre: 'Un curriculum vitae est mentionné',
+    detail: 'Citer un curriculum vitae dans le texte est possible. En revanche, les jurys demandent de ne pas joindre de CV au dossier.',
+  },
+  sources: [SOURCES.S5, SOURCES.S7],
+};
+
+export const R16 = {
+  libelle: 'Pas de lettre de recommandation ni de rapport d’inspection',
+  conforme: {
+    titre: 'Pas de lettre de recommandation ni de rapport d’inspection',
+    detail: 'Aucune lettre de recommandation, aucun rapport d’inspection ou de visite-conseil n’a été trouvé.',
+  },
+  erreur: {
+    titre: 'Le dossier semble contenir un document interdit',
+    detail: (groupes: readonly GroupePages[]) =>
+      `Document probablement joint${ESP}: ${groupesEnTexte(groupes)}. Une lettre de recommandation ou un rapport d’inspection ou de visite-conseil joint écarte le dossier.`,
+    correction:
+      'Retirez ce document du dossier. Vous pouvez évoquer une visite ou une inspection dans votre texte, sans joindre le rapport.',
+  },
+  mention: {
+    titre: 'Une visite ou une inspection est mentionnée',
+    detail:
+      'Mentionner une visite ou une inspection est possible. En revanche, joindre un rapport d’inspection, de visite-conseil ou une lettre de recommandation écarte le dossier.',
+  },
+  sources: [SOURCES.S9],
+};
+
+export const R17 = {
+  libelle: 'Liens et QR codes non lus',
+  conforme: {
+    titre: 'Pas de lien ni d’adresse web',
+    detail: `Aucun lien ni adresse web n’a été trouvé. Les QR codes ne peuvent pas être détectés automatiquement${ESP}: vérifiez qu’il n’y en a pas.`,
+  },
+  avertissement: {
+    titre: 'Le dossier contient des liens ou des adresses web',
+    detail: (groupes: readonly GroupePages[]) =>
+      `Adresses et liens trouvés${ESP}: ${groupesEnTexte(groupes)}. Le jury ne consulte ni les liens ni les QR codes.`,
+    correction: `Mettez dans le dossier ou en annexe ce qui doit être lu${ESP}: un document accessible seulement par un lien ou un QR code ne sera pas consulté.`,
+  },
+  sources: [SOURCES.S6],
+};
+
+export const R18 = {
+  libelle: 'HGGSP en histoire-géographie',
+  conforme: { titre: 'Pas de mention de l’HGGSP', detail: 'La partie 2 et les annexes ne mentionnent pas l’HGGSP.' },
+  avertissement: {
+    titre: 'Le dossier mentionne l’HGGSP',
+    detail: (pages: readonly number[]) =>
+      `L’HGGSP est mentionnée dans la partie 2 ou les annexes (${listePages(pages)}). En histoire-géographie, un dossier qui porte sur l’enseignement de spécialité HGGSP est irrecevable.`,
+    correction: 'Vérifiez que la séquence analysée relève bien de l’histoire-géographie, discipline choisie à l’inscription.',
+  },
+  sources: [SOURCES.S5],
+};
+
+export const R19 = {
+  libelle: 'Nom du fichier',
+  conforme: {
+    titre: 'Le fichier est nommé aux nom et prénom',
+    detail: (nom: string) => `Le fichier s’appelle « ${nom} ».`,
+  },
+  avertissement: {
+    titre: 'Le nom du fichier ne suit pas la forme NOM_Prénom.pdf',
+    detail: (nom: string) =>
+      `Le fichier s’appelle « ${nom} ». La note de service demande un PDF nommé aux nom et prénom du candidat, par exemple DUPONT_Marie.pdf.`,
+    correction: 'Renommez le fichier sous la forme NOM_Prénom.pdf avant de le déposer dans Cyclades.',
+  },
+  sources: [SOURCES.S4],
+};
