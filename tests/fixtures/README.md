@@ -12,7 +12,7 @@ Les PDF fournis ont été exportés depuis **LibreOffice**, sans les polices Mic
 
 C'est un cas réel : beaucoup de candidats utilisent LibreOffice. Pour avoir aussi des exports **Word** avec la vraie police Arial, ouvrir chaque `.docx` dans Word, puis Fichier > Enregistrer sous > PDF, et nommer le fichier avec le suffixe `_word` (par exemple `01_conforme_word.pdf`). Garder les deux séries : le vérificateur doit fonctionner sur les deux.
 
-Exports Word présents : `01_conforme_word.pdf`, `03_calibri_word.pdf`. Manquants : `02_partie1_3pages_word.pdf`, `04_marges_2cm_word.pdf`. Les tests (`tests/fixtures-attendues.test.ts`) les vérifieront automatiquement dès qu'ils seront ajoutés.
+Les quatre exports Word sont présents. `tests/fixtures-attendues.test.ts` vérifie le tableau ci-dessous sur les deux séries.
 
 ## Résultats attendus
 
