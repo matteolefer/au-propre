@@ -1,0 +1,47 @@
+---
+import '../styles/tokens.css';
+import '../styles/base.css';
+
+interface Props {
+  titre: string;
+  description: string;
+}
+
+const { titre, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{titre}</title>
+    <meta name="description" content={description} />
+  </head>
+  <body>
+    <main>
+      <slot />
+    </main>
+    <footer class="pied">
+      <p>Outil indépendant, non affilié au ministère de l’Éducation nationale.</p>
+    </footer>
+  </body>
+</html>
+
+<style>
+  main,
+  .pied {
+    max-width: var(--content-max-width);
+    margin-inline: auto;
+    padding-inline: var(--spacing-16);
+  }
+
+  .pied {
+    margin-top: var(--section-gap);
+    padding-block: var(--spacing-24);
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: var(--text-body-sm);
+    line-height: var(--leading-body-sm);
+  }
+</style>

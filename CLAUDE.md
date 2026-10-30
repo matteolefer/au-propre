@@ -12,7 +12,7 @@ Un outil web qui permet aux candidats des concours internes d'enseignants (CAPES
 | --- | --- |
 | `docs/SPEC.md` | Source de vérité fonctionnelle : périmètre, parcours, liste des règles de conformité avec seuils, gravités et sources |
 | `DESIGN.md` | Système de design (inspiration Notion) : couleurs, typographie, espacements, composants |
-| `docs/recherche-raep.md` | Synthèse des textes officiels et des rapports de jury, avec sources. À consulter en cas de doute sur une règle |
+| `docs/Dossier RAEP – concours internes enseignants (session 2027) règles officielles,.md` | Synthèse des textes officiels et des rapports de jury, avec sources. À consulter en cas de doute sur une règle |
 
 Si une demande contredit l'un de ces documents, le signaler avant d'agir.
 
@@ -23,7 +23,7 @@ Si une demande contredit l'un de ces documents, le signaler avant d'agir.
 3. **Aucune promesse de résultat.** Pas d'« admissibilité garantie » ni de formulation équivalente.
 4. **Confidentialité.** En V1, l'analyse s'exécute entièrement dans le navigateur : le PDF ne quitte jamais l'ordinateur de l'utilisateur. Aucune donnée de dossier côté serveur. Aucun outil d'analyse d'audience qui capture du contenu. En V1.5, le texte n'est envoyé à l'API qu'après consentement explicite, n'est jamais stocké et n'est jamais réutilisé.
 5. **Chaque contrôle cite sa règle et sa source** (URL officielle), exactement comme dans `docs/SPEC.md`. Ne jamais inventer une règle ni un seuil. Une règle incertaine ou une mesure approximative donne un **avertissement**, jamais une **erreur**.
-6. **Dépendances à licence permissive uniquement** (MIT, Apache-2.0, BSD, ISC). Interdit : AGPL et GPL (par exemple PyMuPDF / MuPDF). Demander avant d'ajouter toute dépendance.
+6. **Dépendances à licence permissive uniquement** (MIT, Apache-2.0, BSD, ISC). Interdit : AGPL et GPL (par exemple PyMuPDF / MuPDF). Demander avant d'ajouter toute dépendance. Exception acceptée le 30 octobre 2026 pour des dépendances indirectes servant uniquement au build, jamais livrées au navigateur : sharp / libvips (LGPL-3.0, via Astro), lightningcss (MPL-2.0, via Vite), ainsi que BlueOak-1.0.0 et CC0-1.0.
 
 ## Stack
 
@@ -66,7 +66,8 @@ tests/
 Chaque règle renvoie des résultats de cette forme :
 
 ```ts
-type Gravite = 'erreur' | 'avertissement' | 'conforme' | 'info';
+// « bloquant » : analyse impossible (R00, PDF sans couche texte). Ce n'est pas une erreur de conformité.
+type Gravite = 'bloquant' | 'erreur' | 'avertissement' | 'conforme' | 'info';
 
 interface ResultatRegle {
   id: string;            // ex. 'R05'
@@ -75,7 +76,7 @@ interface ResultatRegle {
   detail: string;        // ce qui a été mesuré, avec les pages concernées
   pages?: number[];
   correction: string;    // comment corriger, concrètement
-  source: { libelle: string; url: string };
+  sources: { libelle: string; url: string }[]; // toutes les sources citées par SPEC ; vide pour R00
 }
 ```
 
