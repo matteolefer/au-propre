@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { verifierR02 } from '../../src/checker/rules/R02-partie1-pages';
 import { documentSynthetique } from '../helpers/document-synthetique';
-import { chargerFixture, DECOUPAGES } from '../helpers/fixtures';
+import { chargerFixture, DECOUPAGES, FIXTURES_TEXTE } from '../helpers/fixtures';
 import { attendreTextesEtSourcesS1S2 } from '../helpers/sources';
 
 describe('R02 : partie 1, 2 pages maximum', () => {
@@ -13,7 +13,7 @@ describe('R02 : partie 1, 2 pages maximum', () => {
     attendreTextesEtSourcesS1S2(resultats);
   });
 
-  it.each(['01_conforme', '03_calibri', '04_marges_2cm'] as const)('%s : conforme', async (nom) => {
+  it.each(FIXTURES_TEXTE.filter((nom) => !nom.startsWith('02_')))('%s : conforme', async (nom) => {
     const resultats = verifierR02(await chargerFixture(nom), DECOUPAGES[nom]);
     expect(resultats.map((r) => r.gravite)).toEqual(['conforme']);
     attendreTextesEtSourcesS1S2(resultats);

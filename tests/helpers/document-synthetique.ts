@@ -1,5 +1,5 @@
 import { A4 } from '../../src/checker/measure';
-import type { BlocTexte, ModeleDocument, PageModele } from '../../src/checker/types';
+import type { BlocTexte, Decoupage, ModeleDocument, PageModele } from '../../src/checker/types';
 
 const BLOC: BlocTexte = {
   texte: 'Texte',
@@ -36,4 +36,87 @@ export function documentSynthetique(nombrePages: number, options: OptionsDocumen
     };
   });
   return { pages, contientTexte: pages.some((page) => page.blocs.length > 0) };
+}
+
+// --- Dossier synthétique ligne par ligne ---------------------------------------
+
+/** Hauteur de la boîte d'une ligne, en multiple de la taille (ascendante 0,905 + descendante 0,212 d'Arial). */
+const HAUTEUR_BOITE = 1.117;
+const PT_PAR_CM = 28.3465;
+
+export interface OptionsPage {
+  margeGaucheCm?: number;
+  margeDroiteCm?: number;
+  taille?: number;
+  police?: string;
+  couleur?: string | null;
+  /** Écart entre deux lignes d'un paragraphe, en multiple de la taille (1,15 : interligne simple d'Arial). */
+  interligne?: number;
+  /** Retrait de la première ligne de chaque paragraphe, en points. */
+  retraitPt?: number;
+  /** Texte du pied de page ; null : pas de pied de page. Par défaut, le numéro de la page. */
+  pied?: string | null;
+  /** Distance entre le bas du pied de page et le bord bas. */
+  piedCm?: number;
+  /** Distance entre le haut du texte et le bord haut. */
+  hautCm?: number;
+  /** Ligne de titre en tête de page. */
+  titre?: { texte: string; taille?: number; police?: string };
+}
+
+export const DECOUPAGE_SYNTHETIQUE: Decoupage = {
+  couverture: { debut: 1, fin: 1 },
+  partie1: { debut: 2, fin: 3 },
+  partie2: { debut: 4, fin: 9 },
+  annexes: { debut: 10, fin: 11 },
+};
+
+function bloc(texte: string, x: number, y: number, largeur: number, taille: number, police: string, couleur: string | null): BlocTexte {
+  return { texte, police, policeBrute: `ABCDEF+${police}`, taille, couleur, x, y, largeur, hauteur: taille * HAUTEUR_BOITE };
+}
+
+/**
+ * Page A4 conforme par défaut : 5 paragraphes de 6 lignes en Arial 11 noir,
+ * marges de 2,5 cm, interligne simple, numéro en pied de page à 1,25 cm.
+ */
+export function pageStandard(numero: number, options: OptionsPage = {}): PageModele {
+  const taille = options.taille ?? 11;
+  const police = options.police ?? 'ArialMT';
+  const couleur = options.couleur === undefined ? '#000000' : options.couleur;
+  const gauche = (options.margeGaucheCm ?? 2.5) * PT_PAR_CM;
+  const droite = A4.largeur - (options.margeDroiteCm ?? 2.5) * PT_PAR_CM;
+  const pas = (options.interligne ?? 1.15) * taille;
+  const retrait = options.retraitPt ?? 0;
+  const blocs: BlocTexte[] = [];
+
+  let y = (options.hautCm ?? 2.5) * PT_PAR_CM;
+  if (options.titre) {
+    const tailleTitre = options.titre.taille ?? taille;
+    blocs.push(bloc(options.titre.texte, gauche, y, 200, tailleTitre, options.titre.police ?? 'Arial-BoldMT', couleur));
+    y += tailleTitre * 1.6;
+  }
+  for (let paragraphe = 0; paragraphe < 5; paragraphe++) {
+    for (let ligne = 0; ligne < 6; ligne++) {
+      const debut = ligne === 0 ? gauche + retrait : gauche;
+      // Lignes justifiées jusqu'à la marge droite, sauf la dernière du paragraphe.
+      const fin = ligne === 5 ? gauche + 0.6 * (droite - gauche) : droite;
+      blocs.push(bloc('Texte d’un paragraphe du dossier, écrit pour les tests.', debut, y, fin - debut, taille, police, couleur));
+      y += pas;
+    }
+    y += 6;
+  }
+  const pied = options.pied === undefined ? String(numero) : options.pied;
+  if (pied !== null) {
+    const bas = A4.hauteur - (options.piedCm ?? 1.25) * PT_PAR_CM;
+    blocs.push(bloc(pied, A4.largeur / 2 - 5, bas - taille * HAUTEUR_BOITE, 10, taille, police, couleur));
+  }
+  return { numero, largeur: A4.largeur, hauteur: A4.hauteur, rotation: 0, blocs, liens: [], images: [] };
+}
+
+/** Dossier de 11 pages (découpage DECOUPAGE_SYNTHETIQUE) ; `pages` modifie certaines pages. */
+export function documentStandard(pages: Record<number, OptionsPage> = {}, communes: OptionsPage = {}): ModeleDocument {
+  return {
+    pages: Array.from({ length: 11 }, (_, i) => pageStandard(i + 1, { ...communes, ...pages[i + 1] })),
+    contientTexte: true,
+  };
 }

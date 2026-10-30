@@ -38,6 +38,33 @@ Socle technique, extraction du PDF et cinq premières règles. Pas encore d'inte
 
 **Tests** : 74 tests Vitest. L'extraction est confrontée aux mesures du script de référence `outils/mesurer_pdf.py` : marges 2,50 / 2,48 cm (01) et 2,00 / 1,97 cm (04), police, taille 11 pt, couleur noire, titres des parties sur les bonnes pages.
 
+## Étape 2 : terminée
+
+Règles de présentation matérielle R05 à R10, R12 et R13, testées sur les fixtures LibreOffice et Word.
+
+**Modules communs**
+
+- `src/checker/polices.ts` : classement d'un nom de police en `arial` (Arial, ArialMT et leurs variantes grasses et italiques), `substitut` (Liberation Sans, Arimo), `symbole` (polices de puces), `inconnue` ou `autre`. Arial Narrow, Arial Black et Arial Unicode sont d'autres polices.
+- `src/checker/texte.ts` : pages des parties, valeurs majoritaires pondérées par le nombre de caractères, regroupement des blocs en lignes (les exposants restent sur leur ligne).
+- `src/checker/measure.ts` : seuils de SPEC, et seuils de calibration non officiels, commentés comme tels.
+
+**Règles**
+
+| Règle | Contrôle | Gravité | Résultat sur les fixtures |
+| --- | --- | --- | --- |
+| R05 | Police Arial (police majoritaire) ; autres polices utilisées | erreur, avertissement | 01, 02, 04 LibreOffice : avertissement (Liberation Sans) ; 03 : erreur (Carlito, Calibri) ; 01 Word : conforme |
+| R06 | Taille du corps dans [10,5 ; 11,5] pt ; lignes d'une autre taille | erreur, avertissement | Conforme (11 pt ; 11,04 pt dans les exports Word) |
+| R07 | Interligne simple : écart médian entre lignes d'un paragraphe ≤ 1,35 fois la taille | avertissement | Conforme : 1,09 (LibreOffice), 1,16 (Word Arial), 1,22 (Word Calibri) |
+| R08 | Marges gauche et droite ≥ 2,5 cm − 2 pt | erreur | 04 : erreur (2 cm et 1,97 cm) ; autres : conforme (2,50 et 2,48 ou 2,49 cm) |
+| R09 | Texte à ≥ 1,25 cm − 2 pt des bords haut et bas | erreur | Conforme (pied de page à 1,25 ou 1,26 cm) |
+| R10 | Pas de retrait de première ligne récurrent (> 5 pt, au moins 2 paragraphes) | avertissement | Conforme |
+| R12 | Numéro de page en haut ou en bas des pages des parties | avertissement | Conforme (8 pages sur 8) |
+| R13 | Texte en couleur (écart RVB ≥ 40) | avertissement | Conforme (noir) |
+
+Quand les parties ne contiennent aucun texte, ces règles renvoient « contrôle impossible » (info) au lieu de conclure.
+
+**Tests** : 243 tests Vitest (3 ignorés : exports Word absents). `tests/fixtures-attendues.test.ts` vérifie le tableau du README : chaque fixture déclenche les règles attendues, et seulement elles. Les cas d'erreur sans fixture (titres en 14 pt, interligne 1,5, retraits, pied de page à 1 cm, texte rouge, absence de numéro…) sont testés sur un dossier synthétique conforme modifié une chose à la fois.
+
 ## Décisions prises
 
 | Date | Décision | Raison |
@@ -50,6 +77,11 @@ Socle technique, extraction du PDF et cinq premières règles. Pas encore d'inte
 | 30/10/2026 | Node 24 LTS, installé avec nvm ; `.node-version` = 24 pour Cloudflare Pages | Vitest 5 ne prend pas en charge Node 23. Homebrew ne peut plus compiler Node 24 sur macOS 12 ; le binaire officiel, que nvm télécharge, fonctionne |
 | 30/10/2026 | Le champ `police` garde le nom PostScript sans préfixe de sous-ensemble (`LiberationSans-Bold`, `Carlito-Regular`) | Le rapprochement avec une famille (Arial, substituts) relève de R05 |
 | 30/10/2026 | Aucune police web embarquée pour l'instant (pile système, Inter si installée localement) | Inter est sous OFL-1.1, licence absente de la liste de CLAUDE.md |
+| 30/10/2026 | R05 : la police majoritaire décide ; toute autre police utilisée sur du texte donne un avertissement ; les polices de puces (Symbol, Wingdings, OpenSymbol…) sont ignorées ; l'italique d'Arial est accepté | Lecture de SPEC (« police majoritaire ») sans laisser passer un passage dans une autre police, et sans fausse alerte sur les listes à puces |
+| 30/10/2026 | R05 : une police non nommée dans le PDF donne un avertissement, pas une erreur | Mesure incertaine (CLAUDE.md, règle 5) |
+| 30/10/2026 | R06 : avertissement aussi pour le texte plus petit que le corps (notes, passages réduits) ; fragments de 3 caractères ou moins ignorés (exposants, appels de note, numéros) | Les jurys sanctionnent la police réduite pour gagner de la place |
+| 30/10/2026 | Seuils de calibration (`measure.ts`) : retrait « récurrent » = 2 paragraphes ; texte « en couleur » si écart RVB ≥ 40 ; interligne mesuré sur au moins 5 écarts, sinon « info » ; ligne « pleine » à 80 % de la largeur | SPEC ne chiffre pas ces seuils ; les règles concernées restent en avertissement |
+| 30/10/2026 | R08 et R09 mesurent tout le texte des pages des parties, en-tête et pied de page compris | Les marges et la distance au bord s'appliquent à toute la page |
 
 **Couleurs ajustées**
 
@@ -63,18 +95,20 @@ Socle technique, extraction du PDF et cinq premières règles. Pas encore d'inte
 **À décider**
 
 - Police du site : embarquer Inter (OFL-1.1) ou rester sur la police système. À trancher à l'étape de la page d'accueil.
-- Page d'essai temporaire `/essai` (dépôt d'un PDF, découpage saisi à la main, résultats bruts) pour tester l'étape 1 sur de vrais dossiers : proposée, pas encore validée.
+- Page d'essai temporaire `/essai` (dépôt d'un PDF, découpage saisi à la main, résultats bruts) pour tester les règles sur de vrais dossiers : proposée, pas encore validée.
+- Seuils de calibration de l'étape 2 à confirmer sur de vrais dossiers (voir les décisions).
 
 **Fixtures à ajouter** (voir `tests/fixtures/README.md`)
 
-- Exports Word (`*_word.pdf`) avec la vraie police Arial : nécessaires pour R05.
-- Cas limites : partie 2 sur 7 pages, annexes de 11 pages, police en 10 pt, retrait de première ligne, texte en couleur, mot « Sommaire », URL dans le texte, export Google Docs. R03, R04 et R11 ne sont aujourd'hui testées en erreur que sur des documents synthétiques.
+- Exports Word manquants : `02_partie1_3pages_word.pdf` et `04_marges_2cm_word.pdf` (01 et 03 sont présents). Les tests les prendront en compte dès leur ajout.
+- Cas limites : partie 2 sur 7 pages, annexes de 11 pages, police en 10 pt, titres en 14 pt, interligne 1,5, retrait de première ligne, texte en couleur, pied de page trop proche du bord, dossier sans pagination, puces, mot « Sommaire », URL dans le texte, export Google Docs. R03, R04, R06, R07, R09, R10, R11, R12 et R13 ne sont testées en erreur ou en avertissement que sur des documents synthétiques.
 - Le vrai formulaire de couverture Cyclades 2027, pour calibrer R01.
 
 **Limites techniques connues**
 
-- Couleur des blocs de texte : obtenue en alignant les opérateurs de dessin sur le texte extrait. Si l'alignement échoue, la couleur vaut `null` (R13 restera donc un avertissement). Validé sur les exports LibreOffice uniquement.
-- Un PDF partiellement scanné (quelques pages sans texte dans les parties) n'est pas encore traité : R00 ne bloque que si le document entier est sans texte.
+- Couleur des blocs de texte : obtenue en alignant les opérateurs de dessin sur le texte extrait. Si l'alignement échoue, la couleur vaut `null` (R13 donne alors « info »). Validé sur les exports LibreOffice et Word.
+- Un PDF partiellement scanné (quelques pages sans texte dans les parties) n'est pas encore traité : R00 ne bloque que si le document entier est sans texte, et les règles de mise en page ne disent « contrôle impossible » que si toutes les pages des parties sont sans texte.
+- R12 ne reconnaît que les numéros en chiffres arabes, seuls ou avec « Page », « - n - », « n/N » ou « n sur N », sur la première ou la dernière ligne de la page.
 - Le Worker n'est testé dans un navigateur que par un essai manuel ; le test automatisé viendra avec Playwright.
 - Le build Cloudflare Pages avec Node 24 reste à vérifier au premier déploiement.
 
@@ -85,16 +119,15 @@ Socle technique, extraction du PDF et cinq premières règles. Pas encore d'inte
 
 ## Étape suivante prévue
 
-**Étape 2 (proposée, à valider en mode Plan) : règles de mise en page R05 à R10**
+**Étape 3 (proposée, à valider en mode Plan) : règles de contenu R14 à R19 et R01**
 
-- R05 police Arial (erreur ; avertissement pour Liberation Sans ou Arimo), R06 taille 11 pt, R07 interligne simple (avertissement), R08 marges gauche et droite de 2,5 cm, R09 en-tête et pied de page à 1,25 cm, R10 pas de retrait de paragraphe (avertissement).
-- Tests attendus sur les fixtures : R05 avertissement pour 01, 02 et 04 (Liberation Sans), R05 erreur pour 03 (Carlito), R08 erreur pour 04 (marges de 2 cm), et aucune erreur pour 01.
-- Seuils marqués « approximatif » dans SPEC (R07, R10) à calibrer sur les fixtures.
+- R14 pas de sommaire, R15 pas de CV, R16 pas de lettre de recommandation ni de rapport d'inspection (erreur), R17 liens et QR codes, R18 HGGSP en histoire-géographie, R19 nom du fichier, R01 page de couverture (heuristique + confirmation).
+- R18 et R19 demandent des paramètres que le modèle actuel n'a pas (discipline choisie, nom du fichier) : à prévoir dans la signature des règles.
+- Le vrai formulaire de couverture Cyclades 2027 est nécessaire pour calibrer R01.
 
 **Ensuite, dans l'ordre**
 
-1. Règles de contenu R12 à R19 (pagination, couleur, sommaire, CV, lettres de recommandation, liens, HGGSP, nom du fichier) et R01 (couverture).
-2. `split.ts` (découpage proposé) et `report.ts` (agrégation et tri par gravité).
-3. Îlot React du vérificateur : dépôt du fichier, confirmation du découpage, rapport, checklist manuelle, impression.
-4. Pages Accueil, Règles officielles, Confidentialité, Mentions légales.
-5. Parcours de bout en bout avec Playwright, vérification qu'aucune requête ne transmet le PDF, Lighthouse accessibilité ≥ 95, déploiement sur Cloudflare Pages.
+1. `split.ts` (découpage proposé) et `report.ts` (agrégation et tri par gravité).
+2. Îlot React du vérificateur : dépôt du fichier, confirmation du découpage, rapport, checklist manuelle, impression.
+3. Pages Accueil, Règles officielles, Confidentialité, Mentions légales.
+4. Parcours de bout en bout avec Playwright, vérification qu'aucune requête ne transmet le PDF, Lighthouse accessibilité ≥ 95, déploiement sur Cloudflare Pages.

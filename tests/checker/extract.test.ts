@@ -2,19 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { OPS } from 'pdfjs-dist';
 import { extraireDocument, ErreurExtraction, parcourirOperateurs } from '../../src/checker/extract';
 import { A4, cmEnPt, pagesDe, ptEnCm } from '../../src/checker/measure';
+import { majoritaire, pagesDesParties, pagesDuDocument } from '../../src/checker/texte';
 import type { BlocTexte, ModeleDocument } from '../../src/checker/types';
 import { chargerFixture, DECOUPAGES, FIXTURES_TEXTE, type FixtureTexte } from '../helpers/fixtures';
 
 function blocsDesParties(document: ModeleDocument, nom: FixtureTexte): BlocTexte[] {
-  const { partie1, partie2 } = DECOUPAGES[nom];
-  return [...pagesDe(partie1), ...pagesDe(partie2)].flatMap((n) => document.pages[n - 1]?.blocs ?? []);
-}
-
-/** Valeur la plus fréquente, pondérée par le nombre de caractères. */
-function majoritaire(blocs: readonly BlocTexte[], cle: (bloc: BlocTexte) => string): string | undefined {
-  const comptes = new Map<string, number>();
-  for (const bloc of blocs) comptes.set(cle(bloc), (comptes.get(cle(bloc)) ?? 0) + bloc.texte.length);
-  return [...comptes.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+  return pagesDuDocument(document, pagesDesParties(DECOUPAGES[nom])).flatMap((page) => page.blocs);
 }
 
 function premierePageContenant(document: ModeleDocument, texte: string): number | undefined {
@@ -41,11 +34,13 @@ function marges(document: ModeleDocument, nom: FixtureTexte): { gauche: number; 
   return { gauche: ptEnCm(gauche), droite: ptEnCm(droite) };
 }
 
-describe('extraireDocument sur les fixtures LibreOffice', () => {
+describe('extraireDocument sur les fixtures LibreOffice et Word', () => {
   it.each([
     ['01_conforme', 11],
+    ['01_conforme_word', 11],
     ['02_partie1_3pages', 12],
     ['03_calibri', 11],
+    ['03_calibri_word', 11],
     ['04_marges_2cm', 11],
     ['05_scanne', 11],
   ] as const)('%s : %i pages au format A4', async (nom, nombrePages) => {
@@ -70,7 +65,9 @@ describe('extraireDocument sur les fixtures LibreOffice', () => {
   it.each([
     ['01_conforme', 'LiberationSans'],
     ['02_partie1_3pages', 'LiberationSans'],
+    ['01_conforme_word', 'ArialMT'],
     ['03_calibri', 'Carlito-Regular'],
+    ['03_calibri_word', 'Calibri'],
     ['04_marges_2cm', 'LiberationSans'],
   ] as const)('%s : police majoritaire %s (nom PostScript sans préfixe de sous-ensemble)', async (nom, police) => {
     const blocs = blocsDesParties(await chargerFixture(nom), nom);
@@ -87,6 +84,7 @@ describe('extraireDocument sur les fixtures LibreOffice', () => {
 
   it.each([
     ['01_conforme', 2.5, 2.48],
+    ['01_conforme_word', 2.5, 2.49],
     ['04_marges_2cm', 2.0, 1.97],
   ] as const)('%s : marges gauche %f cm et droite %f cm (mesures de référence)', async (nom, gauche, droite) => {
     const mesure = marges(await chargerFixture(nom), nom);
