@@ -13,6 +13,7 @@ Un outil web qui permet aux candidats des concours internes d'enseignants (CAPES
 | `docs/SPEC.md` | Source de vérité fonctionnelle : périmètre, parcours, liste des règles de conformité avec seuils, gravités et sources |
 | `DESIGN.md` | Système de design (inspiration Notion) : couleurs, typographie, espacements, composants |
 | `docs/Dossier RAEP – concours internes enseignants (session 2027) règles officielles,.md` | Synthèse des textes officiels et des rapports de jury, avec sources. À consulter en cas de doute sur une règle |
+| `docs/AVANCEMENT.md` | État du projet : étapes terminées, décisions prises, points en suspens, étape suivante prévue |
 
 Si une demande contredit l'un de ces documents, le signaler avant d'agir.
 
@@ -85,7 +86,7 @@ interface ResultatRegle {
 - Toute nouvelle fonctionnalité commence en **mode Plan** : proposer un plan court, attendre la validation, puis coder.
 - Avancer par **petites étapes livrables**. Une règle = une fonction pure + ses tests + ses textes dans `content/rules.fr.ts`.
 - Ne pas coder une étape qui n'a pas été demandée.
-- Après chaque étape : lancer les tests, résumer ce qui a changé, proposer un message de commit.
+- Après chaque étape : lancer les tests, résumer ce qui a changé, mettre à jour `docs/AVANCEMENT.md` (ce qui est fait, décisions, points en suspens, étape suivante), proposer un message de commit.
 - Si une règle de `docs/SPEC.md` est ambiguë ou techniquement peu fiable, le dire au lieu de deviner.
 - Mesures PDF en **points** ; constantes et tolérances centralisées dans `measure.ts`.
 - Un PDF sans couche texte (scan) ne doit pas produire de faux résultats : afficher que l'analyse est impossible et pourquoi.
