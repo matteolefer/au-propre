@@ -4,7 +4,7 @@ import { extraireDocument, ErreurExtraction, parcourirOperateurs } from '../../s
 import { A4, cmEnPt, pagesDe, ptEnCm } from '../../src/checker/measure';
 import { majoritaire, pagesDesParties, pagesDuDocument } from '../../src/checker/texte';
 import type { BlocTexte, ModeleDocument } from '../../src/checker/types';
-import { chargerFixture, DECOUPAGES, FIXTURES_TEXTE, type FixtureTexte } from '../helpers/fixtures';
+import { chargerFixture, DECOUPAGES, FIXTURES_TEXTE, lireFixture, type FixtureTexte } from '../helpers/fixtures';
 
 function blocsDesParties(document: ModeleDocument, nom: FixtureTexte): BlocTexte[] {
   return pagesDuDocument(document, pagesDesParties(DECOUPAGES[nom])).flatMap((page) => page.blocs);
@@ -102,6 +102,16 @@ describe('extraireDocument sur les fixtures LibreOffice et Word', () => {
       expect(image?.largeur).toBeCloseTo(page.largeur, 0);
       expect(image?.hauteur).toBeCloseTo(page.hauteur, 0);
     }
+  });
+
+  it('06_protege : mot de passe demandé à l’ouverture, raison « mot-de-passe »', async () => {
+    const promesse = extraireDocument(lireFixture('06_protege'));
+    await expect(promesse).rejects.toBeInstanceOf(ErreurExtraction);
+    await expect(promesse).rejects.toMatchObject({ raison: 'mot-de-passe' });
+  });
+
+  it('07_restrictions : copie interdite mais ouverture libre, même modèle que 01_conforme_word', async () => {
+    expect(await chargerFixture('07_restrictions')).toEqual(await chargerFixture('01_conforme_word'));
   });
 
   it('refuse un fichier qui n’est pas un PDF', async () => {

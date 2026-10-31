@@ -1,0 +1,87 @@
+---
+import Base from '../layouts/Base.astro';
+import ValeurSite from '../components/pages/ValeurSite.astro';
+import { A_COMPLETER, PAGES_DU_SITE, SITE } from '../content/site';
+import '../styles/pages.css';
+
+const page = PAGES_DU_SITE.mentionsLegales;
+---
+
+<Base titre={page.titre} description={page.description} chemin={page.chemin}>
+  <div class="p-page p-page--document">
+    <h1 class="p-titre">Mentions légales</h1>
+    <p class="p-maj">Mises à jour le 31&nbsp;octobre 2026.</p>
+
+    <section class="p-section" aria-labelledby="editeur">
+      <h2 id="editeur">Éditeur</h2>
+      <dl class="p-fiche">
+        <dt>Site</dt>
+        <dd>{SITE.nom}</dd>
+        <dt>Adresse</dt>
+        <dd><ValeurSite valeur={SITE.domaineDefinitif ? SITE.url.replace('https://', '') : A_COMPLETER} /></dd>
+        <dt>Éditeur</dt>
+        <dd><ValeurSite valeur={SITE.editeur.nom} /></dd>
+        <dt>Statut</dt>
+        <dd><ValeurSite valeur={SITE.editeur.statut} /></dd>
+        <dt>Contact</dt>
+        <dd><ValeurSite valeur={SITE.contact} email /></dd>
+        <dt>Directeur de la publication</dt>
+        <dd><ValeurSite valeur={SITE.directeurPublication} /></dd>
+      </dl>
+    </section>
+
+    <section class="p-section" aria-labelledby="hebergeur">
+      <h2 id="hebergeur">Hébergeur</h2>
+      <dl class="p-fiche">
+        <dt>Société</dt>
+        <dd>{SITE.hebergeur.nom}</dd>
+        <dt>Adresse</dt>
+        <dd>{SITE.hebergeur.adresse}</dd>
+        <dt>Téléphone</dt>
+        <dd>{SITE.hebergeur.telephone}</dd>
+        <dt>Site</dt>
+        <dd><a href={SITE.hebergeur.url}>{SITE.hebergeur.url.replace('https://', '')}</a></dd>
+      </dl>
+    </section>
+
+    <section class="p-section" aria-labelledby="independance">
+      <h2 id="independance">Indépendance</h2>
+      <div class="p-prose">
+        <p>
+          {SITE.nom} est un outil indépendant, non affilié au ministère de l’Éducation nationale. Il n’a aucun lien
+          avec les jurys des concours ni avec Cyclades.
+        </p>
+      </div>
+    </section>
+
+    <section class="p-section" aria-labelledby="responsabilite">
+      <h2 id="responsabilite">Portée du rapport</h2>
+      <div class="p-prose">
+        <p>
+          Le rapport aide à vérifier la présentation du dossier d’après les textes officiels et les rapports de
+          jury. Il ne juge pas son contenu et ne garantit ni sa recevabilité ni l’admissibilité. Certaines mesures
+          sont approximatives et signalées comme telles.
+        </p>
+        <p>
+          Les textes officiels font foi&nbsp;: arrêtés, note de service de la session, pages des épreuves et
+          rapports de jury, cités sous chaque contrôle.
+        </p>
+      </div>
+    </section>
+
+    <section class="p-section" aria-labelledby="contenus">
+      <h2 id="contenus">Contenus et logiciels</h2>
+      <div class="p-prose">
+        <p>
+          Les règles sont reformulées d’après les textes officiels, avec leur source. Le contenu de
+          devenirenseignant.gouv.fr est réutilisé sous{' '}
+          <a href="https://www.etalab.gouv.fr/licence-ouverte-open-licence/">licence ouverte Etalab&nbsp;2.0</a>.
+        </p>
+        <p>
+          Le vérificateur utilise pdf.js (licence Apache&nbsp;2.0) pour lire le PDF dans votre navigateur, et React
+          (licence MIT).
+        </p>
+      </div>
+    </section>
+  </div>
+</Base>

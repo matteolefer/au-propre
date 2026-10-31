@@ -1,7 +1,7 @@
 import { R12 } from '../../content/rules.fr';
 import { regrouperEnLignes } from '../texte';
-import type { Decoupage, ModeleDocument, ResultatRegle } from '../types';
-import { blocsDeTexte, pagesMesurees, resultatSansTexte } from './commun';
+import type { Decoupage, ModeleDocument, ParametresDossier, ResultatRegle } from '../types';
+import { blocsDeTexte, estConcoursCpe, pagesMesurees, resultatSansTexte, sourcesDe } from './commun';
 
 /** Numéro de page : « 2 », « - 2 - », « Page 2 », « 2/8 », « 2 sur 8 ». */
 const NUMERO_DE_PAGE = /^[-–—\s]*(?:page\s*)?\d{1,3}(?:\s*(?:\/|sur)\s*\d{1,3})?[-–—\s]*$/iu;
@@ -10,9 +10,9 @@ const NUMERO_DE_PAGE = /^[-–—\s]*(?:page\s*)?\d{1,3}(?:\s*(?:\/|sur)\s*\d{1,
  * R12 : pagination (SPEC §5). On cherche un numéro sur la première ou la
  * dernière ligne de chaque page des parties.
  */
-export function verifierR12(document: ModeleDocument, decoupage: Decoupage): ResultatRegle[] {
+export function verifierR12(document: ModeleDocument, decoupage: Decoupage, parametres?: ParametresDossier): ResultatRegle[] {
   const pages = pagesMesurees(document, decoupage);
-  if (pages.every((page) => blocsDeTexte(page).length === 0)) return [resultatSansTexte('R12', R12.sources)];
+  if (pages.every((page) => blocsDeTexte(page).length === 0)) return [resultatSansTexte('R12', sourcesDe(R12, parametres))];
   const numerotees = pages.filter((page) => {
     const lignes = regrouperEnLignes(page);
     return [lignes[0], lignes[lignes.length - 1]].some(
@@ -22,14 +22,14 @@ export function verifierR12(document: ModeleDocument, decoupage: Decoupage): Res
     );
   });
 
-  const sources = [...R12.sources];
+  const sources = sourcesDe(R12, parametres);
   if (numerotees.length === 0) {
     return [
       {
         id: 'R12',
         gravite: 'avertissement',
         titre: R12.avertissement.titre,
-        detail: R12.avertissement.detail,
+        detail: R12.avertissement.detail + (estConcoursCpe(parametres) ? R12.mentionCpe : ''),
         pages: pages.map((page) => page.numero),
         correction: R12.avertissement.correction,
         sources,

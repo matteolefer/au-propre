@@ -1,12 +1,9 @@
 import { R14 } from '../../content/rules.fr';
-import { LIGNES_SOMMAIRE_MIN, LONGUEUR_TITRE_MAX } from '../measure';
-import { estTitre, normaliser, texteDePage } from '../recherche';
-import { bornesHorizontales, type Ligne } from '../texte';
+import { LIGNES_SOMMAIRE_MIN } from '../measure';
+import { estTitre, numeroDeFinDeLigne, texteDePage } from '../recherche';
+import { bornesHorizontales } from '../texte';
 import type { Decoupage, ModeleDocument, PageModele, ResultatRegle } from '../types';
 import { pagesSaufCouverture } from './commun';
-
-/** Entrée de sommaire avec points de suite : « Introduction ........ 2 ». */
-const ENTREE_AVEC_POINTS = /^(.*\p{L}.*?)\s*[.·…]{3,}\s*(\d{1,3})$/u;
 
 /**
  * R14 : pas de sommaire (SPEC §5). Titre « Sommaire » ou « Table des
@@ -43,24 +40,4 @@ function contientUneTableDesMatieres(page: PageModele, nombrePages: number): boo
     if (serie.length >= LIGNES_SOMMAIRE_MIN) return true;
   }
   return false;
-}
-
-/**
- * Numéro de page qui termine une entrée de sommaire : après des points de
- * suite, ou dans un bloc séparé par une tabulation et aligné sur la marge droite.
- */
-function numeroDeFinDeLigne(ligne: Ligne, droiteDuTexte: number): number | null {
-  const texte = normaliser(ligne.texte);
-  const avecPoints = ENTREE_AVEC_POINTS.exec(texte);
-  if (avecPoints && (avecPoints[1] ?? '').length <= LONGUEUR_TITRE_MAX) return Number(avecPoints[2]);
-
-  const dernier = ligne.blocs[ligne.blocs.length - 1];
-  const precedents = ligne.blocs.slice(0, -1);
-  if (!dernier || precedents.length === 0 || !/^\d{1,3}$/.test(dernier.texte.trim())) return null;
-  const finDuTitre = Math.max(...precedents.map((bloc) => bloc.x + bloc.largeur));
-  const titre = precedents.map((bloc) => bloc.texte).join(' ').trim();
-  const tabulation = dernier.x - finDuTitre >= 2 * dernier.taille;
-  const aligneADroite = dernier.x + dernier.largeur >= droiteDuTexte - 10;
-  if (!tabulation || !aligneADroite || titre.length > LONGUEUR_TITRE_MAX || !/\p{L}/u.test(titre)) return null;
-  return Number(dernier.texte.trim());
 }

@@ -6,4 +6,13 @@ dist/
 .env.*
 .DS_Store
 __pycache__/
-*.logcoverage/
+*.log
+coverage/
+test-results/
+playwright-report/
+
+# Captures d'écran : références de design (pages de Notion) et captures de relecture
+docs/design/
+Capture d’écran*
+Capture d'écran*
+Screenshot*

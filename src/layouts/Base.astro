@@ -1,13 +1,33 @@
 ---
+// Police des titres (h1, h2) : Source Serif 4 semi-gras, la police du logo, servie par le site (OFL-1.1).
+import '@fontsource/source-serif-4/latin-600.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
+import { PAGES_DU_SITE, SITE, titreDOnglet, urlAbsolue } from '../content/site';
 
 interface Props {
   titre: string;
   description: string;
+  /** Chemin de la page, pour l'adresse canonique (ex. « /regles/ »). */
+  chemin: string;
+  /** Faux pour les pages à ne pas référencer (404). */
+  indexer?: boolean;
 }
 
-const { titre, description } = Astro.props;
+const { titre, description, chemin, indexer = true } = Astro.props;
+const titreComplet = titreDOnglet(titre);
+const canonique = urlAbsolue(chemin);
+const image = urlAbsolue('/og-image.png');
+
+const navigation = [
+  { chemin: PAGES_DU_SITE.regles.chemin, libelle: 'Les règles' },
+  { chemin: PAGES_DU_SITE.verifier.chemin, libelle: 'Vérifier mon dossier' },
+];
+const liensPied = [
+  { chemin: PAGES_DU_SITE.regles.chemin, libelle: 'Les règles officielles du RAEP' },
+  { chemin: PAGES_DU_SITE.confidentialite.chemin, libelle: 'Confidentialité' },
+  { chemin: PAGES_DU_SITE.mentionsLegales.chemin, libelle: 'Mentions légales' },
+];
 ---
 
 <!doctype html>
@@ -15,20 +35,79 @@ const { titre, description } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{titre}</title>
+    <title>{titreComplet}</title>
     <meta name="description" content={description} />
+    {indexer ? <link rel="canonical" href={canonique} /> : <meta name="robots" content="noindex" />}
+    <!-- V1 en thème clair : pas de variante sombre (IDENTITE.md, thème sombre prévu après le lancement). -->
+    <meta name="color-scheme" content="only light" />
+    <meta name="theme-color" content="#FBFAF7" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <meta property="og:site_name" content={SITE.nom} />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={titreComplet} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonique} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${SITE.nom} — ${SITE.sousTitre}`} />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
-    <main>
+    <a class="evitement" href="#contenu">Aller au contenu</a>
+    <header class="entete">
+      <a class="entete__nom" href="/" aria-current={chemin === '/' ? 'page' : undefined}>
+        {
+          SITE.logo ? (
+            <img src={SITE.logo.chemin} width={SITE.logo.largeur} height={SITE.logo.hauteur} alt={SITE.nom} />
+          ) : (
+            SITE.nom
+          )
+        }
+      </a>
+      <nav class="entete__nav" aria-label="Navigation principale">
+        <ul>
+          {
+            navigation.map((lien) => (
+              <li>
+                <a href={lien.chemin} aria-current={lien.chemin === chemin ? 'page' : undefined}>
+                  {lien.libelle}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </header>
+    <main id="contenu" tabindex="-1">
       <slot />
     </main>
     <footer class="pied">
-      <p>Outil indépendant, non affilié au ministère de l’Éducation nationale.</p>
+      <p class="pied__independance">Outil indépendant, non affilié au ministère de l’Éducation nationale.</p>
+      <nav aria-label="Informations">
+        <ul class="pied__liens">
+          {
+            liensPied.map((lien) => (
+              <li>
+                <a href={lien.chemin} aria-current={lien.chemin === chemin ? 'page' : undefined}>
+                  {lien.libelle}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
     </footer>
   </body>
 </html>
 
 <style>
+  .entete,
   main,
   .pied {
     max-width: var(--content-max-width);
@@ -36,12 +115,138 @@ const { titre, description } = Astro.props;
     padding-inline: var(--spacing-16);
   }
 
+  /* Lien d'évitement : visible seulement au clavier. */
+  .evitement {
+    position: absolute;
+    top: var(--spacing-8);
+    left: var(--spacing-8);
+    z-index: 1;
+    padding: var(--spacing-8) var(--spacing-16);
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-radius: var(--radius-buttons);
+    transform: translateY(-200%);
+  }
+
+  .evitement:focus-visible {
+    transform: none;
+  }
+
+  .entete {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-4) var(--spacing-24);
+    padding-block: var(--spacing-16);
+  }
+
+  .entete__nom {
+    display: inline-flex;
+    color: var(--color-text);
+    font-size: var(--text-subheading);
+    line-height: 1.4;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+
+  /* 36 px de haut, soit 151 px de large : au-dessus du minimum de 120 px d'IDENTITE.md. */
+  .entete__nom img {
+    display: block;
+    width: auto;
+    height: 36px;
+  }
+
+  .entete__nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4) var(--spacing-20);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Marge intérieure compensée : l'anneau de focus ne colle pas au texte, l'alignement ne change pas. */
+  .entete__nav a {
+    display: inline-block;
+    padding: var(--spacing-8) var(--spacing-4);
+    margin-inline: calc(-1 * var(--spacing-4));
+    color: var(--color-text-muted);
+    font-size: var(--text-body-sm);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+  }
+
+  .entete__nav a:hover,
+  .entete__nav a[aria-current='page'] {
+    color: var(--color-text);
+  }
+
+  .entete__nav a[aria-current='page'] {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 6px;
+  }
+
+  main:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
   .pied {
     margin-top: var(--section-gap);
-    padding-block: var(--spacing-24);
+    padding-block: var(--spacing-24) var(--spacing-32);
     border-top: 1px solid var(--color-border);
     color: var(--color-text-muted);
     font-size: var(--text-body-sm);
     line-height: var(--leading-body-sm);
+  }
+
+  .pied__independance {
+    margin: 0;
+  }
+
+  .pied__liens {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-4) var(--spacing-20);
+    margin: var(--spacing-12) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pied__liens a {
+    padding-inline: 2px;
+    margin-inline: -2px;
+    color: var(--color-text-muted);
+  }
+
+  .pied__liens a:hover {
+    color: var(--color-text);
+  }
+
+  @media print {
+    .entete,
+    main,
+    .pied {
+      max-width: none;
+      padding-inline: 0;
+    }
+
+    .entete {
+      padding-block: 0 0.3cm;
+    }
+
+    .evitement,
+    .entete__nav,
+    .pied nav {
+      display: none;
+    }
+
+    .pied {
+      margin-top: 1cm;
+      padding-block: 0.3cm 0;
+    }
   }
 </style>

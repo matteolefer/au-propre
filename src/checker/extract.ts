@@ -6,12 +6,13 @@
  * Aucune requête réseau : ni cMapUrl ni standardFontDataUrl.
  */
 import { getDocument, OPS, Util } from 'pdfjs-dist';
-import type { PDFPageProxy, TextContent, TextItem } from 'pdfjs-dist/types/src/display/api';
+import type { PDFDocumentProxy, PDFPageProxy, TextContent, TextItem } from 'pdfjs-dist/types/src/display/api';
+import type { MessageExtraction, RaisonEchec, ReponseExtraction } from './protocole';
 import type { BlocTexte, ImageModele, Lien, ModeleDocument, PageModele, Rectangle } from './types';
 
-type Matrice = [number, number, number, number, number, number];
+export type { MessageExtraction, RaisonEchec, ReponseExtraction } from './protocole';
 
-export type RaisonEchec = 'mot-de-passe' | 'pdf-invalide' | 'inconnue';
+type Matrice = [number, number, number, number, number, number];
 
 export class ErreurExtraction extends Error {
   readonly raison: RaisonEchec;
@@ -36,8 +37,21 @@ const OPTIONS_PDFJS = {
 /** Couleur de remplissage par défaut d'un PDF. */
 const NOIR = '#000000';
 
-export async function extraireDocument(donnees: Uint8Array): Promise<ModeleDocument> {
-  const tache = getDocument({ data: donnees, ...OPTIONS_PDFJS });
+export interface OptionsExtraction {
+  /** Appelé après la lecture de chaque page. */
+  progression?: (page: number, total: number) => void;
+  /** Appelé avec le document pdf.js encore ouvert, une fois le modèle construit (dessin des miniatures). */
+  avantFermeture?: (pdf: PDFDocumentProxy, modele: ModeleDocument) => Promise<void>;
+  /** Fabrique de canvas pour dessiner les pages hors du DOM, dans le Worker. */
+  CanvasFactory?: object;
+}
+
+export async function extraireDocument(donnees: Uint8Array, options: OptionsExtraction = {}): Promise<ModeleDocument> {
+  const tache = getDocument({
+    data: donnees,
+    ...OPTIONS_PDFJS,
+    ...(options.CanvasFactory ? { CanvasFactory: options.CanvasFactory } : {}),
+  });
   try {
     const pdf = await tache.promise.catch((erreur: unknown) => {
       throw new ErreurExtraction(raisonDepuisErreurPdfjs(erreur), erreur);
@@ -45,8 +59,11 @@ export async function extraireDocument(donnees: Uint8Array): Promise<ModeleDocum
     const pages: PageModele[] = [];
     for (let numero = 1; numero <= pdf.numPages; numero++) {
       pages.push(await extrairePage(await pdf.getPage(numero), numero));
+      options.progression?.(numero, pdf.numPages);
     }
-    return { pages, contientTexte: pages.some((page) => page.blocs.length > 0) };
+    const modele = { pages, contientTexte: pages.some((page) => page.blocs.length > 0) };
+    await options.avantFermeture?.(pdf, modele);
+    return modele;
   } catch (erreur) {
     throw erreur instanceof ErreurExtraction ? erreur : new ErreurExtraction('inconnue', erreur);
   } finally {
@@ -362,20 +379,12 @@ function boiteDesPoints(points: readonly [number, number][]): Rectangle {
   return { x, y, largeur: Math.max(...xs) - x, hauteur: Math.max(...ys) - y };
 }
 
-// --- Protocole du Web Worker ------------------------------------------------
-
-export interface MessageExtraction {
-  donnees: ArrayBuffer;
-}
-
-export type ReponseExtraction =
-  | { ok: true; document: ModeleDocument }
-  | { ok: false; raison: RaisonEchec };
+// --- Protocole du Web Worker (types dans protocole.ts) ------------------------
 
 /** Traite un message reçu par le Worker. Séparé du Worker pour être testable. */
-export async function traiterMessage(message: MessageExtraction): Promise<ReponseExtraction> {
+export async function traiterMessage(message: MessageExtraction, options: OptionsExtraction = {}): Promise<ReponseExtraction> {
   try {
-    return { ok: true, document: await extraireDocument(new Uint8Array(message.donnees)) };
+    return { ok: true, document: await extraireDocument(new Uint8Array(message.donnees), options) };
   } catch (erreur) {
     return { ok: false, raison: erreur instanceof ErreurExtraction ? erreur.raison : 'inconnue' };
   }

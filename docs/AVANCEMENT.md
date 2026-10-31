@@ -1,6 +1,6 @@
-# Avancement — RAEP Check
+# Avancement — Au propre
 
-Mis à jour le 30 octobre 2026. Objectif : V1 en ligne vers le 10 novembre 2026, dépôt des dossiers au plus tard le 3 décembre 2026 à 23 h 59.
+Mis à jour le 31 octobre 2026. Objectif : V1 en ligne vers le 10 novembre 2026, dépôt des dossiers au plus tard le 3 décembre 2026 à 23 h 59.
 
 ## Étape 1 : terminée
 
@@ -10,7 +10,7 @@ Socle technique, extraction du PDF et cinq premières règles. Pas encore d'inte
 
 - Astro 7 (site statique) avec un îlot React 19 prévu pour le vérificateur, TypeScript 6 en mode `strictest`, Vitest 5.
 - Dépôt Git : https://github.com/matteolefer/RAEP-check (public), branche `main`.
-- Commandes : `npm test`, `npm run check` (types), `npm run build`, `npm run dev`.
+- Commandes : `npm test`, `npm run test:e2e` (Playwright, construit et sert le site), `npm run check` (types), `npm run build`, `npm run dev`.
 
 **Variables CSS** (`src/styles/tokens.css`)
 
@@ -91,6 +91,336 @@ R14 à R17 portent sur toutes les pages sauf la couverture, annexes comprises ; 
 
 **Tests** : 359 tests Vitest, aucun ignoré. Les quatre exports Word sont désormais présents : le tableau du README est vérifié en entier sur les deux séries. Les cas d'alerte de R14 à R19 et de R01 sont testés sur des pages synthétiques (titres, sommaire à points de suite ou à tabulation, CV en annexe, rapport d'inspection en titre ou cité dans une phrase, adresses web, e-mail ignoré, couverture 2026, page 1 scannée…).
 
+## Étape 4 : terminée
+
+L'interface complète du vérificateur, sur la page `/verifier/` : paramètres, découpage confirmé par le candidat, rapport imprimable. Parcours de SPEC §4 (points 2 à 4).
+
+**Parcours**
+
+- **Paramètres** (`Parametres.tsx`, `DepotFichier.tsx`) : concours, puis discipline (liste officielle des sections 2027, `src/content/concours.fr.ts`, sans discipline pour le CPE), PDF par glisser-déposer ou sélection. Le vrai champ fichier, caché, reste utilisable au clavier. Mention « Votre fichier est analysé dans votre navigateur et n'est envoyé nulle part. » Avant toute lecture, l'outil refuse un document Word ou LibreOffice (en expliquant comment l'exporter), un fichier qui n'est pas un PDF, plusieurs fichiers, ou un fichier de plus de 50 Mo. Au-delà de 10 Mo, il affiche l'information sur le poids.
+- **Lecture** : barre de progression page par page, annulation possible.
+- **Échecs** : PDF invalide, protégé par mot de passe, erreur inattendue. Chaque message dit ce qui ne va pas et comment corriger. Le concours et la discipline sont conservés.
+- **Scan** : textes de R00, en style neutre et non en erreur, puisque le dossier n'enfreint aucune règle. Pas de découpage.
+- **Découpage** (`src/checker/split.ts`, `Decoupage.tsx`) : pages de début proposées d'après les titres (« Première partie », « 1re partie », « Partie 1 », « I. … », « Seconde/Deuxième partie », « Annexe(s) », « Annexe n° 1 »…). Les lignes de sommaire sont ignorées. Le titre d'une annexe doit figurer dans les 3 premières lignes d'une page. Un titre introuvable est remplacé par la structure courante (couverture, 2 pages, 6 pages, annexes) et marqué « À vérifier ». Trois listes de pages, un résumé, et un aperçu de chaque page rangé sous sa section. Une saisie invalide est signalée et bloque la vérification. Rien n'est analysé avant « Confirmer le découpage et vérifier ».
+- **Rapport** (`src/checker/report.ts`, `Rapport.tsx`, `Controle.tsx`, `Checklist.tsx`) :
+  - en-tête (fichier, pages, poids, concours, discipline, date) ;
+  - résumé chiffré, sans promesse de résultat ;
+  - groupes « À corriger », « À vérifier », « Conforme », puis « Informations » à part ;
+  - pour chaque contrôle : mesure, pages concernées, correction, sources en lien (nouvel onglet, pour ne pas perdre le rapport) ;
+  - checklist à cocher (SPEC §6), avec le point sur les annexes en image et leurs numéros de page ;
+  - « Modifier le découpage » efface le rapport.
+- **Impression** (`src/styles/impression.css`) : seul le rapport s'imprime. Les adresses des sources sont listées une seule fois à la fin (« Sources citées ») au lieu d'être répétées sous chaque contrôle.
+
+**Worker**
+
+- `src/checker/protocole.ts` : messages entre la page et le Worker, sans pdf.js, pour que la page n'embarque pas pdf.js. Les gardes ignorent le message « ready » de pdf.js.
+- Le Worker envoie la progression, puis la réponse avec un aperçu PNG de chaque page, dessiné avec OffscreenCanvas (`src/checker/miniatures.ts`). Sans OffscreenCanvas, la page affiche la première ligne de chaque page à la place de l'aperçu.
+- pdf.js n'est que dans le bundle du Worker (1,6 Mo, chargé au moment de la lecture). La page charge l'îlot (78 Ko) et React.
+
+**Règles et contenus**
+
+- `ParametresDossier.concours` ; pour le CPE, R02 et R03 citent S10, R04 passe en avertissement avec « Limite de 10 pages d'annexes non confirmée pour le CPE. »
+- `measure.ts` : `TAILLE_FICHIER_MAX_OCTETS` (50 Mo) et `TAILLE_FICHIER_LOURD_OCTETS` (10 Mo), limites de l'outil et non officielles.
+- Textes de l'interface dans `src/content/interface.fr.ts`, checklist dans `checklist.fr.ts`, libellés des règles dans `LIBELLES_REGLES` (`rules.fr.ts`).
+- SPEC mise à jour : S10, CPE (R02 à R04), poids du fichier (§4), point « annexes en image » (§6).
+
+**Tests**
+
+- 418 tests Vitest : découpage (fixtures, variantes de titres, sommaire, citation dans une phrase, annexes listées en bas de page, document sans titre), rapport, contenus, protocole du Worker, contrastes (nouveaux tokens d'information et bordures de champ à 3:1).
+- 75 tests Playwright (`npm run test:e2e`), sur Chromium, Firefox et mobile (Pixel 7). 73 passent, 2 sont ignorés exprès en mobile (glisser-déposer, parcours clavier). Ils couvrent :
+  - le parcours sur les 8 fixtures (découpage proposé, aperçus, rapport attendu) ;
+  - le glisser-déposer, la correction et l'invalidité du découpage, le CPE, le clavier et le focus, l'absence de défilement horizontal ;
+  - le scan, le faux PDF, le document Word, les seuils de 50 et 10 Mo, l'annulation ;
+  - le message « ready » ;
+  - aucune requête autre qu'un GET local sans corps ;
+  - l'impression.
+- Durée de lecture mesurée, aperçus compris : environ 1 s pour 11 à 12 pages (Chromium et Firefox, 4 tests en parallèle).
+- Captures relues en 1280 et 390 px (script hors dépôt). Défauts corrigés :
+  - bordure rouge de la zone de dépôt écrasée ;
+  - scan affiché comme une erreur ;
+  - détails des contrôles trop hauts (passés en deux colonnes) ;
+  - sources des contrôles conformes mal alignées ;
+  - double ponctuation « PDF.), » ;
+  - adresses répétées à l'impression ;
+  - discipline signalée manquante alors que sa liste était désactivée ;
+  - choix perdus avant l'hydratation de l'îlot (champs désormais actifs seulement après l'hydratation).
+
+## Étape 5 : terminée
+
+Pages de contenu, référencement, inscription facultative, sources du CPE, PDF protégés. Le produit s'appelle désormais **Au propre** (sous-titre « Vérifiez votre dossier RAEP avant le dépôt ») ; l'ancien nom n'apparaît plus nulle part, sauf dans l'adresse du dépôt GitHub.
+
+**Identité** (`src/content/site.ts`, seule source de vérité)
+
+- Nom, sous-titre, domaine provisoire `https://au-propre.pages.dev` (repris par `astro.config.mjs` pour `site`), logo (voir « Identité visuelle »), éditeur, contact, directeur de la publication, hébergeur (Cloudflare, Inc., adresse vérifiée sur sa politique de confidentialité), formulaire d'inscription, titres et descriptions des pages.
+- `champsACompleter()` liste les champs « à compléter », affichés surlignés sur les pages tant qu'ils ne sont pas fournis.
+
+**Pages** (`src/pages/`, styles dans `src/styles/pages.css`)
+
+- **Gabarit** (`Base.astro`) : lien « Aller au contenu », nom ou logo, navigation (« Les règles », « Vérifier mon dossier », page courante signalée), pied de page avec la phrase d'indépendance et les liens vers les règles, la confidentialité et les mentions légales.
+- **Accueil** :
+  - titre de CLAUDE.md, pour qui, bouton « Vérifier mon dossier », « Gratuit, sans compte. Votre fichier reste sur votre ordinateur. » ;
+  - échéance (S3) et faits sourcés : 96 dossiers hors norme en histoire-géographie (S5), 158 au CPE (S11, p. 19) ;
+  - « Comment ça marche » en trois étapes ;
+  - un vrai contrôle R02 rendu au build par le composant du rapport ;
+  - ce que l'outil vérifie, ce qu'il ne fait pas, confidentialité.
+  - Aucun script chargé.
+- **« Les règles officielles du RAEP »** (`/regles/`) :
+  - tableau « En bref », sommaire ;
+  - les 19 règles par groupe, chacune avec énoncé, ce que vérifie l'outil, comment faire, sources, et précision pour le CPE (R04, R12, R13) ;
+  - la checklist, les particularités du CPE, toutes les sources (mention Etalab 2.0).
+  - Textes : `EXPLICATIONS` et `GROUPES_REGLES` dans `rules.fr.ts`, rédigés d'après la synthèse officielle de `docs/` ; règle officielle et recommandation de jury toujours distinguées.
+- **Confidentialité** : votre dossier, ce qui n'est jamais collecté, hébergement Cloudflare, inscription par e-mail (section affichée seulement si le formulaire est renseigné), vos droits (CNIL).
+- **Mentions légales** : éditeur (à compléter), hébergeur, indépendance, portée du rapport, contenus Etalab 2.0, licences de pdf.js et React.
+- **404** : explication et trois liens, `noindex`.
+
+**Référencement**
+
+- Titre (« Titre – Au propre ») et description (≤ 160 caractères) par page, adresse canonique, balises Open Graph (image 1200 × 630), `twitter:card`, `theme-color`.
+- `sitemap.xml` et `robots.txt` générés au build, sans dépendance.
+- Favicon, icône Apple et image de partage provisoires, dessinés par un script ; remplacés le jour même par le kit d'identité (voir « Identité visuelle »).
+
+**Inscription facultative** (`Inscription.tsx`, textes `INSCRIPTION` dans `interface.fr.ts`)
+
+- Sous la checklist du rapport : « Être prévenu quand la relecture critique sera disponible », bouton « M'inscrire par e-mail », « Votre e-mail n'est jamais lié à votre dossier. »
+- Le bouton ouvre le formulaire Brevo tel quel, dans un nouvel onglet, avec `rel="noopener noreferrer"`. Aucun champ ni script tiers sur le site.
+- Masqué, ainsi que sa section de la politique de confidentialité, tant que `SITE.inscription.formulaireUrl` est vide. Pas imprimé.
+
+**Concours de CPE**
+
+- S11, le rapport de jury CPE interne 2026, a été lu (p. 17 à 20). Il confirme :
+  - 2 et 6 pages ;
+  - Arial 11, interligne simple, A4, marges de 2,5 cm, 1,25 cm du bord, sans retrait ;
+  - 10 pages d'annexes au plus (« au-delà, le jury ne les prendra pas en considération ») ;
+  - le refus du CV en annexe et de toute recommandation.
+- Sources citées pour le CPE (`sourcesCpe` dans `rules.fr.ts`, choisies par `sourcesDe()` dans `rules/commun.ts`) :
+
+  | Règles | Sources |
+  | --- | --- |
+  | R02, R03, R05, R07 à R11 | S10 et S11 |
+  | R04 | S11 |
+  | R06 | S10, S11 et S8 |
+  | R15, R16 | S11 en plus |
+
+- R04 au CPE redevient une erreur ; le détail donne la conséquence fixée par le jury.
+- R12 et R13 au CPE restent des avertissements avec S8 et S7 ; le détail précise que la recommandation vient du jury d'un autre concours et qu'elle est donnée comme bonne pratique.
+
+**PDF protégés**
+
+- `06_protege.pdf` (mot de passe d'ouverture) et `07_restrictions.pdf` (copie interdite, ouverture libre), créés par `outils/proteger_pdf.py` (pypdf, RC4 128 bits).
+- Nouveau message : « Ce PDF demande un mot de passe à l'ouverture : l'outil ne peut pas le lire. » La correction explique comment exporter sans mot de passe (Word sous Windows, LibreOffice) et rappelle de déposer cette version dans Cyclades.
+- 07 donne exactement le même modèle que 01_conforme_word.
+
+**Tests**
+
+- **Vitest : 492 tests**
+  - sources du CPE (`tests/rules/cpe.test.ts`), R04 au CPE ;
+  - extraction de 06 et 07 ;
+  - identité du site, explications des 19 règles et typographie ;
+  - encart d'inscription (`renderToStaticMarkup`).
+  - `tests/helpers/typographie.ts` vérifie l'apostrophe, les guillemets, l'espace insécable avant « : ; ! ? » et dans les heures.
+- **Playwright : 129 tests** (126 passent, 3 ignorés exprès en mobile), `tests/e2e/pages.spec.ts` :
+  - pour chaque page : titre, description, canonique, Open Graph, un seul h1, pied de page, pas de défilement horizontal, typographie du texte affiché ;
+  - titres distincts ; bouton de l'accueil ; navigation ; lien d'évitement ;
+  - ancres des 19 règles ; 404 en `noindex` ; sitemap et robots.txt ; images ; mentions légales ; encart d'inscription absent ;
+  - pages de contenu sans requête vers un autre site ni script ;
+  - message du PDF protégé ; sources du CPE dans le rapport.
+
+**Captures relues** (1280 et 390 px, script hors dépôt ; encart vu sur une construction temporaire avec une fausse adresse). Défauts corrigés :
+
+- extrait du rapport décalé par la marge par défaut de `figure` ;
+- listes trop indentées ;
+- 17 liens soulignés dans « Ce que l'outil vérifie » (remplacés par une liste simple et un seul lien) ;
+- sources du CPE répétées sous 9 règles (regroupées dans la section CPE) ;
+- panneaux deux fois plus larges que leur texte (colonne de document de 48 rem) ;
+- espaces perdues avant les liens (« selonsa politique ») ;
+- titre de l'image de partage avec un mot orphelin ;
+- mentions légales en une seule colonne trop longue (passées sur deux colonnes) ;
+- espaces ordinaires entre nombre et unité dans trois libellés.
+
+**Autres**
+
+- Boutons et texte masqué (`.v-bouton`, `.v-visuellement-cache`) déplacés dans `base.css` pour servir à toutes les pages.
+- Token `--text-heading-md` (24 px, taille de DESIGN.md) pour les titres de section.
+
+## Identité visuelle : terminée
+
+Kit d'IDENTITE.md intégré. Le site reste en thème clair en V1.
+
+**Fichiers**
+
+- `IDENTITE.md` à la racine.
+- `public/brand/` : logos clair, sombre et empilés, icônes.
+- `public/` : `favicon.svg` (suit le thème du navigateur), `favicon.ico`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`, `site.webmanifest`, `og-image.png`.
+- Supprimés : les images provisoires (`og.png`, `favicon-32.png`) et `outils/generer-images.mjs`.
+
+**CLAUDE.md**
+
+- Section « Identité » d'IDENTITE.md, avec la ligne « V1 en thème clair ».
+- `IDENTITE.md` ajouté aux documents à lire.
+- L'accent de la marque remplace le bleu de DESIGN.md.
+
+**En-tête et `<head>`** (`Base.astro`, `site.ts`)
+
+- `logo-clair.svg` dans l'en-tête, 32 px de haut (134 px de large, au-dessus du minimum de 120 px). Sur mobile, la navigation passe sous le logo. Le logo figure aussi sur le rapport imprimé.
+- Balises d'IDENTITE.md :
+  - favicons ICO et SVG, icône Apple, manifeste ;
+  - `og:image` vers `og-image.png` avec son texte alternatif ;
+  - `theme-color` `#FBFAF7` ;
+  - en plus, `<meta name="color-scheme" content="only light">`.
+- `SITE.domaineDefinitif = false` : le domaine figure parmi les champs à compléter, et les mentions légales l'affichent « à compléter ». L'adresse provisoire reste dans `SITE.url`, car les adresses absolues en ont besoin d'une valide.
+
+**Couleurs** (`tokens.css`, `base.css`)
+
+| Usage | Couleur | Contraste |
+| --- | --- | --- |
+| Accent (boutons, liens, focus, étapes, cases, progression) | bleu encre `#1E4A9A` | texte blanc 8,4:1 ; liens 7,7:1 sur le papier |
+| Survol du bouton principal et des liens | `#183B7B` | — |
+| Bouton secondaire | teinte `#E8EEF8`, survol `#D9E3F3` | — |
+| Anneau de focus | 2 px blancs puis 2 px de bleu encre | 7,7:1 sur le papier |
+
+- Les liens survolés ont aussi un soulignement de 2 px.
+- `color-scheme: only light` : listes, cases et barres de défilement restent claires quand l'ordinateur est en mode sombre.
+
+**Tests**
+
+- **Vitest** :
+  - contrastes (survols, focus, bleu encre, thème clair) ;
+  - logo d'au moins 120 px ;
+  - domaine à compléter.
+- **Playwright** :
+  - pour chaque page : logo clair, nom accessible « Au propre », largeur d'au moins 120 px, balises d'IDENTITE.md ;
+  - fichiers du kit servis ;
+  - survol et focus du bouton principal ;
+  - en mode sombre (6 pages et le rapport) : fond papier, cartes blanches, logo clair, `color-scheme` clair.
+
+**Captures** (1280 et 390 px, clair et sombre, toutes les pages, découpage, rapport, impression)
+
+- 14 paires sur 16 sont identiques au pixel près entre clair et sombre. Les deux autres :
+  - le rapport, dont l'heure « Vérifié le » avait changé d'une minute ;
+  - l'accueil, au premier rendu (lissage du texte) : identique à l'œil, et au pixel près sur une capture refaite à part.
+- Défaut corrigé : l'anneau de focus des liens de navigation collait au texte. Ajout d'une marge intérieure compensée, sans décalage.
+
+## Refonte de l'accueil : en attente de validation
+
+Accueil refait d'après DESIGN.md et les captures de référence (pages de Notion, déposées dans `docs/design/`). Le reste du site n'a pas encore la nouvelle échelle.
+
+**Deux variantes comparées** (pages temporaires `src/pages/essais/accueil-a/` et `accueil-b/`, non indexées, à supprimer après validation)
+
+- **A, « fenêtre sous le titre »** : titre de 64 px, rapport complet juste sous le hero.
+- **B, « panneau papier »** : titre de 56 px, rapport dans un panneau papier coupé en bas.
+- **B retenue, avec le titre de A** (choix de l'éditeur, qui hésitait entre les deux) :
+  - page plus courte (2 545 px contre 3 182 sur ordinateur, 2 677 contre 4 119 sur mobile) ;
+  - 2 sources visibles dans l'aperçu au lieu de 8 ;
+  - sur mobile, l'aperçu A occupait 1 700 px à lui seul ;
+  - le panneau sépare le hero du produit sans ajouter de texte.
+- Captures dans `test-results/accueil/` (ignoré par Git).
+
+**Page**
+
+- **Hero centré** :
+  - titre « Vérifiez votre dossier RAEP avant de le déposer » (8 mots, 56 px, interligne 1,15) : il dit quoi faire et quand ;
+  - accroche de 600 px de large sur 2 lignes ;
+  - bouton ;
+  - dessous : date limite et « Gratuit, sans compte. Votre fichier reste sur votre ordinateur. »
+- **Aperçu du rapport** (`ApercuRapport.tsx`), rendu au build avec les vrais composants : `CompteursRapport` et `GroupeRapport`, extraits de `Rapport.tsx` dans `PartiesRapport.tsx`. Données d'exemple (`src/content/apercu.fr.ts`) : R02 à corriger, R10 à vérifier, 3 conformes, sur un dossier fictif annoncé comme tel.
+- **Un seul chiffre sourcé** : « En 2026, 8 % des dossiers RAEP du CPE interne ont été écartés pour leur forme. » Source en petit gris. Les autres sources restent sur `/regles/`.
+- **Puis** : « Comment ça marche » en 3 étapes, « Votre fichier reste sur votre ordinateur », « La forme, pas le fond ». En fin de page, « Le dépôt ferme le 3 décembre à 23 h 59 » et le bouton : l'ancien titre de fin répétait le titre principal.
+
+**Échelle** (`tokens.css`, `--echelle-*`, `accueil.css`)
+
+| Mesure | Ordinateur | Mobile |
+| --- | --- | --- |
+| Tailles de texte | 14, 16, 20, 32 et 56 px | 14, 16, 20, 24 et 36 px |
+| Largeur du texte | 680 px | — |
+| Écart entre sections | 112 px | 96 px |
+
+- Fond blanc (`Base.astro`, prop `fond="blanc"`) ; le pied de page garde le papier sur toute la largeur.
+- Logo à 32 px.
+
+**Tests**
+
+- `tests/e2e/accueil.spec.ts` mesure les contraintes sur ordinateur et mobile : tailles, mots du titre, lignes et largeur de l'accroche, largeur du texte, écarts, fond, logo, source unique, aperçu.
+- `tests/content/apercu.test.ts` : compteurs 1, 1, 3 ; sources ; typographie.
+- 506 tests Vitest ; 167 tests Playwright passent, 4 ignorés exprès en mobile.
+
+**Défauts corrigés après les captures**
+
+- Accroche décalée à gauche et collée au titre (une règle plus spécifique annulait sa marge).
+- Accroche trop large : 749 px avec `60ch`, ramenée à 600 px.
+- Coupe de l'aperçu juste sous un titre de groupe (déplacée au milieu d'une carte).
+- Titre coupé au mauvais endroit sur mobile (36 px et espaces insécables).
+- Mot « ordinateur. » seul sur sa ligne sous le bouton : sur mobile, « Votre fichier reste sur votre ordinateur. » passe désormais entière à la ligne.
+
+**Écarts et limites**
+
+- **Fond blanc** : DESIGN.md demande le papier ; le fond blanc est demandé et suit les références.
+- **Logo** : 32 px et non 28, car à 28 px il ne mesurerait que 117 px de large, sous le minimum de 120 px d'IDENTITE.md.
+- **Accroche** : 3 lignes sur mobile (un écran de 390 px ne contient pas 60 caractères en 20 px).
+- **Chiffre sourcé** : sur une ligne à partir d'environ 900 px de large.
+
+## Un site plus chaleureux : terminé
+
+Titres à empattements, encre et papier, logo plus grand, zones en faute surlignées dans le rapport, exemple présenté comme une feuille, résumé resserré. Appliqué à tout le site.
+
+**Titres** (`Base.astro`, `base.css`, `--font-titres`)
+
+- h1 et h2 en Source Serif 4 semi-gras, la police du logo, avec une approche de −0,01 em.
+- Paquet `@fontsource/source-serif-4` 5.3.1 (OFL-1.1, exception ajoutée à la règle 6 de CLAUDE.md). Seul le fichier latin en 600 est chargé, servi par le site.
+- Le texte courant, les h3 et l'interface gardent la police actuelle.
+
+**Couleurs** (`tokens.css`)
+
+| Usage | Avant | Après | Contraste |
+| --- | --- | --- | --- |
+| Texte (encre) | `#000` | `#37352F` | 11,7:1 sur le papier |
+| Fond (papier), tout le site | blanc (accueil), `#f6f5f4` (autres pages) | `#FBFAF7` | — |
+| Panneau de l'exemple | `#f6f5f4` | `#F2F5FB` (bleu très pâle) | AA vérifié pour le texte, le texte secondaire et l'accent |
+| Surligneur | — | `#FFF1A8`, contour `#A07F00` | contour 3,8:1 sur la page blanche |
+
+- Les cartes restent blanches ; l'impression reste en noir sur blanc.
+- La prop `fond="blanc"` de `Base.astro` et le pied de page papier propre à l'accueil sont supprimés.
+
+**Logo** : 36 px de haut (151 px de large).
+
+**Zones en faute surlignées, dans le vrai rapport**
+
+- `ResultatRegle.zones` (facultatif) : `ZoneEnFaute` en points, avec la taille de la page (`types.ts`, CLAUDE.md). Helpers `zoneEnFaute` et `englobant` dans `rules/commun.ts`.
+- Zones calculées, sans changement de gravité ni de texte :
+
+  | Règle | Zone |
+  | --- | --- |
+  | R08 | Bande de marge occupée par le texte, à gauche et à droite |
+  | R09 | Blocs trop proches du bord |
+  | R10 | Espace de chaque retrait |
+  | R13 | Blocs en couleur |
+
+- `Controle.tsx` : ligne « Aperçu » avec la miniature de la première page concernée (200 px, 160 sur mobile), les zones posées en pourcentage (jaune en `multiply`, contour) et la légende « Page 2 : zone en faute surlignée. »
+- Les miniatures passent de `Verificateur` à `Rapport`, puis `GroupeRapport` et `Controle`. Sans miniature (pas d'OffscreenCanvas), il n'y a pas d'aperçu. L'aperçu est imprimé en 3,5 cm, jaune conservé.
+
+**Exemple de l'accueil**
+
+- L'erreur est R08, identique au résultat réel sur la fixture `04_marges_2cm_word`, zones de la page 2 comprises (vérifié par `tests/content/apercu.test.ts`).
+- Miniature `public/exemple/page-2.png` produite par le vrai pipeline (`outils/miniature-exemple.mjs`).
+- La feuille remplace la fenêtre : coin supérieur droit corné (découpe et pli, ombre qui suit la découpe), trait de marge bleu encre de 2 px, en-tête « Rapport de vérification » et nom du fichier.
+- Panneau coupé après la carte R08 : à 1 040 px sur ordinateur (dans la carte R10), à 1 200 px sur mobile. Le test vérifie que la miniature est visible en entier.
+
+**Résumé** : chaque chiffre est collé à son libellé (« 1 point à corriger »), dans le rapport et l'exemple.
+
+**Tests**
+
+- 519 tests Vitest :
+  - zones de R08 (fixture 04), R09, R10 et R13, absentes des résultats conformes ;
+  - rendu de l'aperçu dans `Controle` ;
+  - exemple identique au réel ;
+  - contrastes (encre, papier, panneau, contour jaune).
+- 176 tests Playwright passent, 4 ignorés exprès en mobile :
+  - miniature et zones de R08 dans le rapport de la fixture 04 ;
+  - feuille, panneau et polices de l'accueil ;
+  - fond papier partout, y compris en mode sombre.
+- Toujours 5 tailles de texte par écran sur l'accueil.
+
+**Captures relues** (`test-results/accueil/`, `test-results/rapport/`) : accueil sur ordinateur et mobile, page des règles, rapport réel et impression.
+
 ## Décisions prises
 
 | Date | Décision | Raison |
@@ -114,6 +444,36 @@ R14 à R17 portent sur toutes les pages sauf la couverture, annexes comprises ; 
 | 30/10/2026 | R16 : erreur si l'expression est un titre, figure en annexe ou ouvre un bloc ; info si elle est citée dans les parties 1 et 2 (« Mentionner une visite ou une inspection est possible… ») | Évoquer une visite-conseil dans son parcours est légitime ; joindre le rapport écarte le dossier (S9) |
 | 30/10/2026 | Portée : R14 à R17 sur toutes les pages sauf la couverture ; R18 sur la partie 2 et les annexes | Les jurys relèvent CV et lettres de recommandation en annexe ; avoir enseigné l'HGGSP (partie 1) est légitime |
 | 30/10/2026 | R17 : les QR codes ne sont pas détectés, et le résultat le dit | Les détecter demanderait une dépendance de décodage d'image |
+| 31/10/2026 | Poids du fichier : refus au-delà de 50 Mo, information au-delà de 10 Mo, présentés comme des limites de l'outil (validé) | Aucune limite officielle n'est publiée pour le dépôt du RAEP dans Cyclades ; les 5 Mo cités en ligne concernent d'autres ministères |
+| 31/10/2026 | CPE : R03 reste une erreur (6 pages confirmées par S10) ; R04 passe en avertissement avec la mention « limite non confirmée » ; R02 et R03 citent S10 pour le CPE (validé ; remplacé le même jour, voir plus bas : le rapport du jury CPE 2026 confirme la limite) | Limite des annexes du CPE non confirmée (CLAUDE.md, règle 5) |
+| 31/10/2026 | Disciplines : sections ouvertes en 2027 d'après la page officielle (octobre 2026) ; CAPES sans documentation ni éducation musicale (pas de RAEP) ; CAER avec la liste du concours public ; identifiant `histoire-geographie` réservé au CAPES | R18 ne vise que le CAPES ; la page officielle ne publie pas de liste propre au CAER |
+| 31/10/2026 | pdf.js « legacy » dans le navigateur (alias dans `astro.config.mjs`) | La version moderne de pdf.js 6 exige `Uint8Array.prototype.toHex` et `Map.prototype.getOrInsertComputed`, absents de navigateurs de quelques mois (Chromium 136, Safari sous macOS 12) : la lecture échouait. Même paquet, même licence |
+| 31/10/2026 | Playwright épinglé en 1.52.0 (Apache-2.0, développement) | Dernière version dont les navigateurs tournent sous macOS 12. Alerte `npm audit` (GHSA-7mvr-c777-76hp) : elle ne concerne que le téléchargement des navigateurs (`playwright install`), déjà en cache ici. Ne pas lancer `playwright install` sur un réseau non fiable ; mettre à jour en changeant de machine |
+| 31/10/2026 | `npm run test:e2e` = `PW_DISABLE_TS_ESM=1 playwright test`, imports en `.ts` dans `tests/e2e` | Le chargeur TypeScript de Playwright 1.52 se bloque sous Node 24 ; Node lit lui-même les fichiers .ts |
+| 31/10/2026 | Serveur des tests : `astro preview --ignore-lock` | Quand Astro 7 détecte un agent (assistant de code), `astro preview` passe en arrière-plan et rend la main ; Playwright croyait à un échec et laissait un serveur orphelin |
+| 31/10/2026 | Pas de test WebKit automatisé | Sous macOS 12, le WebKit de Playwright 1.52 refuse son protocole (« Unknown setting ») |
+| 31/10/2026 | Analyse impossible (scan) affichée en style neutre, pas en erreur | Un scan n'enfreint aucune règle (décision du 30/10 sur R00) |
+| 31/10/2026 | À l'impression, adresses des sources listées une fois à la fin | Répétées sous chaque contrôle, elles doublaient la longueur du rapport imprimé |
+| 31/10/2026 | Liens vers les sources dans un nouvel onglet | Quitter la page ferait perdre le rapport, qui n'est enregistré nulle part |
+| 31/10/2026 | Pas d'axe-core | Licence MPL-2.0, absente de la liste de CLAUDE.md ; accessibilité vérifiée par les tests clavier et focus, les contrastes et les captures |
+| 31/10/2026 | Nom du produit : « Au propre », sous-titre « Vérifiez votre dossier RAEP avant le dépôt » ; domaine provisoire `au-propre.pages.dev` ; identité centralisée dans `src/content/site.ts` | Décision de l'éditeur ; le domaine n'est pas encore réservé |
+| 31/10/2026 | Inscription par e-mail : lien vers un formulaire Brevo hébergé, ouvert sans paramètre ni référent ; encart masqué tant que l'adresse est vide (non bloquant) | Rien n'est saisi ni stocké sur le site ; l'e-mail ne peut pas être lié au dossier. Clôt le point en suspens « SPEC §4.5 contre hors périmètre » (CLAUDE.md précisé) |
+| 31/10/2026 | Conservation des adresses : jusqu'à l'envoi de l'annonce, puis suppression ; désinscription à tout moment | Finalité unique (proposée dans le plan de l'étape 5) |
+| 31/10/2026 | CPE : S10 et S11 pour R02, R03, R05 à R11 ; S11 pour R04, qui redevient une erreur ; S11 ajoutée à R15 et R16 ; R12 et R13 gardent S8 et S7 avec la mention « bonne pratique » | Le rapport du jury CPE 2026 confirme ces règles (p. 17 à 20) mais ne parle ni de pagination ni de couleur (CLAUDE.md, règle 5) |
+| 31/10/2026 | Pas de police web : Inter si installée, sinon police système | Inter est sous OFL-1.1, hors de la liste de CLAUDE.md ; aucune requête de plus |
+| 31/10/2026 | pypdf (BSD-3-Clause) pour créer les fixtures protégées, outil de développement hors de `package.json` ; chiffrement RC4 128 bits | L'AES demanderait le paquet `cryptography` ; Ghostscript (AGPL) écarté |
+| 31/10/2026 | « Officiel » permis quand il qualifie les textes, jamais le site ni l'outil (CLAUDE.md, règle 2 précisée) | Le titre « Les règles officielles du RAEP » est demandé par SPEC §9 |
+| 31/10/2026 | Sitemap et robots.txt écrits à la main (points d'accès statiques), sans `@astrojs/sitemap` | 5 pages ; aucune dépendance de plus |
+| 31/10/2026 | Accent du site : bleu encre de la marque `#1E4A9A`, survol `#183B7B`, à la place du bleu de DESIGN.md (validé) | Un seul bleu, celui du logo (IDENTITE.md) ; meilleur contraste que `#0075de` |
+| 31/10/2026 | V1 en thème clair seulement : `logo-clair.svg`, `color-scheme: only light`, `theme-color` clair seul ; `logo-sombre.svg` et `#8CB4FF` gardés pour le thème sombre (validé) | Un logo sombre sur un site resté clair serait illisible ; le `theme-color` sombre teinterait la barre du navigateur au-dessus d'une page claire |
+| 31/10/2026 | Logo à 32 px de haut (134 px de large) | Minimum de 120 px de large fixé par IDENTITE.md |
+| 31/10/2026 | `SITE.url` garde l'adresse provisoire, signalée « à compléter » par `domaineDefinitif: false` | Canonique, sitemap et image de partage exigent une adresse absolue valide |
+| 31/10/2026 | Titres h1 et h2 en Source Serif 4 (OFL-1.1, exception à la règle 6) ; l'interdit vise la combinaison terre cuite, crème et serif, pas notre serif avec le bleu encre | Demande de l'éditeur : site trop froid ; police du logo |
+| 31/10/2026 | Encre `#37352F` et papier `#FBFAF7` sur tout le site ; panneau de l'exemple `#F2F5FB` ; logo à 36 px | Couleurs d'IDENTITE.md ; contrastes AA vérifiés |
+| 31/10/2026 | Jaune surligneur `#FFF1A8` : couleur fonctionnelle (zones en faute), jamais en titre ni en décoration (IDENTITE.md, CLAUDE.md) | Situer un défaut sur la page sans ajouter d'accent |
+| 31/10/2026 | Les zones surlignées sont dans le vrai rapport (R08, R09, R10, R13), pas seulement dans l'exemple (validé) | L'accueil ne montre que ce que l'outil fait vraiment |
+| 31/10/2026 | Tests de bout en bout sur le port 4329 (et non 4321) | `npm run dev` occupe 4321 ; Playwright réutilisait ce serveur de développement, dont la barre d'outils ajoute titres et liens, et les tests échouaient |
+| 31/10/2026 | Accueil : variante B (panneau papier) avec le titre de A, fond blanc, échelle de 5 tailles par écran, chiffre sourcé unique (CPE 2026) | Plus court, moins de texte et de sources visibles, aperçu du produit dès le premier écran (voir « Refonte de l'accueil ») |
 
 **Couleurs ajustées**
 
@@ -122,12 +482,30 @@ R14 à R17 portent sur toutes les pages sauf la couverture, annexes comprises ; 
 - Le bouton secondaire de DESIGN.md (texte `#0075de` sur `#e6f3fe`, 4,05:1) n'est pas conforme : utiliser `--color-accent-text` sur `--color-accent-soft`.
 - Couleurs d'état, absentes de DESIGN.md : erreur `#b42318` (vermillon assombri), avertissement `#8a5a00` (safran assombri), conforme `#1f7a3d` (vert ajouté, DESIGN.md n'en a pas). Chacune a un fond clair associé.
 
+## Améliorations prévues après le lancement
+
+- **Thème sombre complet**, selon le réglage de l'ordinateur :
+  - `logo-sombre.svg` dans l'en-tête ;
+  - couleurs sombres d'IDENTITE.md : fond `#191919`, feuille `#232323`, encre `#EDECE8`, accent `#8CB4FF`, lignes `#3A4A66` ;
+  - `theme-color` `#191919` ;
+  - couleurs d'état sombres vérifiées en AA ;
+  - impression toujours en clair.
+
 ## Points en suspens
 
-**À décider**
+**Bloquant pour la mise en ligne** (dans `src/content/site.ts`)
 
-- Police du site : embarquer Inter (OFL-1.1) ou rester sur la police système. À trancher à l'étape de la page d'accueil.
-- Page d'essai temporaire `/essai` (dépôt d'un PDF, découpage saisi à la main, résultats bruts) pour tester les règles sur de vrais dossiers : proposée, pas encore validée.
+- Éditeur : nom et statut (particulier, entreprise individuelle avec SIRET…).
+- Adresse e-mail de contact.
+- Directeur de la publication.
+- Domaine définitif (`SITE.url`, puis `domaineDefinitif: true`) : il fixe les adresses canoniques, le sitemap et l'image de partage.
+
+**Non bloquant**
+
+- Adresse du formulaire Brevo (`SITE.inscription.formulaireUrl`) : l'encart et la section de la politique de confidentialité apparaîtront d'eux-mêmes. Régler dans Brevo la case de consentement et la double confirmation.
+- Brevo : vérifier sur son site le lieu d'hébergement des données avant de le mentionner. Le téléchargement de sa politique a été refusé par l'outil de permissions ; la page ne dit que « société française ».
+- S10 : la page refuse la lecture automatique (403). Les sources du CPE reposent sur la décision validée et sur le rapport S11, relu.
+- Renommer le dépôt GitHub `RAEP-check` si souhaité.
 
 **Fixtures à ajouter** (voir `tests/fixtures/README.md`)
 
@@ -141,24 +519,27 @@ R14 à R17 portent sur toutes les pages sauf la couverture, annexes comprises ; 
 - Un PDF partiellement scanné (quelques pages sans texte dans les parties) n'est pas encore traité : R00 ne bloque que si le document entier est sans texte, et les règles de mise en page ne disent « contrôle impossible » que si toutes les pages des parties sont sans texte.
 - R16 et R15 ne lisent que le texte : un rapport ou un CV joint sous forme d'image (scan) n'est pas détecté. R17 ne détecte pas les QR codes.
 - R12 ne reconnaît que les numéros en chiffres arabes, seuls ou avec « Page », « - n - », « n/N » ou « n sur N », sur la première ou la dernière ligne de la page.
-- Le Worker n'est testé dans un navigateur que par un essai manuel ; le test automatisé viendra avec Playwright.
+- Le Worker est testé dans Chromium et Firefox par Playwright. Safari n'est testé ni automatiquement ni à la main : à essayer dans Safari (OffscreenCanvas dans un Worker, glisser-déposer, impression) avant la mise en ligne.
+- Un PDF lâché sur la page avant l'hydratation de l'îlot (connexion très lente) ouvrirait le PDF dans l'onglet ; les champs, eux, restent désactivés jusqu'à l'hydratation.
 - Le build Cloudflare Pages avec Node 24 reste à vérifier au premier déploiement.
+- Après le déploiement, vérifier qu'aucun cookie n'est posé (en-têtes `Set-Cookie`), comme l'affirme la politique de confidentialité.
+- Le cas « PDF protégé » est désormais testé sur une vraie fixture chiffrée en RC4 ; Word et LibreOffice chiffrent en AES, que pdf.js lit aussi.
 
 **À vérifier dans les textes officiels** (d'après `docs/Dossier RAEP – … règles officielles,.md`)
 
-- Volume de pages du RAEP du concours interne de CPE.
+- Sections ouvertes au CAER en 2027 (la liste du concours public est reprise).
 - Arrêté d'ouverture de la session 2027, avant de figer les règles.
 
 ## Étape suivante prévue
 
-**Étape 4 (à planifier en mode Plan) : l'interface complète**
+**Après validation de l'accueil**
 
-- Dépôt du PDF ; choix du concours et de la discipline (liste, avec l'identifiant `histoire-geographie` attendu par R18) ; nom du fichier transmis à R19.
-- `split.ts` : découpage proposé d'après les titres, puis confirmé ou corrigé par l'utilisateur ; rien n'est analysé avant la confirmation.
-- `report.ts` et rapport : résumé, groupes « À corriger », « À vérifier », « Conforme », informations, sources sous chaque contrôle, checklist manuelle (SPEC §6), impression.
-- Tests Playwright de bout en bout, dont le cas du message « ready » envoyé par pdf.js dans le Worker, et la vérification qu'aucune requête ne transmet le PDF.
+- Étendre l'échelle (5 tailles, 680 px, 112 px entre sections, fond blanc) aux pages des règles, de confidentialité, des mentions légales, à la 404 et au vérificateur.
+- Supprimer `src/pages/essais/` et la variante A.
 
-**Ensuite**
+**Étape 6 (à planifier en mode Plan) : mise en ligne**
 
-1. Pages Accueil, Règles officielles, Confidentialité, Mentions légales.
-2. Lighthouse accessibilité ≥ 95, déploiement sur Cloudflare Pages.
+1. Renseigner les champs bloquants de `src/content/site.ts`.
+2. Essai manuel dans Safari (vérificateur, impression, pages de contenu).
+3. Lighthouse accessibilité ≥ 95 sur chaque page.
+4. Déploiement sur Cloudflare Pages ; vérifier le build Node 24, les en-têtes (aucun `Set-Cookie`), la 404 et le sitemap en ligne.

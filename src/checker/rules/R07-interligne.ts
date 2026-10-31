@@ -8,18 +8,18 @@ import {
   RAPPORT_INTERLIGNE_MAX,
 } from '../measure';
 import { bornesHorizontales, estLigneDeTexte, estLignePleine, mediane, regrouperEnLignes, tailleDuCorps } from '../texte';
-import type { Decoupage, ModeleDocument, ResultatRegle } from '../types';
-import { blocsDeTexte, pagesMesurees, resultatSansTexte } from './commun';
+import type { Decoupage, ModeleDocument, ParametresDossier, ResultatRegle } from '../types';
+import { blocsDeTexte, pagesMesurees, resultatSansTexte, sourcesDe } from './commun';
 
 /**
  * R07 : interligne simple (SPEC §5, mesure approximative). On mesure l'écart
  * entre une ligne pleine et la suivante, c'est-à-dire entre deux lignes d'un
  * même paragraphe, et on rapporte la médiane à la taille du corps.
  */
-export function verifierR07(document: ModeleDocument, decoupage: Decoupage): ResultatRegle[] {
+export function verifierR07(document: ModeleDocument, decoupage: Decoupage, parametres?: ParametresDossier): ResultatRegle[] {
   const pages = pagesMesurees(document, decoupage);
   const corps = tailleDuCorps(pages.flatMap(blocsDeTexte));
-  if (corps === undefined) return [resultatSansTexte('R07', R07.sources)];
+  if (corps === undefined) return [resultatSansTexte('R07', sourcesDe(R07, parametres))];
 
   const ecarts: number[] = [];
   for (const page of pages) {
@@ -34,7 +34,7 @@ export function verifierR07(document: ModeleDocument, decoupage: Decoupage): Res
     });
   }
 
-  const sources = [...R07.sources];
+  const sources = sourcesDe(R07, parametres);
   const ecartMedian = mediane(ecarts);
   if (ecarts.length < ECARTS_INTERLIGNE_MIN || ecartMedian === undefined) {
     return [{ id: 'R07', gravite: 'info', titre: R07.nonMesurable.titre, detail: R07.nonMesurable.detail, correction: '', sources }];

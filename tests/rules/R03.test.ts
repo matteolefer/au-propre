@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { CONCOURS_CPE } from '../../src/checker/rules/nombre-pages';
 import { verifierR03 } from '../../src/checker/rules/R03-partie2-pages';
 import type { Decoupage } from '../../src/checker/types';
 import { documentSynthetique } from '../helpers/document-synthetique';
 import { chargerFixture, FIXTURES_TEXTE, DECOUPAGES } from '../helpers/fixtures';
-import { attendreTextesEtSourcesS1S2 } from '../helpers/sources';
+import { attendreTextesEtSources, attendreTextesEtSourcesS1S2 } from '../helpers/sources';
 
 function decoupageAvecPartie2(nombrePages: number): Decoupage {
   return {
@@ -32,5 +33,12 @@ describe('R03 : partie 2, 6 pages maximum', () => {
     expect(resultats[0]).toMatchObject({ gravite: 'erreur', pages: [4, 5, 6, 7, 8, 9, 10] });
     expect(resultats[0]?.detail).toContain('7\u00A0pages (pages 4 à 10)');
     attendreTextesEtSourcesS1S2(resultats);
+  });
+
+  it('CPE interne : 7 pages restent une erreur, sources S10 et S11', () => {
+    const parametres = { concours: CONCOURS_CPE, discipline: null, nomFichier: null };
+    const resultats = verifierR03(documentSynthetique(10), decoupageAvecPartie2(7), parametres);
+    expect(resultats[0]?.gravite).toBe('erreur');
+    attendreTextesEtSources(resultats, ['S10', 'S11']);
   });
 });

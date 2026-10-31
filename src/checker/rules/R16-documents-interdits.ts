@@ -1,7 +1,7 @@
 import { R16 } from '../../content/rules.fr';
 import { estDebutDeParagraphe, estTitre, rechercher, texteDePage } from '../recherche';
-import type { Decoupage, ModeleDocument, ResultatRegle } from '../types';
-import { ajouterPage, enGroupes, estDansPlage, pagesSaufCouverture } from './commun';
+import type { Decoupage, ModeleDocument, ParametresDossier, ResultatRegle } from '../types';
+import { ajouterPage, enGroupes, estDansPlage, pagesSaufCouverture, sourcesDe } from './commun';
 
 /** Expressions recherchées, avec leur libellé affiché. Le texte est normalisé (sans accents, en minuscules). */
 const EXPRESSIONS: readonly { motif: RegExp; libelle: string }[] = [
@@ -19,7 +19,7 @@ const PREFIXE_DE_BLOC = /^(?:annexe\s*\d*\s*[:.-]?\s*|objet\s*:\s*)?$/;
  * bloc (document probablement joint) ; simple information quand elle est
  * citée dans le texte des parties 1 et 2.
  */
-export function verifierR16(document: ModeleDocument, decoupage: Decoupage): ResultatRegle[] {
+export function verifierR16(document: ModeleDocument, decoupage: Decoupage, parametres?: ParametresDossier): ResultatRegle[] {
   const joints = new Map<string, Set<number>>();
   const mentions = new Set<number>();
   for (const page of pagesSaufCouverture(document, decoupage)) {
@@ -35,7 +35,7 @@ export function verifierR16(document: ModeleDocument, decoupage: Decoupage): Res
     }
   }
 
-  const sources = [...R16.sources];
+  const sources = sourcesDe(R16, parametres);
   if (joints.size > 0) {
     const groupes = enGroupes(joints);
     return [

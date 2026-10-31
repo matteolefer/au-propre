@@ -93,3 +93,16 @@ export const LONGUEUR_TITRE_MAX = 60;
 
 /** R14 : nombre minimal de lignes consécutives terminées par un numéro de page pour reconnaître un sommaire (calibration). */
 export const LIGNES_SOMMAIRE_MIN = 3;
+
+// --- Poids du fichier (étape 4) ------------------------------------------------
+// Limites de l'outil, non officielles : aucune limite de poids n'est publiée
+// pour le dépôt du RAEP dans Cyclades.
+
+/** Un mégaoctet, tel que l'affichent Windows et l'interface (1 Mo = 1 048 576 octets). */
+export const OCTETS_PAR_MO = 1024 * 1024;
+
+/** Au-delà, l'outil refuse d'analyser le fichier, pour ne pas bloquer le navigateur. */
+export const TAILLE_FICHIER_MAX_OCTETS = 50 * OCTETS_PAR_MO;
+
+/** Au-delà, le rapport signale un fichier lourd (information, pas une règle). */
+export const TAILLE_FICHIER_LOURD_OCTETS = 10 * OCTETS_PAR_MO;

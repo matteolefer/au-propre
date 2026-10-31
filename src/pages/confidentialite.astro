@@ -1,0 +1,115 @@
+---
+import Base from '../layouts/Base.astro';
+import ValeurSite from '../components/pages/ValeurSite.astro';
+import { inscriptionActive, PAGES_DU_SITE, SITE } from '../content/site';
+import '../styles/pages.css';
+
+const page = PAGES_DU_SITE.confidentialite;
+const inscription = inscriptionActive();
+---
+
+<Base titre={page.titre} description={page.description} chemin={page.chemin}>
+  <div class="p-page p-page--document">
+    <h1 class="p-titre">Confidentialité</h1>
+    <p class="p-chapo">
+      Votre dossier est analysé dans votre navigateur et n’est jamais envoyé. Cette page dit ce que le site
+      traite, où, et ce qu’il ne collecte jamais.
+    </p>
+    <p class="p-maj">Mise à jour le 31&nbsp;octobre 2026.</p>
+
+    <section class="p-section" aria-labelledby="dossier">
+      <h2 id="dossier">Votre dossier</h2>
+      <div class="p-prose">
+        <p>
+          Quand vous choisissez votre PDF, il est lu par votre navigateur, sur votre ordinateur. Il n’est envoyé à
+          aucun serveur, ni au nôtre ni à un autre.
+        </p>
+        <p>
+          Le concours, la discipline, le découpage et le rapport restent dans l’onglet. Ils disparaissent quand vous
+          le fermez ou rechargez la page. Les cases cochées de la checklist ne sont pas enregistrées.
+        </p>
+        <p>
+          Pour garder le rapport, imprimez-le, ou enregistrez-le en PDF depuis la fenêtre d’impression de votre
+          navigateur.
+        </p>
+      </div>
+    </section>
+
+    <section class="p-section" aria-labelledby="jamais">
+      <h2 id="jamais">Ce que le site ne collecte jamais</h2>
+      <ul class="p-prose">
+        <li>Votre fichier, son contenu ou son nom.</li>
+        <li>Le rapport, le concours ou la discipline choisis.</li>
+        <li>Aucun compte, aucun cookie déposé par le site, aucun outil de mesure d’audience ni de publicité.</li>
+      </ul>
+    </section>
+
+    <section class="p-section" aria-labelledby="hebergement">
+      <h2 id="hebergement">Hébergement</h2>
+      <div class="p-prose">
+        <p>
+          Le site est hébergé par Cloudflare. Comme tout hébergeur, Cloudflare reçoit l’adresse IP de votre
+          connexion et des informations techniques (navigateur, pages demandées) pour délivrer les pages et
+          protéger le site. Ces informations ne contiennent jamais votre dossier.
+        </p>
+        <p>
+          Cloudflare les traite selon{' '}
+          <a href={SITE.hebergeur.politiqueUrl}>sa politique de confidentialité</a>.
+        </p>
+      </div>
+    </section>
+
+    {
+      inscription && (
+        <section class="p-section" aria-labelledby="inscription">
+          <h2 id="inscription">Inscription facultative par e-mail</h2>
+          <div class="p-prose">
+            <p>
+              Sous le rapport, vous pouvez demander à être prévenu quand la relecture critique sera disponible.
+              Cette inscription est facultative.
+            </p>
+            <dl>
+              <dt>Finalité</dt>
+              <dd>Vous envoyer cette annonce, et rien d’autre.</dd>
+              <dt>Base légale</dt>
+              <dd>Votre consentement, que vous pouvez retirer à tout moment.</dd>
+              <dt>Prestataire</dt>
+              <dd>
+                Le formulaire est hébergé par {SITE.inscription.service}, société française qui gère l’envoi des
+                e-mails. Vous y donnez votre adresse et votre accord, puis vous confirmez l’inscription par un lien
+                reçu par e-mail. {SITE.inscription.service} traite ces données selon{' '}
+                <a href={SITE.inscription.politiqueUrl}>sa politique de confidentialité</a>.
+              </dd>
+              <dt>Aucun lien avec votre dossier</dt>
+              <dd>
+                Le formulaire s’ouvre sans aucune information sur votre fichier ni sur votre rapport, et le site ne
+                transmet rien à {SITE.inscription.service}.
+              </dd>
+              <dt>Conservation</dt>
+              <dd>
+                Jusqu’à l’envoi de l’annonce, puis suppression. Vous pouvez vous désinscrire à tout moment grâce au
+                lien présent dans chaque e-mail.
+              </dd>
+            </dl>
+          </div>
+        </section>
+      )
+    }
+
+    <section class="p-section" aria-labelledby="droits">
+      <h2 id="droits">Vos droits</h2>
+      <div class="p-prose">
+        <p>
+          Le responsable du traitement est l’éditeur du site (voir les{' '}
+          <a href={PAGES_DU_SITE.mentionsLegales.chemin}>mentions légales</a>). Vous pouvez accéder à vos données,
+          les faire rectifier ou effacer, vous opposer à leur traitement et retirer votre consentement.
+        </p>
+        <p>Écrivez à&nbsp;: <ValeurSite valeur={SITE.contact} email /></p>
+        <p>
+          Vous pouvez aussi adresser une réclamation à la Commission nationale de l’informatique et des libertés
+          (<a href="https://www.cnil.fr/fr/plaintes">CNIL</a>).
+        </p>
+      </div>
+    </section>
+  </div>
+</Base>

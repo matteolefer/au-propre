@@ -1,5 +1,5 @@
 {
-  "name": "raep-check",
+  "name": "au-propre",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -13,10 +13,12 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:e2e": "PW_DISABLE_TS_ESM=1 playwright test"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.2",
+    "@fontsource/source-serif-4": "^5.3.1",
     "astro": "^7.4.4",
     "pdfjs-dist": "^6.4.299",
     "react": "^19.3.1",
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
+    "@playwright/test": "1.52.0",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",

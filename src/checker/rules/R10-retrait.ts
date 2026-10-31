@@ -1,18 +1,19 @@
 import { R10 } from '../../content/rules.fr';
 import { LONGUEUR_FRAGMENT_MAX, PART_LIGNE_PLEINE, RETRAIT_MIN_PT, RETRAITS_RECURRENTS_MIN, TOLERANCE_PT } from '../measure';
 import { bornesHorizontales, estLigneDeTexte, estLignePleine, regrouperEnLignes, type Ligne } from '../texte';
-import type { Decoupage, ModeleDocument, ResultatRegle } from '../types';
-import { blocsDeTexte, pagesMesurees, resultatSansTexte } from './commun';
+import type { Decoupage, ModeleDocument, ParametresDossier, ResultatRegle, ZoneEnFaute } from '../types';
+import { blocsDeTexte, pagesMesurees, resultatSansTexte, sourcesDe, zoneEnFaute } from './commun';
 
 /**
  * R10 : pas de retrait en début de paragraphe (SPEC §5, mesure approximative).
  * Une ligne pleine décalée de plus de 5 pt vers la droite, suivie d'une ligne
  * revenue à l'alignement habituel de la page, est une première ligne en retrait.
  */
-export function verifierR10(document: ModeleDocument, decoupage: Decoupage): ResultatRegle[] {
+export function verifierR10(document: ModeleDocument, decoupage: Decoupage, parametres?: ParametresDossier): ResultatRegle[] {
   const pages = pagesMesurees(document, decoupage);
-  if (pages.every((page) => blocsDeTexte(page).length === 0)) return [resultatSansTexte('R10', R10.sources)];
+  if (pages.every((page) => blocsDeTexte(page).length === 0)) return [resultatSansTexte('R10', sourcesDe(R10, parametres))];
   const pagesEnRetrait: number[] = [];
+  const zones: ZoneEnFaute[] = [];
   for (const page of pages) {
     const lignes = regrouperEnLignes(page).filter((ligne) => estLigneDeTexte(ligne, LONGUEUR_FRAGMENT_MAX));
     if (lignes.length < 2) continue;
@@ -27,11 +28,13 @@ export function verifierR10(document: ModeleDocument, decoupage: Decoupage): Res
         Math.abs(suivante.xDebut - alignement) <= TOLERANCE_PT
       ) {
         pagesEnRetrait.push(page.numero);
+        // Zone : l'espace laissé par le retrait, au début de la ligne.
+        zones.push(zoneEnFaute(page, { x: alignement, y: ligne.y, largeur: ligne.xDebut - alignement, hauteur: ligne.bas - ligne.y }));
       }
     });
   }
 
-  const sources = [...R10.sources];
+  const sources = sourcesDe(R10, parametres);
   if (pagesEnRetrait.length >= RETRAITS_RECURRENTS_MIN) {
     const pages = [...new Set(pagesEnRetrait)].sort((a, b) => a - b);
     return [
@@ -43,6 +46,7 @@ export function verifierR10(document: ModeleDocument, decoupage: Decoupage): Res
         pages,
         correction: R10.avertissement.correction,
         sources,
+        zones,
       },
     ];
   }

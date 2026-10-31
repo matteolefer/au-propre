@@ -48,6 +48,14 @@ export const SOURCES = {
     libelle: 'Rapport de jury CAPES interne SES 2025',
     url: 'https://ses.ens-lyon.fr/fichiers/enseigner/rapport-de-jury-capes-interne-2025.pdf',
   },
+  S10: {
+    libelle: 'Les épreuves du concours interne de recrutement de conseillers principaux d’éducation',
+    url: 'https://www.education.gouv.fr/les-epreuves-du-concours-interne-de-recrutement-de-conseillers-principaux-d-education-12956',
+  },
+  S11: {
+    libelle: 'Rapport de jury CPE interne 2026',
+    url: 'https://www.education.gouv.fr/sites/default/files/document/rapport-du-jury-du-concours-interne-de-recrutement-de-cpe-de-la-session-2026-518831.pdf',
+  },
 } as const satisfies Record<string, Source>;
 
 // --- Outils de formulation ---------------------------------------------------
@@ -144,6 +152,8 @@ export const R02 = {
     detail: (plage: Plage, n: number) => `La partie 1 occupe ${nPages(n)} (${plageEnTexte(plage)}).`,
   },
   sources: [SOURCES.S1, SOURCES.S2],
+  /** Concours interne de CPE : la page du concours et le rapport du jury 2026 (p. 17 et 19) fixent aussi 2 pages. */
+  sourcesCpe: [SOURCES.S10, SOURCES.S11],
 };
 
 export const R03 = {
@@ -160,6 +170,8 @@ export const R03 = {
     detail: (plage: Plage, n: number) => `La partie 2 occupe ${nPages(n)} (${plageEnTexte(plage)}).`,
   },
   sources: [SOURCES.S1, SOURCES.S2],
+  /** Concours interne de CPE : la page du concours et le rapport du jury 2026 (p. 17 et 19) fixent aussi 6 pages. */
+  sourcesCpe: [SOURCES.S10, SOURCES.S11],
 };
 
 export const R04 = {
@@ -179,7 +191,11 @@ export const R04 = {
     titre: 'Aucune annexe',
     detail: 'Le découpage ne comporte pas d’annexes. Elles sont facultatives.',
   },
+  /** Concours interne de CPE : conséquence d'un dépassement selon le rapport du jury 2026 (p. 18). */
+  consequenceCpe: ` Pour le CPE, le jury ne prend pas en considération les annexes au-delà de 10${ESP}pages.`,
   sources: [SOURCES.S1, SOURCES.S2],
+  /** Concours interne de CPE : le rapport du jury 2026 fixe 10 pages d'annexes au plus (p. 18). */
+  sourcesCpe: [SOURCES.S11],
 };
 
 /** Taille mesurée d’un groupe de pages, en centimètres. */
@@ -217,6 +233,8 @@ export const R11 = {
       `Les ${nPages(n)} mesurent 21 × 29,7${ESP}cm, avec une tolérance de 2${ESP}points (moins d’un millimètre).`,
   },
   sources: [SOURCES.S1, SOURCES.S2],
+  /** Concours interne de CPE : la page du concours et le rapport du jury 2026 (p. 18). */
+  sourcesCpe: [SOURCES.S10, SOURCES.S11],
 };
 
 /** Une valeur mesurée (police, taille, couleur) et les pages où elle apparaît. */
@@ -258,10 +276,12 @@ export const R05 = {
     correction: `Passez ces passages en Arial, ${NOUVEL_EXPORT}`,
   },
   sources: [SOURCES.S1, SOURCES.S2],
+  /** Concours interne de CPE : la page du concours et le rapport du jury 2026 (p. 18). */
+  sourcesCpe: [SOURCES.S10, SOURCES.S11],
 };
 
 export const R06 = {
-  libelle: 'Taille 11 pt',
+  libelle: `Taille 11${ESP}pt`,
   conforme: {
     titre: 'Le texte est en 11 pt',
     detail: (taille: number) => `Taille du corps du texte${ESP}: ${pt(taille)}.`,
@@ -283,6 +303,8 @@ export const R06 = {
     correction: `Remettez ces passages en 11${ESP}pt, notes comprises${ESP}: la règle « Arial 11 » ne prévoit pas de taille réduite.`,
   },
   sources: [SOURCES.S1, SOURCES.S2, SOURCES.S8],
+  /** Concours interne de CPE : la page du concours et le rapport du jury 2026 (p. 18) ; S8 pour les titres. */
+  sourcesCpe: [SOURCES.S10, SOURCES.S11, SOURCES.S8],
 };
 
 export const R07 = {
@@ -304,10 +326,12 @@ export const R07 = {
       'Les parties 1 et 2 contiennent trop peu de lignes de paragraphe pour mesurer l’interligne. Vérifiez dans votre document qu’il est réglé sur « Simple ».',
   },
   sources: [SOURCES.S1, SOURCES.S2],
+  /** Concours interne de CPE : la page du concours et le rapport du jury 2026 (p. 18). */
+  sourcesCpe: [SOURCES.S10, SOURCES.S11],
 };
 
 export const R08 = {
-  libelle: 'Marges gauche et droite de 2,5 cm',
+  libelle: `Marges gauche et droite de 2,5${ESP}cm`,
   conforme: {
     titre: 'Les marges gauche et droite font au moins 2,5 cm',
     detail: (gauche: number, droite: number) =>
@@ -319,10 +343,12 @@ export const R08 = {
     correction: `Dans Mise en page > Marges, réglez les marges gauche et droite sur 2,5${ESP}cm et vérifiez qu’aucun tableau ne déborde dans la marge. Ensuite, ${VOLUME_INCHANGE} ${NOUVEL_EXPORT}`,
   },
   sources: [SOURCES.S1, SOURCES.S2],
+  /** Concours interne de CPE : la page du concours et le rapport du jury 2026 (p. 18). */
+  sourcesCpe: [SOURCES.S10, SOURCES.S11],
 };
 
 export const R09 = {
-  libelle: 'En-tête et pied de page à 1,25 cm du bord',
+  libelle: `En-tête et pied de page à 1,25${ESP}cm du bord`,
   conforme: {
     titre: 'Le texte est à au moins 1,25 cm des bords haut et bas',
     detail: (haut: number, bas: number) =>
@@ -336,6 +362,8 @@ export const R09 = {
       `Dans LibreOffice${ESP}: ajustez la marge et l’espacement de l’en-tête ou du pied de page dans Format > Style de page. Ensuite, ${NOUVEL_EXPORT}`,
   },
   sources: [SOURCES.S1, SOURCES.S2],
+  /** Concours interne de CPE : la page du concours et le rapport du jury 2026 (p. 18). */
+  sourcesCpe: [SOURCES.S10, SOURCES.S11],
 };
 
 export const R10 = {
@@ -351,6 +379,8 @@ export const R10 = {
     correction: `Sélectionnez tout le texte et réglez le retrait de première ligne sur « aucun » (0${ESP}cm) dans la fenêtre Paragraphe, ${NOUVEL_EXPORT}`,
   },
   sources: [SOURCES.S1, SOURCES.S2],
+  /** Concours interne de CPE : la page du concours et le rapport du jury 2026 (p. 18). */
+  sourcesCpe: [SOURCES.S10, SOURCES.S11],
 };
 
 export const R12 = {
@@ -365,6 +395,8 @@ export const R12 = {
     detail: 'Aucune page des parties 1 et 2 ne porte de numéro en haut ou en bas de page.',
     correction: `Insérez la pagination (Insertion > Numéro de page), ${NOUVEL_EXPORT} Vérifiez ensuite les numéros dans le PDF obtenu.`,
   },
+  /** Concours interne de CPE : ni la page du concours ni le rapport du jury 2026 n'en parlent. */
+  mentionCpe: ` Pour le CPE, cette recommandation vient du jury d’un autre concours (CAPES interne de lettres)${ESP}: elle est donnée comme bonne pratique.`,
   sources: [SOURCES.S8],
 };
 
@@ -379,6 +411,8 @@ export const R13 = {
     detail: (groupes: readonly GroupePages[]) => `Couleur ${groupesEnTexte(groupes)}.`,
     correction: `Passez ces passages en noir (couleur de police « Automatique » ou « Noir »), ${NOUVEL_EXPORT}`,
   },
+  /** Concours interne de CPE : ni la page du concours ni le rapport du jury 2026 n'en parlent. */
+  mentionCpe: ` Pour le CPE, cette recommandation vient du jury d’un autre concours (CAPES interne d’arts plastiques)${ESP}: elle est donnée comme bonne pratique.`,
   nonVerifiable: {
     titre: 'La couleur du texte n’a pas pu être vérifiée',
     detail:
@@ -459,6 +493,8 @@ export const R15 = {
     detail: 'Citer un curriculum vitae dans le texte est possible. En revanche, les jurys demandent de ne pas joindre de CV au dossier.',
   },
   sources: [SOURCES.S5, SOURCES.S7],
+  /** Concours interne de CPE : le rapport du jury 2026 proscrit aussi le CV en annexe (p. 20). */
+  sourcesCpe: [SOURCES.S5, SOURCES.S7, SOURCES.S11],
 };
 
 export const R16 = {
@@ -480,6 +516,8 @@ export const R16 = {
       'Mentionner une visite ou une inspection est possible. En revanche, joindre un rapport d’inspection, de visite-conseil ou une lettre de recommandation écarte le dossier.',
   },
   sources: [SOURCES.S9],
+  /** Concours interne de CPE : le rapport du jury 2026 exclut aussi toute recommandation (p. 18 et 20). */
+  sourcesCpe: [SOURCES.S9, SOURCES.S11],
 };
 
 export const R17 = {
@@ -523,3 +561,180 @@ export const R19 = {
   },
   sources: [SOURCES.S4],
 };
+
+/** Libellé court de chaque règle, affiché dans le rapport à côté de son identifiant. */
+export const LIBELLES_REGLES: Readonly<Record<string, string>> = {
+  R00: R00.libelle,
+  R01: R01.libelle,
+  R02: R02.libelle,
+  R03: R03.libelle,
+  R04: R04.libelle,
+  R05: R05.libelle,
+  R06: R06.libelle,
+  R07: R07.libelle,
+  R08: R08.libelle,
+  R09: R09.libelle,
+  R10: R10.libelle,
+  R11: R11.libelle,
+  R12: R12.libelle,
+  R13: R13.libelle,
+  R14: R14.libelle,
+  R15: R15.libelle,
+  R16: R16.libelle,
+  R17: R17.libelle,
+  R18: R18.libelle,
+  R19: R19.libelle,
+};
+
+// --- Page « Les règles officielles du RAEP » --------------------------------
+
+/** Explication d'une règle pour le public, d'après la synthèse des textes officiels (docs/). */
+export interface Explication {
+  /** Ce que disent les textes ou les jurys, en clair. */
+  regle: string;
+  /** Ce que vérifie l'outil, et quand il signale une erreur ou un avertissement. */
+  controle: string;
+  /** Comment respecter la règle. */
+  conseil: string;
+}
+
+const TOLERANCE = `avec une tolérance de 2${ESP}points (moins d’un millimètre)`;
+
+export const EXPLICATIONS = {
+  R01: {
+    regle: `Le dossier commence par le formulaire de couverture téléchargé dans votre espace Cyclades, de l’année de la session. Une couverture absente ou d’une autre année rend le dossier hors norme.`,
+    controle: `L’outil cherche en page${ESP}1 les mots du formulaire (concours, session, nom, signature…) et l’année de la session. Il ne peut pas certifier qu’il s’agit du bon formulaire${ESP}: il vous demande de le confirmer dans la checklist. Avertissement si la page${ESP}1 ne ressemble pas à une couverture ou mentionne une autre session.`,
+    conseil: `Téléchargez le formulaire de la session 2027 dans votre espace Cyclades, remplissez-le, signez-le et placez-le en page${ESP}1.`,
+  },
+  R02: {
+    regle: `La première partie, consacrée à votre parcours et aux responsabilités qui vous ont été confiées, tient en 2${ESP}pages au plus.`,
+    controle: `L’outil compte les pages de la partie${ESP}1 d’après le découpage que vous confirmez. Erreur au-delà de 2${ESP}pages.`,
+    conseil: 'Resserrez le propos, sans réduire la police, la taille ni les marges, qui sont elles aussi contrôlées.',
+  },
+  R03: {
+    regle: `La seconde partie, l’analyse d’une expérience que vous avez menée, tient en 6${ESP}pages au plus.`,
+    controle: `L’outil compte les pages de la partie${ESP}2 d’après le découpage que vous confirmez. Erreur au-delà de 6${ESP}pages.`,
+    conseil: 'Resserrez l’analyse, sans réduire la police, la taille ni les marges, qui sont elles aussi contrôlées.',
+  },
+  R04: {
+    regle: `Les annexes sont facultatives${ESP}: un ou deux exemples de documents ou de travaux liés à la situation décrite, 10${ESP}pages au plus pour l’ensemble.`,
+    controle: `Erreur au-delà de 10${ESP}pages d’annexes. L’outil ne juge pas leur choix${ESP}: c’est un point de la checklist.`,
+    conseil: 'Gardez un ou deux documents en lien direct avec la situation analysée.',
+  },
+  R05: {
+    regle: 'Le dossier est écrit en Arial.',
+    controle: `L’outil lit le nom des polices dans le PDF. Erreur si le texte des parties${ESP}1 et 2 est surtout dans une autre police. Avertissement si votre traitement de texte a remplacé Arial par une police aux mêmes dimensions (Liberation Sans, Arimo), ou si d’autres polices apparaissent.`,
+    conseil: 'Choisissez Arial pour tout le texte, et exportez le PDF depuis un ordinateur où Arial est installée (Windows et macOS la fournissent).',
+  },
+  R06: {
+    regle: `Le texte est en 11${ESP}points. Le jury de lettres recommande aussi d’écrire les titres à la même taille.`,
+    controle: `Erreur si la taille principale du texte sort de l’intervalle de 10,5 à 11,5${ESP}points. Avertissement pour les lignes d’une autre taille${ESP}: titres plus grands, notes ou passages réduits.`,
+    conseil: `Écrivez tout en 11${ESP}points, titres et notes compris, et distinguez les titres par le gras.`,
+  },
+  R07: {
+    regle: 'L’interligne est simple.',
+    controle: `L’outil mesure l’écart entre les lignes d’un même paragraphe. Au-delà de 1,35${ESP}fois la taille de la police, il donne un avertissement${ESP}: la mesure est approximative.`,
+    conseil: 'Réglez l’interligne sur « Simple » dans la fenêtre Paragraphe.',
+  },
+  R08: {
+    regle: `Les marges gauche et droite mesurent 2,5${ESP}cm.`,
+    controle: `Erreur si du texte des parties${ESP}1 et 2 est à moins de 2,5${ESP}cm du bord gauche ou droit, ${TOLERANCE}.`,
+    conseil: `Réglez les marges gauche et droite sur 2,5${ESP}cm et vérifiez qu’aucun tableau ne déborde dans la marge.`,
+  },
+  R09: {
+    regle: `L’en-tête et le pied de page sont à 1,25${ESP}cm du bord. Les marges haute et basse, elles, ne sont pas fixées.`,
+    controle: `Erreur si du texte, numéro de page compris, est à moins de 1,25${ESP}cm du bord haut ou bas, ${TOLERANCE}.`,
+    conseil: `Dans Word, réglez « À partir du bord » sur 1,25${ESP}cm pour l’en-tête et le pied de page (Mise en page > Marges > Marges personnalisées, onglet Disposition).`,
+  },
+  R10: {
+    regle: 'Les paragraphes commencent sans retrait.',
+    controle: `Avertissement si plusieurs paragraphes commencent plus à droite que leurs lignes suivantes, de plus de 5${ESP}points. Mesure approximative.`,
+    conseil: `Réglez le retrait de première ligne sur 0${ESP}cm dans la fenêtre Paragraphe.`,
+  },
+  R11: {
+    regle: `Le format est A4${ESP}: 21 × 29,7${ESP}cm.`,
+    controle: `Erreur si une page des parties${ESP}1 ou 2 n’est pas au format A4, en portrait ou en paysage, ${TOLERANCE}. Avertissement pour la couverture et les annexes.`,
+    conseil: 'Choisissez le format A4 dans la mise en page, puis vérifiez-le dans la fenêtre d’export PDF.',
+  },
+  R12: {
+    regle: `Numérotez les pages${ESP}: le jury du CAPES interne de lettres le rappelle dans son rapport 2026.`,
+    controle: `Avertissement si aucun numéro n’est trouvé en haut ou en bas des pages des parties${ESP}1 et 2. L’outil reconnaît les numéros en chiffres (« 3 », « Page 3 », « 3/11 »…).`,
+    conseil: 'Insérez la pagination avant l’export, puis vérifiez les numéros dans le PDF obtenu.',
+  },
+  R13: {
+    regle: `Écrivez le texte en noir${ESP}: le jury du CAPES interne d’arts plastiques relève dans son rapport 2026 que les couleurs excessives gênent la lecture.`,
+    controle: `Avertissement si du texte des parties${ESP}1 et 2 est en couleur. Le gris n’est pas compté comme une couleur.`,
+    conseil: 'Choisissez la couleur de police « Automatique » ou « Noir ».',
+  },
+  R14: {
+    regle: `Les jurys jugent le sommaire inutile${ESP}: il prend de la place dans des pages comptées.`,
+    controle: 'Avertissement si l’outil trouve un titre « Sommaire » ou « Table des matières », ou une liste de titres suivis de numéros de page. Le mot cité dans une phrase est ignoré.',
+    conseil: 'Supprimez le sommaire.',
+  },
+  R15: {
+    regle: 'Le parcours se présente de façon rédigée dans la première partie. Les jurys demandent de ne pas joindre de CV.',
+    controle: 'Avertissement si « CV » ou « Curriculum vitae » apparaît comme titre. Simple information s’il est cité dans une phrase.',
+    conseil: 'Présentez votre parcours en montrant les compétences construites, plutôt qu’une liste de postes.',
+  },
+  R16: {
+    regle: `Joindre une lettre de recommandation ou un rapport d’inspection ou de visite-conseil écarte le dossier. Les mentionner dans le texte reste possible.`,
+    controle: `Erreur si l’une de ces expressions est un titre, figure dans les annexes ou ouvre un bloc de texte. Simple information si elle est citée dans une phrase des parties${ESP}1 et 2. Un document scanné, en image, n’est pas lu${ESP}: c’est un point de la checklist.`,
+    conseil: 'Retirez ce document. Vous pouvez évoquer la visite ou l’inspection dans votre texte.',
+  },
+  R17: {
+    regle: `Le jury ne consulte ni les liens ni les QR codes${ESP}: ce qui doit être lu figure dans le dossier.`,
+    controle: `Avertissement si une adresse web ou un lien cliquable est trouvé. Les QR codes ne sont pas détectés${ESP}: vérifiez-les vous-même.`,
+    conseil: 'Mettez dans le dossier ou en annexe ce qui doit être lu.',
+  },
+  R18: {
+    regle: 'En histoire-géographie, un dossier qui porte sur l’enseignement de spécialité HGGSP est irrecevable.',
+    controle: `Si vous avez choisi l’histoire-géographie, avertissement quand «${ESP}HGGSP${ESP}» apparaît dans la partie${ESP}2 ou les annexes. Une mention dans le parcours (partie${ESP}1) est ignorée.`,
+    conseil: 'Analysez une séquence d’histoire-géographie, la discipline de votre inscription.',
+  },
+  R19: {
+    regle: 'Le dossier se dépose en PDF, nommé à vos nom et prénom.',
+    controle: 'Avertissement si le nom du fichier ne ressemble pas à NOM_Prénom.pdf, la forme que l’outil propose.',
+    conseil: 'Renommez le fichier, par exemple DUPONT_Marie.pdf, avant de le déposer dans Cyclades.',
+  },
+} as const satisfies Record<string, Explication>;
+
+export type IdRegleExpliquee = keyof typeof EXPLICATIONS;
+
+/** Textes de chaque règle utiles à la page publique : libellé, sources, sources du CPE. */
+export const TEXTES_REGLES = {
+  R01, R02, R03, R04, R05, R06, R07, R08, R09, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19,
+} as const satisfies Record<IdRegleExpliquee, { libelle: string; sources: readonly Source[] }>;
+
+/** Groupes de la page « Les règles officielles du RAEP », dans l'ordre d'affichage. */
+export const GROUPES_REGLES: readonly { id: string; titre: string; intro: string; regles: readonly IdRegleExpliquee[] }[] = [
+  {
+    id: 'volume',
+    titre: 'Nombre de pages',
+    intro: `Les deux parties comptent 8${ESP}pages au plus${ESP}: 2 pour la première, 6 pour la seconde. Les annexes ont leur propre limite.`,
+    regles: ['R02', 'R03', 'R04'],
+  },
+  {
+    id: 'presentation',
+    titre: 'Présentation',
+    intro: 'Les textes officiels fixent la présentation de chaque partie.',
+    regles: ['R05', 'R06', 'R07', 'R08', 'R09', 'R10', 'R11'],
+  },
+  {
+    id: 'recommandations',
+    titre: 'Recommandations des jurys',
+    intro: `Ces points viennent des rapports de jury, pas des textes officiels${ESP}: l’outil les signale en avertissement.`,
+    regles: ['R12', 'R13'],
+  },
+  {
+    id: 'contenu',
+    titre: 'Ce que le dossier ne doit pas contenir',
+    intro: 'Les jurys relèvent chaque année les mêmes ajouts, inutiles ou éliminatoires.',
+    regles: ['R14', 'R15', 'R16', 'R17', 'R18'],
+  },
+  {
+    id: 'couverture-fichier',
+    titre: 'Couverture et fichier',
+    intro: '',
+    regles: ['R01', 'R19'],
+  },
+];

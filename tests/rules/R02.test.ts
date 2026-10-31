@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { verifierR02 } from '../../src/checker/rules/R02-partie1-pages';
+import { CONCOURS_CPE } from '../../src/checker/rules/nombre-pages';
 import { documentSynthetique } from '../helpers/document-synthetique';
 import { chargerFixture, DECOUPAGES, FIXTURES_TEXTE } from '../helpers/fixtures';
-import { attendreTextesEtSourcesS1S2 } from '../helpers/sources';
+import { attendreTextesEtSources, attendreTextesEtSourcesS1S2 } from '../helpers/sources';
 
 describe('R02 : partie 1, 2 pages maximum', () => {
   it('02_partie1_3pages : erreur sur les pages 2 à 4', async () => {
@@ -24,5 +25,12 @@ describe('R02 : partie 1, 2 pages maximum', () => {
     const [resultat] = verifierR02(documentSynthetique(9, { vides: [3] }), decoupage);
     expect(resultat?.gravite).toBe('erreur');
     expect(resultat?.detail).toContain('La page\u00A03 est vide');
+  });
+
+  it('CPE interne : même limite, sources S10 et S11 (page du concours, rapport du jury 2026)', async () => {
+    const parametres = { concours: CONCOURS_CPE, discipline: null, nomFichier: null };
+    const resultats = verifierR02(await chargerFixture('02_partie1_3pages'), DECOUPAGES['02_partie1_3pages'], parametres);
+    expect(resultats[0]?.gravite).toBe('erreur');
+    attendreTextesEtSources(resultats, ['S10', 'S11']);
   });
 });

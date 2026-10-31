@@ -1,0 +1,89 @@
+/*
+ * Impression du rapport : seul le rapport s'imprime. Les sources gardent leur
+ * libellé dans chaque contrôle ; leurs adresses complètes sont listées une
+ * seule fois à la fin (« Sources citées »). Le formulaire, le découpage et les
+ * boutons sont masqués. L'en-tête et le pied de page du site sont réglés
+ * pour l'impression dans layouts/Base.astro.
+ */
+@media print {
+  @page {
+    margin: 1.5cm;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 11pt;
+    line-height: 1.4;
+  }
+
+  .v-etapes,
+  .v-page__titre,
+  .v-page__chapo,
+  .v-actions,
+  .v-inscription,
+  noscript {
+    display: none !important;
+  }
+
+  .v-imprime-seulement {
+    display: block;
+  }
+
+  .v-page,
+  .v-verificateur,
+  .v-etape {
+    padding-top: 0;
+    margin-top: 0;
+  }
+
+  .v-carte,
+  .v-controles,
+  .v-checklist__liste {
+    border-color: #999;
+  }
+
+  .v-controle,
+  .v-checklist__point,
+  .v-compteurs,
+  .v-meta > div,
+  .v-sources-citees li {
+    break-inside: avoid;
+  }
+
+  .v-groupe__titre {
+    break-after: avoid;
+  }
+
+  .v-groupe {
+    margin-top: 0.6cm;
+  }
+
+  .v-controle__corps,
+  .v-checklist__texte,
+  .v-intro {
+    max-width: none;
+  }
+
+  .v-source {
+    color: #000;
+  }
+
+  .v-sources-citees ul {
+    margin: 0;
+    padding-left: 1.2em;
+    font-size: 9.5pt;
+    overflow-wrap: anywhere;
+  }
+
+  .v-case {
+    print-color-adjust: exact;
+  }
+}
+
+@media print {
+  /* Aperçu de la page concernée : petit, zones surlignées conservées. */
+  .v-apercu-page__cadre {
+    width: 3.5cm;
+  }
+}

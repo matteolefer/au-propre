@@ -1,0 +1,21 @@
+---
+/** Liens vers des sources officielles, séparés par « ; ». */
+import type { Source } from '../../checker/types';
+
+interface Props {
+  sources: readonly Source[];
+}
+
+const { sources } = Astro.props;
+---
+
+{
+  sources.map((source, i) => (
+    <>
+      {i > 0 && ' ; '}
+      <a class="p-source" href={source.url}>
+        {source.libelle}
+      </a>
+    </>
+  ))
+}

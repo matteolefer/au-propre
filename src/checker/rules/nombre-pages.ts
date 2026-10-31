@@ -1,6 +1,8 @@
 import { nombrePages, pagesDe } from '../measure';
 import type { ModeleDocument, Plage, ResultatRegle, Source } from '../types';
 
+export { CONCOURS_CPE, estConcoursCpe } from './commun';
+
 interface TextesNombrePages {
   erreur: {
     titre: string;

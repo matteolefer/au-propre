@@ -1,0 +1,18 @@
+---
+// Page temporaire de comparaison des variantes du hero : non indexée, absente du sitemap.
+import Base from '../../layouts/Base.astro';
+import HeroA from '../../components/accueil/HeroA.astro';
+import SuiteAccueil from '../../components/accueil/SuiteAccueil.astro';
+import { PAGES_DU_SITE } from '../../content/site';
+import '../../styles/verificateur.css';
+import '../../styles/accueil.css';
+
+const page = PAGES_DU_SITE.accueil;
+---
+
+<Base titre={`Essai A – ${page.titre}`} description={page.description} chemin="/essais/accueil-a/" indexer={false}>
+  <div class="accueil accueil--a">
+    <HeroA />
+    <SuiteAccueil />
+  </div>
+</Base>

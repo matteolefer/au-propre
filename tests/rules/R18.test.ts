@@ -3,7 +3,7 @@ import { DISCIPLINE_HISTOIRE_GEOGRAPHIE, verifierR18 } from '../../src/checker/r
 import { avecPage, DECOUPAGE_SYNTHETIQUE, documentStandard, pageDeLignes } from '../helpers/document-synthetique';
 import { attendreTextesEtSources } from '../helpers/sources';
 
-const HG = { discipline: DISCIPLINE_HISTOIRE_GEOGRAPHIE, nomFichier: null };
+const HG = { concours: null, discipline: DISCIPLINE_HISTOIRE_GEOGRAPHIE, nomFichier: null };
 
 describe('R18 : HGGSP en histoire-géographie', () => {
   it('« HGGSP » en partie 2 en histoire-géographie : avertissement', () => {
@@ -22,7 +22,7 @@ describe('R18 : HGGSP en histoire-géographie', () => {
 
   it('autre discipline ou discipline inconnue : la règle ne s’applique pas', () => {
     const document = avecPage(documentStandard(), pageDeLignes(5, ['Séance de spécialité HGGSP.']));
-    expect(verifierR18(document, DECOUPAGE_SYNTHETIQUE, { discipline: 'lettres-modernes', nomFichier: null })).toEqual([]);
-    expect(verifierR18(document, DECOUPAGE_SYNTHETIQUE, { discipline: null, nomFichier: null })).toEqual([]);
+    expect(verifierR18(document, DECOUPAGE_SYNTHETIQUE, { concours: null, discipline: 'lettres-modernes', nomFichier: null })).toEqual([]);
+    expect(verifierR18(document, DECOUPAGE_SYNTHETIQUE, { concours: null, discipline: null, nomFichier: null })).toEqual([]);
   });
 });

@@ -4,7 +4,7 @@ import { DECOUPAGE_SYNTHETIQUE, documentStandard } from '../helpers/document-syn
 import { attendreTextesEtSources } from '../helpers/sources';
 
 function verifierNom(nomFichier: string | null) {
-  return verifierR19(documentStandard(), DECOUPAGE_SYNTHETIQUE, { discipline: null, nomFichier });
+  return verifierR19(documentStandard(), DECOUPAGE_SYNTHETIQUE, { concours: null, discipline: null, nomFichier });
 }
 
 describe('R19 : nom du fichier', () => {

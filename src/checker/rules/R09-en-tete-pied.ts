@@ -1,15 +1,16 @@
 import { cm, R09 } from '../../content/rules.fr';
 import { cmEnPt, DISTANCE_EN_TETE_PIED_CM, ptEnCm, TOLERANCE_PT } from '../measure';
-import type { Decoupage, ModeleDocument, ResultatRegle } from '../types';
-import { pagesMesurees, resultatSansTexte } from './commun';
+import type { Decoupage, ModeleDocument, ParametresDossier, ResultatRegle, ZoneEnFaute } from '../types';
+import { englobant, pagesMesurees, resultatSansTexte, sourcesDe, zoneEnFaute } from './commun';
 
 /**
  * R09 : en-tête et pied de page à 1,25 cm du bord (SPEC §5). On mesure la
  * distance entre le bord et la boîte de ligne du texte le plus haut et le plus
  * bas, comme le fait Word pour l'en-tête et le pied de page.
  */
-export function verifierR09(document: ModeleDocument, decoupage: Decoupage): ResultatRegle[] {
+export function verifierR09(document: ModeleDocument, decoupage: Decoupage, parametres?: ParametresDossier): ResultatRegle[] {
   const seuil = cmEnPt(DISTANCE_EN_TETE_PIED_CM) - TOLERANCE_PT;
+  const zones: ZoneEnFaute[] = [];
   let hautMin = Infinity;
   let basMin = Infinity;
   const defauts = { haut: { min: Infinity, pages: [] as number[] }, bas: { min: Infinity, pages: [] as number[] } };
@@ -28,12 +29,17 @@ export function verifierR09(document: ModeleDocument, decoupage: Decoupage): Res
       if (mesure < seuil) {
         defauts[bord].min = Math.min(defauts[bord].min, mesure);
         defauts[bord].pages.push(page.numero);
+        // Zone : les blocs trop proches du bord.
+        const fautifs = blocs.filter((bloc) =>
+          bord === 'haut' ? bloc.y < seuil : page.hauteur - (bloc.y + bloc.hauteur) < seuil,
+        );
+        zones.push(zoneEnFaute(page, englobant(fautifs)));
       }
     }
   }
 
-  const sources = [...R09.sources];
-  if (hautMin === Infinity) return [resultatSansTexte('R09', R09.sources)];
+  const sources = sourcesDe(R09, parametres);
+  if (hautMin === Infinity) return [resultatSansTexte('R09', sources)];
   const groupes = (['haut', 'bas'] as const)
     .filter((bord) => defauts[bord].pages.length > 0)
     .map((bord) => ({ libelle: `texte à ${cm(ptEnCm(defauts[bord].min))} du bord ${bord}`, pages: defauts[bord].pages }));
@@ -47,6 +53,7 @@ export function verifierR09(document: ModeleDocument, decoupage: Decoupage): Res
         pages: [...new Set(groupes.flatMap((g) => g.pages))].sort((a, b) => a - b),
         correction: R09.erreur.correction,
         sources,
+        zones,
       },
     ];
   }

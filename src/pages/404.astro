@@ -1,0 +1,22 @@
+---
+import Base from '../layouts/Base.astro';
+import { PAGES_DU_SITE } from '../content/site';
+import '../styles/pages.css';
+---
+
+<Base
+  titre="Page introuvable"
+  description="Cette page n’existe pas. Vérifiez votre dossier RAEP ou consultez les règles officielles."
+  chemin="/404/"
+  indexer={false}
+>
+  <div class="p-page p-page--document">
+    <h1 class="p-titre">Cette page n’existe pas</h1>
+    <p class="p-chapo">L’adresse est peut-être mal saisie, ou la page a été déplacée.</p>
+    <div class="p-accueil__action">
+      <a class="v-bouton v-bouton--principal" href={PAGES_DU_SITE.verifier.chemin}>Vérifier mon dossier</a>
+      <a class="v-bouton v-bouton--secondaire" href={PAGES_DU_SITE.regles.chemin}>Lire les règles officielles</a>
+      <a class="v-bouton v-bouton--texte" href={PAGES_DU_SITE.accueil.chemin}>Revenir à l’accueil</a>
+    </div>
+  </div>
+</Base>

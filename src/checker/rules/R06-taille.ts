@@ -1,20 +1,20 @@
 import { pt, R06 } from '../../content/rules.fr';
 import { ECART_TAILLE_PT, LONGUEUR_FRAGMENT_MAX, TAILLE_CORPS_MAX_PT, TAILLE_CORPS_MIN_PT } from '../measure';
 import { estLigneDeTexte, regrouperEnLignes, tailleDuCorps } from '../texte';
-import type { Decoupage, ModeleDocument, ResultatRegle } from '../types';
-import { ajouterPage, blocsDeTexte, enGroupes, pagesMesurees, resultatSansTexte } from './commun';
+import type { Decoupage, ModeleDocument, ParametresDossier, ResultatRegle } from '../types';
+import { ajouterPage, blocsDeTexte, enGroupes, pagesMesurees, resultatSansTexte, sourcesDe } from './commun';
 
 /**
  * R06 : taille 11 pt (SPEC §5). Erreur si le corps du texte sort de
  * [10,5 ; 11,5] pt ; avertissement pour les lignes d'une autre taille,
  * plus grandes (titres) ou plus petites (notes, passages réduits).
  */
-export function verifierR06(document: ModeleDocument, decoupage: Decoupage): ResultatRegle[] {
+export function verifierR06(document: ModeleDocument, decoupage: Decoupage, parametres?: ParametresDossier): ResultatRegle[] {
   const pages = pagesMesurees(document, decoupage);
   const corps = tailleDuCorps(pages.flatMap(blocsDeTexte));
-  if (corps === undefined) return [resultatSansTexte('R06', R06.sources)];
+  if (corps === undefined) return [resultatSansTexte('R06', sourcesDe(R06, parametres))];
 
-  const sources = [...R06.sources];
+  const sources = sourcesDe(R06, parametres);
   const resultats: ResultatRegle[] = [];
   if (corps < TAILLE_CORPS_MIN_PT || corps > TAILLE_CORPS_MAX_PT) {
     resultats.push({

@@ -1,12 +1,19 @@
 ---
-// Page provisoire : la page d'accueil fera l'objet d'une étape dédiée.
+// Accueil : variante B du hero (panneau papier) avec le titre de la variante A, retenue après comparaison des captures.
+// Les pages src/pages/essais/ restent jusqu'à validation, puis seront supprimées.
 import Base from '../layouts/Base.astro';
+import HeroB from '../components/accueil/HeroB.astro';
+import SuiteAccueil from '../components/accueil/SuiteAccueil.astro';
+import { PAGES_DU_SITE } from '../content/site';
+import '../styles/verificateur.css';
+import '../styles/accueil.css';
+
+const page = PAGES_DU_SITE.accueil;
 ---
 
-<Base
-  titre="RAEP Check"
-  description="Vérifiez que votre dossier RAEP respecte les règles officielles avant le 3 décembre."
->
-  <h1>RAEP Check</h1>
-  <p>Site en construction.</p>
+<Base titre={page.titre} description={page.description} chemin={page.chemin}>
+  <div class="accueil accueil--b">
+    <HeroB />
+    <SuiteAccueil />
+  </div>
 </Base>

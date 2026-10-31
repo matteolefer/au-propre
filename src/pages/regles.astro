@@ -1,0 +1,207 @@
+---
+import Base from '../layouts/Base.astro';
+import ListeSources from '../components/pages/ListeSources.astro';
+import { pointsChecklist } from '../content/checklist.fr';
+import { EXPLICATIONS, GROUPES_REGLES, R04, R12, R13, SOURCES, TEXTES_REGLES, type IdRegleExpliquee } from '../content/rules.fr';
+import { PAGES_DU_SITE } from '../content/site';
+import '../styles/pages.css';
+
+const page = PAGES_DU_SITE.regles;
+
+const enBref: { regle: string; valeur: string }[] = [
+  { regle: 'Première partie (parcours)', valeur: '2 pages au plus' },
+  { regle: 'Seconde partie (analyse)', valeur: '6 pages au plus' },
+  { regle: 'Annexes', valeur: 'Facultatives, 1 ou 2 exemples, 10 pages au plus' },
+  { regle: 'Police', valeur: 'Arial 11' },
+  { regle: 'Interligne', valeur: 'Simple' },
+  { regle: 'Format', valeur: 'A4 (21 × 29,7 cm)' },
+  { regle: 'Marges gauche et droite', valeur: '2,5 cm' },
+  { regle: 'En-tête et pied de page', valeur: '1,25 cm du bord' },
+  { regle: 'Paragraphes', valeur: 'Sans retrait' },
+  { regle: 'Fichier', valeur: 'Un seul PDF, nommé à vos nom et prénom' },
+  { regle: 'Dépôt', valeur: 'Dans Cyclades, rubrique « Mes justificatifs », au plus tard le jeudi 3 décembre 2026 à 23 h 59' },
+];
+const sourcesEnBref = [SOURCES.S1, SOURCES.S2, SOURCES.S3, SOURCES.S4];
+
+/** Précision propre au concours de CPE, affichée sous la règle. */
+const precisionsCpe: Partial<Record<IdRegleExpliquee, string>> = {
+  R04: R04.consequenceCpe.trim(),
+  R12: R12.mentionCpe.trim(),
+  R13: R13.mentionCpe.trim(),
+};
+
+
+const checklist = pointsChecklist({ sansDiscipline: false, pagesAnnexesEnImage: [] });
+const toutesLesSources = Object.values(SOURCES);
+---
+
+<Base titre={page.titre} description={page.description} chemin={page.chemin}>
+  <div class="p-page p-page--document">
+    <h1 class="p-titre">Les règles officielles du dossier RAEP, session 2027</h1>
+    <p class="p-chapo">
+      La forme du dossier est vérifiée avant son contenu&nbsp;: un dossier hors norme n’est pas évalué. Voici
+      chaque règle expliquée simplement, avec sa source, et ce que l’outil vérifie.
+    </p>
+    <p class="p-maj">
+      Concours internes du CAPES, du CAPLP, du CAPET, CAER et concours interne de CPE. Mis à jour le
+      31&nbsp;octobre 2026.
+    </p>
+
+    <nav aria-label="Sommaire de la page">
+      <ul class="p-sommaire">
+        <li><a href="#en-bref">En bref</a></li>
+        {
+          GROUPES_REGLES.map((groupe) => (
+            <li>
+              <a href={`#${groupe.id}`}>{groupe.titre}</a>
+            </li>
+          ))
+        }
+        <li><a href="#a-verifier">À vérifier vous-même</a></li>
+        <li><a href="#cpe">Concours de CPE</a></li>
+        <li><a href="#sources">Sources</a></li>
+      </ul>
+    </nav>
+
+    <section class="p-section" aria-labelledby="en-bref">
+      <h2 id="en-bref">En bref</h2>
+      <table class="p-tableau">
+        <tbody>
+          {
+            enBref.map((ligne) => (
+              <tr>
+                <th scope="row">{ligne.regle}</th>
+                <td>{ligne.valeur}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+      <p class="p-aide">Sources&nbsp;: <ListeSources sources={sourcesEnBref} /></p>
+    </section>
+
+    {
+      GROUPES_REGLES.map((groupe) => (
+        <section class="p-section" aria-labelledby={groupe.id}>
+          <h2 id={groupe.id}>{groupe.titre}</h2>
+          {groupe.intro && <p class="p-groupe__intro">{groupe.intro}</p>}
+          <ul class="p-regles">
+            {groupe.regles.map((id) => {
+              const explication = EXPLICATIONS[id];
+              const textes = TEXTES_REGLES[id];
+              const precision = precisionsCpe[id];
+              return (
+                <li class="p-regle" id={id}>
+                  <h3 class="p-regle__titre">
+                    <span class="p-regle__id">{id}</span>
+                    {textes.libelle}
+                  </h3>
+                  <p class="p-regle__enonce">{explication.regle}</p>
+                  <dl class="p-regle__details">
+                    <div>
+                      <dt>Ce que vérifie l’outil</dt>
+                      <dd>{explication.controle}</dd>
+                    </div>
+                    <div>
+                      <dt>Comment faire</dt>
+                      <dd>{explication.conseil}</dd>
+                    </div>
+                    <div>
+                      <dt>{textes.sources.length > 1 ? 'Sources' : 'Source'}</dt>
+                      <dd>
+                        <ListeSources sources={textes.sources} />
+                      </dd>
+                    </div>
+                    {precision && (
+                      <div>
+                        <dt>Pour le CPE</dt>
+                        <dd>{precision}</dd>
+                      </div>
+                    )}
+                  </dl>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))
+    }
+
+    <section class="p-section" aria-labelledby="a-verifier">
+      <h2 id="a-verifier">À vérifier vous-même</h2>
+      <p class="p-groupe__intro">
+        Ces règles ne peuvent pas être contrôlées automatiquement. Le rapport les reprend sous forme de checklist à
+        cocher.
+      </p>
+      <ul class="p-regles">
+        {
+          checklist.map((point) => (
+            <li class="p-regle">
+              <p class="p-regle__enonce">{point.texte}</p>
+              <p class="p-aide">
+                {point.sources.length > 1 ? 'Sources' : 'Source'}&nbsp;: <ListeSources sources={point.sources} />
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="p-section" aria-labelledby="cpe">
+      <h2 id="cpe">Concours interne de CPE</h2>
+      <div class="p-prose">
+        <p>
+          Le concours interne de conseiller principal d’éducation a lui aussi un dossier RAEP, avec la même
+          présentation&nbsp;: Arial 11, interligne simple, format A4, marges de 2,5&nbsp;cm, en-tête et pied de page
+          à 1,25&nbsp;cm du bord, sans retrait. La première partie compte 2&nbsp;pages au plus, la seconde
+          6&nbsp;pages au plus&nbsp;; elle porte sur une situation d’éducation observée en collège ou en lycée.
+        </p>
+        <p>D’après le rapport du jury 2026&nbsp;:</p>
+        <ul>
+          <li>tout dépassement du nombre de pages, par partie ou au total, entraîne l’exclusion du dossier&nbsp;;</li>
+          <li>
+            les annexes comptent 1 ou 2 exemples, 10&nbsp;pages au plus&nbsp;; au-delà, le jury ne les prend pas en
+            considération&nbsp;;
+          </li>
+          <li>le dossier ne contient ni appréciation sur le candidat ni recommandation, quelle qu’en soit la forme.</li>
+        </ul>
+        <p>
+          Le rapport du jury 2026 ne parle ni de pagination ni de couleur du texte. L’outil donne ces deux points
+          comme bonnes pratiques, recommandées par les jurys d’autres concours.
+        </p>
+        <p>
+          Pour ce concours, le rapport de l’outil cite la page officielle des épreuves et le rapport du jury 2026
+          pour les règles R02 à R11, et ce rapport aussi pour R15 et R16.
+        </p>
+        <p class="p-aide">Sources&nbsp;: <ListeSources sources={[SOURCES.S10, SOURCES.S11]} /></p>
+      </div>
+    </section>
+
+    <section class="p-section" aria-labelledby="sources">
+      <h2 id="sources">Sources</h2>
+      <div class="p-prose">
+        <ul>
+          {
+            toutesLesSources.map((source) => (
+              <li>
+                <a class="p-source" href={source.url}>
+                  {source.libelle}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="p-aide">
+          Les règles sont reformulées d’après ces textes, qui font foi. Le contenu de devenirenseignant.gouv.fr est
+          réutilisé sous licence ouverte Etalab&nbsp;2.0, avec mention de la source. Les rapports de jury de chaque
+          discipline précisent souvent leurs attentes&nbsp;: lisez celui de votre section.
+        </p>
+      </div>
+    </section>
+
+    <section class="p-section p-panneau p-fin" aria-label="Vérifier mon dossier">
+      <p>Vérifiez ces règles sur votre PDF, sans l’envoyer.</p>
+      <a class="v-bouton v-bouton--principal" href={PAGES_DU_SITE.verifier.chemin}>Vérifier mon dossier</a>
+    </section>
+  </div>
+</Base>

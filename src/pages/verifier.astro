@@ -1,0 +1,29 @@
+---
+import Base from '../layouts/Base.astro';
+import { Verificateur } from '../components/verificateur/Verificateur';
+import { PAGES_DU_SITE } from '../content/site';
+import '../styles/verificateur.css';
+import '../styles/impression.css';
+---
+
+<Base
+  titre={PAGES_DU_SITE.verifier.titre}
+  description={PAGES_DU_SITE.verifier.description}
+  chemin={PAGES_DU_SITE.verifier.chemin}
+>
+  <div class="v-page">
+    <h1 class="v-page__titre">Vérifier mon dossier RAEP</h1>
+    <p class="v-page__chapo">
+      Contrôlez la présentation de votre dossier (nombre de pages, police, marges, interligne…) d’après
+      les règles officielles de la session 2027, avant de le déposer dans Cyclades au plus tard le
+      3&nbsp;décembre 2026 à 23&nbsp;h&nbsp;59.
+    </p>
+    <noscript>
+      <p class="v-note">
+        Le vérificateur fonctionne dans votre navigateur&nbsp;: activez JavaScript pour l’utiliser.
+        Votre fichier n’est jamais envoyé.
+      </p>
+    </noscript>
+    <Verificateur client:load />
+  </div>
+</Base>

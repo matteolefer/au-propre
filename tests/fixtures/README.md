@@ -1,6 +1,6 @@
 # Fichiers de test du vérificateur RAEP
 
-Cinq PDF de test, plus les quatre documents Word dont ils sont issus. Contenu : texte bidon, aucune donnée réelle.
+Sept PDF de test, plus les quatre documents Word dont ils sont issus. Contenu : texte bidon, aucune donnée réelle.
 
 Structure commune (sauf mention contraire) : page 1 = couverture fictive ; partie 1 = 2 pages ; partie 2 = 6 pages ; annexes = 2 pages ; A4 ; texte justifié ; pas de retrait de paragraphe ; interligne simple ; marges haut et bas 2,5 cm ; en-tête et pied de page à 1,25 cm ; numéro de page en pied de page à partir de la page 2.
 
@@ -23,6 +23,19 @@ Les quatre exports Word sont présents. `tests/fixtures-attendues.test.ts` véri
 | 03_calibri | Police Calibri 11 | Carlito 11 pt | R05 erreur (Carlito n'est pas un substitut d'Arial) | R05 erreur (Calibri) |
 | 04_marges_2cm | Marges gauche et droite de 2 cm | marges 2,00 / 1,97 cm | R08 erreur ; R05 avertissement | R08 erreur |
 | 05_scanne | Images seules, sans couche texte (copie rastérisée de 01, légère rotation et grain) | aucun texte, aucune police | R00 bloquant : analyse impossible | Sans objet |
+| 06_protege | Copie de 01_conforme_word avec mot de passe d'ouverture (« test ») | illisible sans le mot de passe | Lecture impossible : message « Le PDF est protégé par un mot de passe » | Sans objet |
+| 07_restrictions | Copie de 01_conforme_word, copie et modification interdites, sans mot de passe d'ouverture | identiques à 01_conforme_word | Sans objet | Aucune erreur ; R01 à confirmer (même modèle que 01_conforme_word) |
+
+## PDF protégés (06 et 07)
+
+`outils/proteger_pdf.py` les crée à partir de `01_conforme_word.pdf`, avec pypdf (licence BSD-3-Clause, outil de développement) et un chiffrement RC4 128 bits :
+
+```
+pip install pypdf
+python outils/proteger_pdf.py
+```
+
+Le résultat est identique d'une exécution à l'autre.
 
 ## Vérifier les mesures soi-même
 

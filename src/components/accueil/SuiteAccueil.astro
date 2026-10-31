@@ -1,0 +1,54 @@
+---
+/** Suite de la page d'accueil, commune aux deux variantes du hero. */
+import { SOURCES } from '../../content/rules.fr';
+import { PAGES_DU_SITE } from '../../content/site';
+
+const source = SOURCES.S11;
+---
+
+<section class="accueil-section accueil-chiffre" aria-label="Dossiers écartés pour leur forme">
+  <p class="accueil-chiffre__texte">
+    En 2026, 8&nbsp;% des dossiers RAEP du CPE interne ont été écartés pour leur forme.
+  </p>
+  <p class="accueil-chiffre__source">Source&nbsp;: <a href={source.url}>{source.libelle}</a></p>
+</section>
+
+<section class="accueil-section accueil-colonne" aria-labelledby="titre-etapes">
+  <h2 id="titre-etapes">Comment ça marche</h2>
+  <ol class="accueil-etapes">
+    <li>
+      <h3>Déposez votre PDF</h3>
+      <p>Choisissez votre concours. Le fichier est lu sur votre ordinateur.</p>
+    </li>
+    <li>
+      <h3>Confirmez le découpage</h3>
+      <p>Couverture, parties et annexes sont repérées d’après leurs titres.</p>
+    </li>
+    <li>
+      <h3>Corrigez avec le rapport</h3>
+      <p>Chaque point indique la page, la correction et la règle officielle.</p>
+    </li>
+  </ol>
+</section>
+
+<section class="accueil-section accueil-colonne accueil-blocs" aria-label="Confidentialité et limites">
+  <div>
+    <h3>Votre fichier reste sur votre ordinateur</h3>
+    <p>
+      Le PDF est lu par votre navigateur et n’est envoyé nulle part. Aucun compte, aucun cookie, aucune mesure
+      d’audience. <a href={PAGES_DU_SITE.confidentialite.chemin}>Politique de confidentialité</a>
+    </p>
+  </div>
+  <div>
+    <h3>La forme, pas le fond</h3>
+    <p>
+      L’outil vérifie la présentation d’après les textes officiels. Il ne juge pas le contenu, n’écrit rien à votre
+      place et ne garantit pas l’admissibilité. <a href={PAGES_DU_SITE.regles.chemin}>Voir les règles vérifiées</a>
+    </p>
+  </div>
+</section>
+
+<section class="accueil-section accueil-fin" aria-labelledby="titre-fin">
+  <h2 id="titre-fin">Le dépôt ferme le 3&nbsp;décembre à 23&nbsp;h&nbsp;59</h2>
+  <a class="v-bouton v-bouton--principal" href={PAGES_DU_SITE.verifier.chemin}>Vérifier mon dossier</a>
+</section>

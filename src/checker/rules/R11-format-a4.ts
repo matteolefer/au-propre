@@ -1,13 +1,14 @@
 import { R11, type FormatMesure } from '../../content/rules.fr';
 import { estA4, pagesDe, ptEnCm } from '../measure';
-import type { Decoupage, ModeleDocument, PageModele, ResultatRegle } from '../types';
+import type { Decoupage, ModeleDocument, PageModele, ParametresDossier, ResultatRegle } from '../types';
+import { sourcesDe } from './commun';
 
 /**
  * R11 : format A4 (SPEC §5). Erreur pour les parties 1 et 2 ; avertissement
  * pour la couverture et les annexes, où la règle est moins certaine.
  * L'A4 paysage est accepté.
  */
-export function verifierR11(document: ModeleDocument, decoupage: Decoupage): ResultatRegle[] {
+export function verifierR11(document: ModeleDocument, decoupage: Decoupage, parametres?: ParametresDossier): ResultatRegle[] {
   const parties = [...pagesDe(decoupage.partie1), ...pagesDe(decoupage.partie2)];
   const autres = [
     ...(decoupage.couverture ? pagesDe(decoupage.couverture) : []),
@@ -28,7 +29,7 @@ export function verifierR11(document: ModeleDocument, decoupage: Decoupage): Res
       detail: R11.erreur.detail(regrouperParFormat(partiesHorsA4)),
       pages: partiesHorsA4.map((page) => page.numero),
       correction: R11.erreur.correction,
-      sources: [...R11.sources],
+      sources: sourcesDe(R11, parametres),
     });
   }
   const autresHorsA4 = horsA4(autres);
@@ -40,7 +41,7 @@ export function verifierR11(document: ModeleDocument, decoupage: Decoupage): Res
       detail: R11.avertissement.detail(regrouperParFormat(autresHorsA4)),
       pages: autresHorsA4.map((page) => page.numero),
       correction: R11.avertissement.correction,
-      sources: [...R11.sources],
+      sources: sourcesDe(R11, parametres),
     });
   }
   if (resultats.length === 0) {
@@ -50,7 +51,7 @@ export function verifierR11(document: ModeleDocument, decoupage: Decoupage): Res
       titre: R11.conforme.titre,
       detail: R11.conforme.detail(parties.length + autres.length),
       correction: '',
-      sources: [...R11.sources],
+      sources: sourcesDe(R11, parametres),
     });
   }
   return resultats;

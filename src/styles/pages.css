@@ -1,0 +1,499 @@
+/*
+ * Pages de contenu : accueil, règles, confidentialité, mentions légales, 404.
+ * Texte aligné à gauche comme un document, lignes de moins de 80 caractères,
+ * surfaces blanches à bordure fine, sans ombre. Un seul bouton bleu par écran.
+ */
+
+.p-page {
+  padding-top: var(--spacing-32);
+}
+
+/* Pages de lecture (règles, confidentialité, mentions) : une colonne de document. */
+.p-page--document {
+  max-width: 48rem;
+}
+
+.p-titre {
+  max-width: 22em;
+  margin: 0;
+  font-size: var(--text-heading);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+.p-chapo {
+  max-width: var(--measure);
+  margin: var(--spacing-16) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-subheading);
+  line-height: 1.5;
+}
+
+.p-maj {
+  margin: var(--spacing-12) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+/* --- Sections et texte courant --------------------------------------------------- */
+
+.p-section {
+  margin-top: var(--spacing-64);
+}
+
+.p-section > h2,
+.p-h2 {
+  max-width: var(--measure);
+  margin: 0 0 var(--spacing-16);
+  font-size: var(--text-heading-md);
+  line-height: var(--leading-heading-md);
+  scroll-margin-top: var(--spacing-16);
+}
+
+.p-prose {
+  max-width: var(--measure);
+}
+
+.p-prose > :first-child {
+  margin-top: 0;
+}
+
+.p-prose p,
+.p-prose ul,
+.p-prose ol,
+.p-prose dl {
+  margin: 0 0 var(--spacing-16);
+}
+
+.p-prose ul,
+.p-prose ol,
+ul.p-prose {
+  padding-left: var(--spacing-20);
+}
+
+ul.p-prose {
+  margin: 0;
+}
+
+.p-prose li + li {
+  margin-top: var(--spacing-8);
+}
+
+.p-prose h3 {
+  margin: var(--spacing-32) 0 var(--spacing-8);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.p-prose dt {
+  font-weight: var(--font-weight-semibold);
+}
+
+.p-prose dd {
+  margin: var(--spacing-4) 0 var(--spacing-12);
+}
+
+.p-aide {
+  max-width: var(--measure);
+  margin: var(--spacing-8) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+.p-source {
+  overflow-wrap: anywhere;
+}
+
+/* Fiche : libellés et valeurs sur deux colonnes (mentions légales). */
+.p-fiche {
+  display: grid;
+  gap: var(--spacing-4) var(--spacing-16);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+.p-fiche dt {
+  font-weight: var(--font-weight-semibold);
+}
+
+.p-fiche dd {
+  margin: 0 0 var(--spacing-8);
+}
+
+@media (min-width: 40rem) {
+  .p-fiche {
+    grid-template-columns: 14rem minmax(0, 1fr);
+  }
+
+  .p-fiche dd {
+    margin: 0;
+  }
+}
+
+/* Champ que l'éditeur doit encore fournir : visible, pour ne pas l'oublier. */
+.p-a-completer {
+  padding: 0 var(--spacing-4);
+  border-radius: var(--radius-small);
+  background: var(--color-avertissement-bg);
+  color: var(--color-avertissement);
+  font-weight: var(--font-weight-medium);
+}
+
+/* --- Panneau : surface blanche à bordure fine ----------------------------------- */
+
+.p-panneau {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-cards);
+  padding: var(--card-padding);
+}
+
+/* --- Accueil -------------------------------------------------------------------- */
+
+.p-accueil__titre {
+  max-width: 19em;
+  font-size: var(--text-heading-lg);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
+.p-accueil__chapo {
+  max-width: 38em;
+}
+
+.p-accueil__action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-12) var(--spacing-20);
+  margin-top: var(--spacing-32);
+}
+
+.p-accueil__action .v-bouton {
+  min-height: 48px;
+  padding-inline: var(--spacing-24);
+  font-size: var(--text-body);
+}
+
+.p-accueil__rassurance {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+/* Échéance et constats des jurys : un panneau, deux colonnes séparées d'un filet. */
+.p-faits {
+  display: grid;
+  gap: var(--spacing-24);
+  margin-top: var(--spacing-36);
+}
+
+.p-fait__libelle {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.p-fait__valeur {
+  margin: var(--spacing-4) 0 0;
+  font-size: var(--text-heading-sm);
+  line-height: var(--leading-heading-sm);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: var(--tracking-heading-sm);
+}
+
+.p-fait__texte {
+  margin: var(--spacing-8) 0 0;
+}
+
+.p-fait__source {
+  margin: var(--spacing-8) 0 0;
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+@media (min-width: 48rem) {
+  .p-faits {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .p-faits > * + * {
+    padding-left: var(--card-padding);
+    margin-left: var(--card-padding);
+    border-left: 1px solid var(--color-border);
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .p-faits > * + * {
+    padding-top: var(--spacing-24);
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+/* Étapes : une vraie séquence, numérotée par la liste elle-même. */
+.p-etapes {
+  max-width: var(--measure);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: etape;
+}
+
+.p-etapes > li {
+  position: relative;
+  padding-left: 48px;
+  counter-increment: etape;
+}
+
+.p-etapes > li + li {
+  margin-top: var(--spacing-24);
+}
+
+.p-etapes > li::before {
+  content: counter(etape);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pills);
+  font-size: var(--text-body-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 30px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.p-etapes h3 {
+  margin: 4px 0 var(--spacing-4);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.p-etapes p {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+/* Extrait du rapport : le vrai composant, rendu au build. */
+.p-extrait {
+  max-width: 52rem;
+  margin: 0;
+}
+
+.p-extrait figcaption {
+  margin-top: var(--spacing-8);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+/* Liste des contrôles par groupe : deux colonnes sur grand écran. */
+.p-controles {
+  display: grid;
+  gap: var(--spacing-24) var(--spacing-32);
+  margin: 0;
+}
+
+.p-controles h3 {
+  margin: 0 0 var(--spacing-8);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.p-controles ul {
+  margin: 0;
+  padding-left: var(--spacing-20);
+}
+
+.p-controles li + li {
+  margin-top: var(--spacing-4);
+}
+
+.p-controles + .p-aide {
+  margin-top: var(--spacing-24);
+}
+
+@media (min-width: 48rem) {
+  .p-controles {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+
+.p-fin {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-16) var(--spacing-24);
+}
+
+.p-fin p {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+/* --- Règles -------------------------------------------------------------------- */
+
+.p-tableau {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-cards);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+.p-tableau caption {
+  padding-bottom: var(--spacing-8);
+  text-align: left;
+  color: var(--color-text-muted);
+}
+
+.p-tableau th,
+.p-tableau td {
+  padding: var(--spacing-12) var(--spacing-16);
+  text-align: left;
+  vertical-align: top;
+}
+
+.p-tableau tr + tr > * {
+  border-top: 1px solid var(--color-border);
+}
+
+.p-tableau th {
+  width: 14rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.p-sommaire {
+  margin: var(--spacing-32) 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-8) var(--spacing-20);
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+.p-groupe__intro {
+  max-width: var(--measure);
+  margin: 0 0 var(--spacing-16);
+  color: var(--color-text-muted);
+}
+
+.p-regles {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-cards);
+}
+
+.p-regle {
+  padding: var(--spacing-20) var(--card-padding);
+  scroll-margin-top: var(--spacing-16);
+}
+
+.p-regle + .p-regle {
+  border-top: 1px solid var(--color-border);
+}
+
+.p-regle__titre {
+  max-width: var(--measure);
+  margin: 0;
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  font-weight: var(--font-weight-semibold);
+}
+
+.p-regle__id {
+  margin-right: var(--spacing-8);
+  color: var(--color-text-muted);
+  font-size: var(--text-body-sm);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.p-regle__enonce {
+  max-width: var(--measure);
+  margin: var(--spacing-4) 0 0;
+}
+
+.p-regle__details {
+  display: grid;
+  gap: var(--spacing-8);
+  max-width: var(--measure);
+  margin: var(--spacing-12) 0 0;
+  font-size: var(--text-body-sm);
+  line-height: var(--leading-body-sm);
+}
+
+.p-regle__details dt {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-semibold);
+}
+
+.p-regle__details dd {
+  margin: 2px 0 0;
+}
+
+@media (min-width: 48rem) {
+  .p-regle__details > div {
+    display: grid;
+    grid-template-columns: 11rem minmax(0, 1fr);
+    gap: var(--spacing-16);
+  }
+
+  .p-regle__details dd {
+    margin: 0;
+  }
+}
+
+/* --- Petits écrans ---------------------------------------------------------------- */
+
+@media (max-width: 40rem) {
+  .p-page {
+    padding-top: var(--spacing-16);
+  }
+
+  .p-titre {
+    font-size: 30px;
+  }
+
+  .p-accueil__titre {
+    font-size: 32px;
+  }
+
+  .p-chapo {
+    font-size: var(--text-body);
+  }
+
+  .p-section {
+    margin-top: var(--spacing-36);
+  }
+
+  .p-regle,
+  .p-panneau {
+    padding-inline: var(--spacing-16);
+  }
+
+  .p-tableau th,
+  .p-tableau td {
+    padding-inline: var(--spacing-12);
+  }
+}

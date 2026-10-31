@@ -1,6 +1,6 @@
-# Spécification produit — RAEP Check (nom provisoire)
+# Spécification produit — Au propre
 
-Version : 30 octobre 2026. Session visée : concours internes 2027.
+Version : 31 octobre 2026. Session visée : concours internes 2027.
 
 ## 1. Le problème
 
@@ -23,7 +23,8 @@ Le produit **ne rédige jamais** le dossier (voir `CLAUDE.md`, règle absolue n�
 ## 4. Parcours V1
 
 1. **Accueil** : ce que fait l'outil, pour qui, l'échéance du 3 décembre, la garantie de confidentialité. Bouton « Vérifier mon dossier ».
-2. **Paramètres** : choix du concours (CAPES interne, CAER-CAPES, CAPLP interne, CAER-CAPLP, CAPET interne, CAER-CAPET, CPE interne) et de la discipline (liste). Dépôt du PDF par glisser-déposer ou sélection. Mention visible : « Votre fichier est analysé dans votre navigateur et n'est envoyé nulle part. »
+2. **Paramètres** : choix du concours (CAPES interne, CAER-CAPES, CAPLP interne, CAER-CAPLP, CAPET interne, CAER-CAPET, CPE interne) et de la discipline (liste officielle des sections ouvertes en 2027, sans discipline pour le CPE). Dépôt du PDF par glisser-déposer ou sélection. Mention visible : « Votre fichier est analysé dans votre navigateur et n'est envoyé nulle part. »
+   - **Poids du fichier** : aucune limite officielle n'est publiée pour le RAEP. Au-delà de 50 Mo, l'outil refuse l'analyse, en le présentant comme une limite de l'outil et non comme une règle officielle. Au-delà de 10 Mo, il affiche : « Votre fichier est lourd. Aucune limite officielle n'est publiée pour le RAEP, mais vérifiez que Cyclades l'accepte bien avant la date limite ; compresser les images des annexes réduit la taille. » Les deux seuils sont réglables dans `measure.ts`.
 3. **Découpage** : l'outil propose automatiquement, d'après les titres détectés, les pages de la couverture, de la partie 1, de la partie 2 et des annexes. L'utilisateur confirme ou corrige avec de simples sélecteurs de pages. Rien n'est analysé tant que le découpage n'est pas confirmé.
 4. **Rapport** :
    - un résumé en tête (nombre d'erreurs, nombre d'avertissements) ;
@@ -31,11 +32,11 @@ Le produit **ne rédige jamais** le dossier (voir `CLAUDE.md`, règle absolue n�
    - pour chaque contrôle : titre, ce qui a été mesuré, pages concernées, comment corriger, source officielle (lien) ;
    - une **checklist manuelle** à cocher pour ce qui ne peut pas être vérifié automatiquement (section 6) ;
    - possibilité d'imprimer le rapport.
-5. **Après le rapport** : encart discret présentant la relecture critique à venir, avec inscription facultative par e-mail (consentement explicite, finalité unique).
+5. **Après le rapport** : encart discret présentant la relecture critique à venir, avec inscription facultative par e-mail (consentement explicite, finalité unique). Le bouton ouvre, dans un nouvel onglet et sans paramètre ni référent, un formulaire hébergé par Brevo (double confirmation). Le site ne stocke rien et l'e-mail n'est jamais lié au dossier. Tant que l'adresse du formulaire est vide (`src/content/site.ts`), l'encart ne s'affiche pas.
 
 ## 5. Règles de conformité automatisées (V1)
 
-Les mesures se font sur les pages de la partie 1 et de la partie 2, sauf mention contraire. La page de couverture et les annexes ne sont pas soumises aux règles de police et de marges. Les règles de contenu R14 à R17 portent sur toutes les pages sauf la couverture, annexes comprises.
+Les mesures se font sur les pages de la partie 1 et de la partie 2, sauf mention contraire. Pour le concours interne de CPE, les sources propres au concours (S10, S11) remplacent S1 et S2, comme l'indique la colonne Source. La page de couverture et les annexes ne sont pas soumises aux règles de police et de marges. Les règles de contenu R14 à R17 portent sur toutes les pages sauf la couverture, annexes comprises.
 
 Unités : 1 cm = 28,3465 pt. A4 = 595,28 × 841,89 pt. Tolérance par défaut : 2 pt.
 
@@ -43,21 +44,21 @@ Unités : 1 cm = 28,3465 pt. A4 = 595,28 × 841,89 pt. Tolérance par défaut : 
 | --- | --- | --- | --- | --- |
 | R00 | PDF lisible | Si aucune couche texte n'est trouvée (scan), arrêter l'analyse et expliquer pourquoi | Bloquant | — |
 | R01 | Page de couverture présente | Heuristique sur la page 1 (mots-clés du formulaire Cyclades, à calibrer sur un vrai formulaire) + confirmation manuelle. Avertissement si la page 1 est sans texte (scan), commence par « Première partie », ne contient aucun mot-clé de couverture (concours, session, RAEP, nom, prénom, attestation sur l'honneur, signature…) ou mentionne une autre session que celle attendue (`SESSION_ATTENDUE`, 2027). Sinon info : « Couverture détectée : vérifiez dans la checklist qu'il s'agit du formulaire 2027 téléchargé dans Cyclades. » | Avertissement ou info | S2, S3, S5 |
-| R02 | Partie 1 : 2 pages maximum | Nombre de pages de la partie 1 > 2 | Erreur | S1, S2 |
-| R03 | Partie 2 : 6 pages maximum | Nombre de pages de la partie 2 > 6 | Erreur | S1, S2 |
-| R04 | Annexes : 10 pages maximum | Nombre de pages d'annexes > 10 | Erreur | S1, S2 |
-| R05 | Police Arial | Police majoritaire du corps de texte ≠ Arial / ArialMT → erreur. Police de substitution métrique (Liberation Sans, Arimo) → avertissement : « votre traitement de texte a remplacé Arial » | Erreur ou avertissement | S1, S2 |
-| R06 | Taille 11 pt | Corps de texte hors [10,5 ; 11,5] pt → erreur. Titres d'une autre taille → avertissement (les jurys recommandent d'unifier) | Erreur ou avertissement | S1, S2, S8 |
-| R07 | Interligne simple | Écart médian entre lignes d'un même paragraphe rapporté à la taille de police > 1,35 → avertissement (mesure approximative) | Avertissement | S1, S2 |
-| R08 | Marges gauche et droite de 2,5 cm | Texte du corps à moins de 2,5 cm − tolérance du bord gauche ou droit → erreur | Erreur | S1, S2 |
-| R09 | En-tête et pied de page à 1,25 cm du bord | Texte à moins de 1,25 cm − tolérance du bord haut ou bas → erreur | Erreur | S1, S2 |
-| R10 | Pas de retrait en début de paragraphe | Premières lignes décalées de plus de 5 pt par rapport aux lignes suivantes, de façon récurrente → avertissement | Avertissement | S1, S2 |
-| R11 | Format A4 | Taille de page différente de l'A4 au-delà de la tolérance → erreur | Erreur | S1, S2 |
-| R12 | Pagination | Aucun numéro de page détecté dans les parties → avertissement | Avertissement | S8 |
-| R13 | Texte en noir | Texte coloré dans les parties → avertissement | Avertissement | S7 |
+| R02 | Partie 1 : 2 pages maximum | Nombre de pages de la partie 1 > 2 | Erreur | S1, S2 ; S10, S11 pour le CPE |
+| R03 | Partie 2 : 6 pages maximum | Nombre de pages de la partie 2 > 6 | Erreur | S1, S2 ; S10, S11 pour le CPE |
+| R04 | Annexes : 10 pages maximum | Nombre de pages d'annexes > 10. Pour le CPE, le détail ajoute : « Pour le CPE, le jury ne prend pas en considération les annexes au-delà de 10 pages. » (rapport du jury 2026, p. 18) | Erreur | S1, S2 ; S11 pour le CPE |
+| R05 | Police Arial | Police majoritaire du corps de texte ≠ Arial / ArialMT → erreur. Police de substitution métrique (Liberation Sans, Arimo) → avertissement : « votre traitement de texte a remplacé Arial » | Erreur ou avertissement | S1, S2 ; S10, S11 pour le CPE |
+| R06 | Taille 11 pt | Corps de texte hors [10,5 ; 11,5] pt → erreur. Titres d'une autre taille → avertissement (les jurys recommandent d'unifier) | Erreur ou avertissement | S1, S2, S8 ; S10, S11, S8 pour le CPE |
+| R07 | Interligne simple | Écart médian entre lignes d'un même paragraphe rapporté à la taille de police > 1,35 → avertissement (mesure approximative) | Avertissement | S1, S2 ; S10, S11 pour le CPE |
+| R08 | Marges gauche et droite de 2,5 cm | Texte du corps à moins de 2,5 cm − tolérance du bord gauche ou droit → erreur | Erreur | S1, S2 ; S10, S11 pour le CPE |
+| R09 | En-tête et pied de page à 1,25 cm du bord | Texte à moins de 1,25 cm − tolérance du bord haut ou bas → erreur | Erreur | S1, S2 ; S10, S11 pour le CPE |
+| R10 | Pas de retrait en début de paragraphe | Premières lignes décalées de plus de 5 pt par rapport aux lignes suivantes, de façon récurrente → avertissement | Avertissement | S1, S2 ; S10, S11 pour le CPE |
+| R11 | Format A4 | Taille de page différente de l'A4 au-delà de la tolérance → erreur | Erreur | S1, S2 ; S10, S11 pour le CPE |
+| R12 | Pagination | Aucun numéro de page détecté dans les parties → avertissement. Pour le CPE, le détail précise que la recommandation vient du jury d'un autre concours (CAPES interne de lettres) et qu'elle est donnée comme bonne pratique | Avertissement | S8 |
+| R13 | Texte en noir | Texte coloré dans les parties → avertissement. Pour le CPE, même précision (CAPES interne d'arts plastiques) | Avertissement | S7 |
 | R14 | Pas de sommaire | Titre « Sommaire » ou « Table des matières » (ligne courte qui commence par le mot), ou au moins 3 lignes courtes consécutives terminées par un numéro de page croissant, avec points de suite ou tabulation → avertissement. Le mot cité dans une phrase est ignoré | Avertissement | S5, S7 |
-| R15 | Pas de CV | « CV » ou « Curriculum vitae » en titre → avertissement. Cité dans une phrase → info : « Citer un curriculum vitae dans le texte est possible. En revanche, les jurys demandent de ne pas joindre de CV au dossier. » | Avertissement ou info | S5, S7 |
-| R16 | Pas de lettre de recommandation ni de rapport d'inspection | « lettre de recommandation », « rapport d'inspection », « visite-conseil » en titre, dans les annexes ou en tête d'un bloc (document probablement joint) → erreur. Cité dans le texte des parties 1 et 2 → info : « Mentionner une visite ou une inspection est possible. En revanche, joindre un rapport d'inspection, de visite-conseil ou une lettre de recommandation écarte le dossier. » | Erreur ou info | S9 |
+| R15 | Pas de CV | « CV » ou « Curriculum vitae » en titre → avertissement. Cité dans une phrase → info : « Citer un curriculum vitae dans le texte est possible. En revanche, les jurys demandent de ne pas joindre de CV au dossier. » | Avertissement ou info | S5, S7 ; S5, S7, S11 pour le CPE |
+| R16 | Pas de lettre de recommandation ni de rapport d'inspection | « lettre de recommandation », « rapport d'inspection », « visite-conseil » en titre, dans les annexes ou en tête d'un bloc (document probablement joint) → erreur. Cité dans le texte des parties 1 et 2 → info : « Mentionner une visite ou une inspection est possible. En revanche, joindre un rapport d'inspection, de visite-conseil ou une lettre de recommandation écarte le dossier. » | Erreur ou info | S9 ; S9, S11 pour le CPE |
 | R17 | Liens et QR codes non lus | URL dans le texte ou annotations de lien → avertissement | Avertissement | S6 |
 | R18 | HGGSP en histoire-géographie | Si discipline = histoire-géographie et « HGGSP » présent dans la partie 2 ou les annexes → avertissement. Une mention dans la partie 1 (parcours) est ignorée | Avertissement | S5 |
 | R19 | Nom du fichier | Ne ressemble pas à NOM_Prénom.pdf → avertissement | Avertissement | S4 |
@@ -68,9 +69,10 @@ Les seuils marqués « approximatif » doivent être calibrés sur les fichiers 
 
 - [ ] La page de couverture est celle de l'année 2027, téléchargée dans mon espace Cyclades (S2, S3).
 - [ ] J'ai signé le dossier (S5, S6).
-- [ ] La discipline de ma séquence est celle choisie à l'inscription (S5).
+- [ ] La discipline de ma séquence est celle choisie à l'inscription (S5). Point absent pour le CPE, qui n'a pas de discipline.
 - [ ] J'atteste sur l'honneur l'authenticité de toutes les informations (S2).
 - [ ] Mes annexes sont 1 ou 2 exemples liés à la situation décrite et ne prolongent pas l'analyse (S2, S5).
+- [ ] Mes annexes en image (pages scannées, photos) ne contiennent ni CV, ni lettre de recommandation, ni rapport d'inspection ou de visite-conseil, ni lien ou QR code : l'outil ne lit pas le texte des images (S5, S7, S9, S6, sources de R15 à R17). Le rapport cite les pages d'annexes sans texte quand il y en a.
 - [ ] Les élèves sont anonymisés dans le texte et les annexes (S5, S7).
 - [ ] Chaque citation est entre guillemets et référencée (S5).
 - [ ] J'ai vérifié la pagination après l'export en PDF (S5).
@@ -99,8 +101,10 @@ Les seuils marqués « approximatif » doivent être calibrés sur les fichiers 
 - Accueil.
 - Vérificateur.
 - « Les règles officielles du RAEP » : chaque règle, expliquée simplement, avec sa source. Page utile aux candidats et au référencement.
-- Confidentialité : ce qui est traité, où, ce qui n'est jamais collecté.
+- Confidentialité : ce qui est traité, où, ce qui n'est jamais collecté, et l'inscription facultative par e-mail (Brevo) quand elle est active.
 - Mentions légales.
+- Page 404.
+- Référencement : titre et description par page, adresse canonique, balises Open Graph, sitemap, robots.txt, favicon.
 
 ## 10. Sources
 
@@ -115,5 +119,7 @@ Les seuils marqués « approximatif » doivent être calibrés sur les fichiers 
 | S7 | Rapport de jury CAPES interne arts plastiques 2026 — https://www.devenirenseignant.gouv.fr/media/20876/download |
 | S8 | Rapport de jury CAPES interne lettres 2026 — https://www.devenirenseignant.gouv.fr/media/21286/download |
 | S9 | Rapport de jury CAPES interne SES 2025 — https://ses.ens-lyon.fr/fichiers/enseigner/rapport-de-jury-capes-interne-2025.pdf |
+| S10 | Les épreuves du concours interne de recrutement de conseillers principaux d'éducation — https://www.education.gouv.fr/les-epreuves-du-concours-interne-de-recrutement-de-conseillers-principaux-d-education-12956 |
+| S11 | Rapport de jury CPE interne 2026 — https://www.education.gouv.fr/sites/default/files/document/rapport-du-jury-du-concours-interne-de-recrutement-de-cpe-de-la-session-2026-518831.pdf |
 
 Le contenu de devenirenseignant.gouv.fr est sous licence etalab-2.0 (réutilisation libre avec mention de la source).

@@ -2,48 +2,75 @@
  * Variables CSS issues de DESIGN.md.
  *
  * Écarts volontaires, imposés par CLAUDE.md :
- * - un seul accent (le bleu) : la palette d'accents décoratifs (corail, jaune,
- *   bleu ciel, nuit) n'est pas reprise ;
- * - pas de police à empattements ;
- * - contraste AA : #757575 et #0075de n'atteignent pas 4,5:1 sur le fond
- *   #f6f5f4. Le texte secondaire utilise #615d59 et les liens une variante
- *   plus sombre du bleu ;
+ * - un seul accent, le bleu encre de la marque (IDENTITE.md, #1E4A9A), à la
+ *   place du bleu de DESIGN.md ; la palette d'accents décoratifs (corail,
+ *   jaune, bleu ciel, nuit) n'est pas reprise ;
+ * - thème clair seulement en V1 (color-scheme: only light) : le thème sombre
+ *   d'IDENTITE.md (#8CB4FF, logo-sombre.svg) est prévu après le lancement ;
+ * - encre (#37352F) et papier (#FBFAF7) d'IDENTITE.md à la place du noir et
+ *   du fond #f6f5f4 ; les cartes restent blanches ;
+ * - titres h1 et h2 en Source Serif 4, la police du logo ; le reste en sans ;
+ * - jaune surligneur (#FFF1A8) : couleur fonctionnelle, seulement pour situer
+ *   une zone en faute sur l'aperçu d'une page (IDENTITE.md) ;
+ * - contraste AA : #757575 n'atteint pas 4,5:1 sur le papier ; le texte
+ *   secondaire utilise #615d59 ;
  * - couleurs d'état (absentes de DESIGN.md) : vermillon et safran assombris
  *   jusqu'au contraste AA, plus un vert pour « conforme ».
  * tests/styles/contraste.test.ts vérifie les couples texte / fond.
  */
 :root {
-  /* Couleurs brutes (DESIGN.md) */
-  --color-notion-blue: #0075de;
-  --color-paper-warmth: #f6f5f4;
+  /* V1 : toujours en clair, même quand l'ordinateur est en mode sombre (listes, cases, défilement compris). */
+  color-scheme: only light;
+
+  /* Couleurs brutes (DESIGN.md, et encre, papier, bleu encre d'IDENTITE.md) */
+  --color-bleu-encre: #1e4a9a;
+  --color-encre: #37352f;
+  --color-papier: #fbfaf7;
   --color-pure-white: #ffffff;
-  --color-ink-black: #000000;
-  --color-charcoal: #111111;
   --color-graphite: #615d59;
-  --color-sky-tint: #e6f3fe;
 
   /* Couleurs sémantiques : les seules à utiliser dans les composants */
-  --color-bg: var(--color-paper-warmth);
+  --color-bg: var(--color-papier);
   --color-surface: var(--color-pure-white);
-  --color-text: var(--color-ink-black);
+  --color-text: var(--color-encre);
   --color-text-muted: var(--color-graphite);
   --color-border: rgba(0, 0, 0, 0.08);
   --color-border-strong: rgba(0, 0, 0, 0.2);
-  --color-accent: var(--color-notion-blue);
+  --color-accent: var(--color-bleu-encre);
   --color-accent-contrast: var(--color-pure-white);
-  --color-accent-text: #005fb8;
-  --color-accent-soft: var(--color-sky-tint);
+  --color-accent-text: var(--color-bleu-encre);
+  /* Survol : bouton principal et liens, un ton plus sombre */
+  --color-accent-survol: #183b7b;
+  /* Teinte claire du bleu encre : bouton secondaire, zone de dépôt survolée */
+  --color-accent-soft: #e8eef8;
+  --color-accent-soft-survol: #d9e3f3;
+  /* Anneau de focus : 2 px de la surface, puis 2 px de bleu encre */
+  --color-focus: var(--color-bleu-encre);
   --color-erreur: #b42318;
   --color-erreur-bg: #fdecea;
   --color-avertissement: #8a5a00;
   --color-avertissement-bg: #fdf3e1;
   --color-conforme: #1f7a3d;
   --color-conforme-bg: #e8f4ec;
-  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-accent-text);
+  /* Information : neutre, pour garder un seul accent coloré */
+  --color-info: var(--color-graphite);
+  --color-info-bg: #efeeec;
+  /* Fond des aperçus de pages */
+  --color-surface-muted: #efeeec;
+  /* Panneau de l'exemple de rapport (accueil) : bleu très pâle */
+  --color-panneau-exemple: #f2f5fb;
+  /* Surligneur : zone en faute sur l'aperçu d'une page ; bordure à 3:1 minimum sur le blanc */
+  --color-surligne: #fff1a8;
+  --color-surligne-bord: #a07f00;
+  /* Bordure des champs de formulaire : contraste 3:1 minimum (WCAG 1.4.11) */
+  --color-border-champ: #8c8782;
+  --focus-ring: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-focus);
 
   /* Typographie */
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
     Roboto, sans-serif;
+  /* Titres h1 et h2 : la police du logo (IDENTITE.md) ; le texte courant garde --font-sans. */
+  --font-titres: 'Source Serif 4', Georgia, 'Times New Roman', serif;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
@@ -61,6 +88,9 @@
   --text-heading-sm: 22px;
   --leading-heading-sm: 1.27;
   --tracking-heading-sm: -0.242px;
+  /* 24 px figure parmi les tailles de DESIGN.md, sans rôle nommé : titres de section des pages de contenu. */
+  --text-heading-md: 24px;
+  --leading-heading-md: 1.25;
   --text-heading: 40px;
   --leading-heading: 1.5;
   --text-heading-lg: 48px;
@@ -106,6 +136,27 @@
 
   /* Mouvement */
   --transition-base: 200ms ease;
+
+  /*
+   * Échelle de la page d'accueil refondue : 5 tailles par écran, texte de
+   * 680 px de large, 112 px entre les sections. À étendre au reste du site
+   * après validation.
+   */
+  --echelle-petit: 14px;
+  --echelle-texte: 16px;
+  --echelle-accroche: 20px;
+  --echelle-section: 32px;
+  --echelle-titre: 64px;
+  --mesure-texte: 680px;
+  --ecart-sections: 112px;
+}
+
+@media (max-width: 40rem) {
+  :root {
+    --echelle-section: 24px;
+    --echelle-titre: 40px;
+    --ecart-sections: 96px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

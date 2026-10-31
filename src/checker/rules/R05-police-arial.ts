@@ -1,8 +1,8 @@
 import { R05 } from '../../content/rules.fr';
 import { classerPolice, nomAffiche, type ClassePolice } from '../polices';
 import { nombreCaracteres } from '../texte';
-import type { Decoupage, ModeleDocument, ResultatRegle } from '../types';
-import { ajouterPage, blocsDeTexte, enGroupes, pagesMesurees, resultatSansTexte } from './commun';
+import type { Decoupage, ModeleDocument, ParametresDossier, ResultatRegle } from '../types';
+import { ajouterPage, blocsDeTexte, enGroupes, pagesMesurees, resultatSansTexte, sourcesDe } from './commun';
 
 interface Famille {
   classe: ClassePolice;
@@ -15,7 +15,7 @@ interface Famille {
  * décide ; les autres polices utilisées donnent un avertissement. Les polices
  * de puces (Symbol, Wingdings…) sont ignorées.
  */
-export function verifierR05(document: ModeleDocument, decoupage: Decoupage): ResultatRegle[] {
+export function verifierR05(document: ModeleDocument, decoupage: Decoupage, parametres?: ParametresDossier): ResultatRegle[] {
   const familles = new Map<string, Famille>();
   for (const page of pagesMesurees(document, decoupage)) {
     for (const bloc of blocsDeTexte(page)) {
@@ -30,11 +30,11 @@ export function verifierR05(document: ModeleDocument, decoupage: Decoupage): Res
   }
   const classement = [...familles.entries()].sort((a, b) => b[1].caracteres - a[1].caracteres);
   const [principale] = classement;
-  if (!principale) return [resultatSansTexte('R05', R05.sources)];
+  if (!principale) return [resultatSansTexte('R05', sourcesDe(R05, parametres))];
 
   const [nom, famille] = principale;
   const pages = [...famille.pages].sort((a, b) => a - b);
-  const sources = [...R05.sources];
+  const sources = sourcesDe(R05, parametres);
   const resultats: ResultatRegle[] = [];
   switch (famille.classe) {
     case 'arial':

@@ -1,0 +1,324 @@
+/*
+ * Page d'accueil refondue : hero centré, aperçu du rapport, puis une colonne
+ * de texte de 680 px. Cinq tailles de texte par écran (tokens --echelle-*),
+ * 112 px entre les sections (96 px sur mobile), fond papier.
+ */
+
+.accueil {
+  padding-top: var(--spacing-64);
+}
+
+.accueil-section + .accueil-section {
+  margin-top: var(--ecart-sections);
+}
+
+.accueil-section h2 {
+  margin: 0 0 var(--spacing-24);
+  font-size: var(--echelle-section);
+  line-height: 1.25;
+}
+
+.accueil-section h3 {
+  margin: 0 0 var(--spacing-8);
+  font-size: var(--echelle-accroche);
+  line-height: 1.4;
+  font-weight: var(--font-weight-semibold);
+}
+
+.accueil-section p {
+  margin: 0;
+}
+
+/* --- Hero ------------------------------------------------------------------ */
+
+.accueil-hero {
+  text-align: center;
+}
+
+.accueil-hero__titre {
+  max-width: 14em;
+  margin: 0 auto;
+  font-size: var(--echelle-titre);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+/* 60 caractères de large environ (600 px en 20 px), 2 lignes au plus. */
+.accueil-hero .accueil-hero__accroche {
+  max-width: 600px;
+  margin: var(--spacing-24) auto 0;
+  color: var(--color-text-muted);
+  font-size: var(--echelle-accroche);
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.accueil-hero__action {
+  margin-top: var(--spacing-32);
+}
+
+.accueil-hero__action .v-bouton {
+  min-height: 48px;
+  padding-inline: var(--spacing-24);
+  font-size: var(--echelle-texte);
+}
+
+.accueil .accueil-hero__infos {
+  margin-top: var(--spacing-16);
+  color: var(--color-text-muted);
+  font-size: var(--echelle-petit);
+  line-height: 1.6;
+}
+
+/* Une ligne par information ; sur mobile, la seconde phrase passe entière à la ligne. */
+.accueil-hero__infos > span {
+  display: block;
+}
+
+.accueil-hero__phrase {
+  display: inline-block;
+}
+
+.accueil-hero__apercu {
+  margin-top: var(--spacing-64);
+  text-align: left;
+}
+
+/* Variante B : titre plus court en 56 px, aperçu dans un panneau papier coupé en bas. */
+.accueil--b {
+  --echelle-titre: 56px;
+}
+
+/* Sur mobile, 36 px au lieu de 40 : « Le dossier RAEP, » tient sur une ligne. */
+@media (max-width: 40rem) {
+  .accueil--b {
+    --echelle-titre: 36px;
+  }
+}
+
+/*
+ * Coupe du panneau : la carte R08 et sa miniature restent entières, la coupe
+ * tombe dans la carte suivante (sur mobile, juste sous la carte R08).
+ * tests/e2e/accueil.spec.ts vérifie que la miniature est visible en entier.
+ */
+.accueil-panneau {
+  max-height: 1040px;
+  overflow: hidden;
+  padding: var(--spacing-32) var(--spacing-64) 0;
+  border-radius: var(--radius-cards);
+  background: var(--color-panneau-exemple);
+}
+
+.accueil-panneau .apercu {
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.accueil-panneau .apercu__legende {
+  margin: 0 0 var(--spacing-16);
+  text-align: left;
+}
+
+/* --- Aperçu du rapport : une feuille du logo (coin corné, trait de marge) -- */
+
+.apercu {
+  margin: 0;
+}
+
+/* L'ombre suit la découpe du coin corné : elle est portée par un parent. */
+.apercu__ombre {
+  --coin: 36px;
+  position: relative;
+  filter: drop-shadow(0 0 0.5px rgba(55, 53, 47, 0.35)) drop-shadow(0 4px 12px rgba(55, 53, 47, 0.1));
+}
+
+/* Le pli : le coin replié, dans la partie basse de l'angle découpé. */
+.apercu__ombre::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: var(--coin);
+  height: var(--coin);
+  background: var(--color-surface-muted);
+  clip-path: polygon(0 0, 0 100%, 100% 100%);
+}
+
+.apercu__feuille {
+  position: relative;
+  padding: var(--spacing-24) var(--spacing-32) var(--spacing-32) 72px;
+  background: var(--color-surface);
+  clip-path: polygon(0 0, calc(100% - var(--coin)) 0, 100% var(--coin), 100% 100%, 0 100%);
+}
+
+/* Le trait de marge bleu encre du logo. */
+.apercu__feuille::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 44px;
+  width: 2px;
+  background: var(--color-bleu-encre);
+}
+
+.apercu__entete {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--spacing-4) var(--spacing-16);
+  margin: 0 var(--spacing-24) var(--spacing-20) 0;
+  color: var(--color-text-muted);
+  font-size: var(--echelle-petit);
+  line-height: 1.4;
+}
+
+.apercu__titre {
+  color: var(--color-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.apercu__legende {
+  margin-top: var(--spacing-12);
+  color: var(--color-text-muted);
+  font-size: var(--echelle-petit);
+  line-height: 1.4;
+  text-align: center;
+}
+
+/* Le rapport sur l'échelle de l'accueil. */
+.apercu .v-compteur__nombre {
+  font-size: var(--echelle-accroche);
+}
+
+.apercu .v-groupe {
+  margin-top: var(--spacing-24);
+}
+
+.apercu .v-groupe__titre {
+  font-size: var(--echelle-accroche);
+}
+
+.apercu .v-groupe__intro {
+  display: none;
+}
+
+/* --- Chiffre sourcé ----------------------------------------------------------- */
+
+.accueil-chiffre {
+  text-align: center;
+}
+
+.accueil .accueil-chiffre__texte {
+  font-size: var(--echelle-accroche);
+  line-height: 1.5;
+  font-weight: var(--font-weight-semibold);
+}
+
+.accueil .accueil-chiffre__source {
+  margin-top: var(--spacing-8);
+  color: var(--color-text-muted);
+  font-size: var(--echelle-petit);
+}
+
+.accueil-chiffre__source a {
+  color: inherit;
+}
+
+/* --- Colonne de texte ---------------------------------------------------------- */
+
+.accueil-colonne {
+  max-width: var(--mesure-texte);
+  margin-inline: auto;
+}
+
+.accueil-etapes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: etape;
+}
+
+.accueil-etapes > li {
+  position: relative;
+  padding-left: 48px;
+  counter-increment: etape;
+}
+
+.accueil-etapes > li + li {
+  margin-top: var(--spacing-24);
+}
+
+.accueil-etapes > li::before {
+  content: counter(etape);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pills);
+  font-size: var(--echelle-petit);
+  line-height: 30px;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.accueil-section .accueil-etapes h3 {
+  margin: 4px 0 var(--spacing-4);
+  font-size: var(--echelle-texte);
+}
+
+.accueil-etapes p,
+.accueil-blocs p {
+  color: var(--color-text-muted);
+}
+
+.accueil-blocs > div + div {
+  margin-top: var(--spacing-36);
+}
+
+/* --- Fin de page --------------------------------------------------------------- */
+
+.accueil-fin {
+  text-align: center;
+}
+
+.accueil-fin .v-bouton {
+  min-height: 48px;
+  padding-inline: var(--spacing-24);
+}
+
+/* --- Petits écrans --------------------------------------------------------------- */
+
+@media (max-width: 40rem) {
+  .accueil {
+    padding-top: var(--spacing-36);
+  }
+
+  .accueil-hero__apercu {
+    margin-top: var(--spacing-36);
+  }
+
+  .apercu__ombre {
+    --coin: 24px;
+  }
+
+  .apercu__feuille {
+    padding: var(--spacing-16) var(--spacing-12) var(--spacing-20) 36px;
+  }
+
+  .apercu__feuille::before {
+    left: 20px;
+  }
+
+  .apercu__entete {
+    margin-right: var(--spacing-16);
+  }
+
+  .accueil-panneau {
+    max-height: 1200px;
+    padding: var(--spacing-20) var(--spacing-12) 0;
+  }
+}

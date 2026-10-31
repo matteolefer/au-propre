@@ -67,6 +67,16 @@ export interface Source {
   url: string;
 }
 
+/**
+ * Zone d'une page où se trouve le défaut signalé, en points (même repère que
+ * les blocs), avec la taille de la page : le rapport la surligne sur l'aperçu.
+ */
+export interface ZoneEnFaute extends Rectangle {
+  page: number;
+  largeurPage: number;
+  hauteurPage: number;
+}
+
 export interface ResultatRegle {
   /** Ex. « R05 ». */
   id: string;
@@ -79,10 +89,14 @@ export interface ResultatRegle {
   correction: string;
   /** Sources officielles de la règle (vide pour R00, qui n'est pas une règle officielle). */
   sources: Source[];
+  /** Zones en faute, page par page, pour les résultats qui signalent un défaut situé (R08, R09, R10, R13). */
+  zones?: ZoneEnFaute[];
 }
 
 /** Informations fournies par le candidat en plus du PDF. */
 export interface ParametresDossier {
+  /** Identifiant du concours (ex. « cpe-interne »), si connu. */
+  concours: string | null;
   /** Identifiant de la discipline choisie à l'inscription (ex. « histoire-geographie »), si connue. */
   discipline: string | null;
   /** Nom du fichier déposé, si connu. */

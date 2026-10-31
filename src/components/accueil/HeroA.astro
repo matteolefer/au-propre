@@ -1,0 +1,16 @@
+---
+/** Variante A : hero centré, fenêtre du rapport juste dessous, sur fond blanc. */
+import ActionHero from './ActionHero.astro';
+import { ApercuRapport } from '../verificateur/ApercuRapport';
+---
+
+<section class="accueil-section accueil-hero accueil-hero--a" aria-labelledby="titre-accueil">
+  <h1 class="accueil-hero__titre" id="titre-accueil">Vérifiez votre dossier RAEP avant de le déposer</h1>
+  <p class="accueil-hero__accroche">
+    Déposez votre PDF&nbsp;: l’outil contrôle chaque règle officielle et vous dit quoi corriger, page par page.
+  </p>
+  <ActionHero />
+  <div class="accueil-hero__apercu">
+    <ApercuRapport />
+  </div>
+</section>
