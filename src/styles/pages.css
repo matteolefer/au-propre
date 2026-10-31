@@ -1,53 +1,61 @@
 /*
- * Pages de contenu : accueil, règles, confidentialité, mentions légales, 404.
- * Texte aligné à gauche comme un document, lignes de moins de 80 caractères,
- * surfaces blanches à bordure fine, sans ombre. Un seul bouton bleu par écran.
+ * Pages de contenu : règles, confidentialité, mentions légales, 404.
+ * Échelle de l'accueil (tokens --echelle-*) : colonne de 680 px centrée,
+ * paragraphes de moins de 80 caractères (--measure), 112 px entre les
+ * sections (96 px sur mobile). Surfaces blanches à bordure fine, sans ombre.
+ * Un seul bouton bleu par écran.
  */
 
 .p-page {
-  padding-top: var(--spacing-32);
+  padding-top: var(--ecart-haut);
 }
 
-/* Pages de lecture (règles, confidentialité, mentions) : une colonne de document. */
 .p-page--document {
-  max-width: 48rem;
+  max-width: var(--mesure-texte);
+  margin-inline: auto;
 }
 
 .p-titre {
-  max-width: 22em;
   margin: 0;
-  font-size: var(--text-heading);
+  font-size: var(--echelle-titre);
   line-height: 1.15;
   text-wrap: balance;
 }
 
 .p-chapo {
   max-width: var(--measure);
-  margin: var(--spacing-16) 0 0;
+  margin: var(--spacing-24) 0 0;
   color: var(--color-text-muted);
-  font-size: var(--text-subheading);
+  font-size: var(--echelle-accroche);
   line-height: 1.5;
 }
 
 .p-maj {
+  max-width: var(--measure);
   margin: var(--spacing-12) 0 0;
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
+}
+
+.p-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-12) var(--spacing-20);
+  margin-top: var(--spacing-32);
 }
 
 /* --- Sections et texte courant --------------------------------------------------- */
 
 .p-section {
-  margin-top: var(--spacing-64);
+  margin-top: var(--ecart-sections);
 }
 
-.p-section > h2,
-.p-h2 {
-  max-width: var(--measure);
-  margin: 0 0 var(--spacing-16);
-  font-size: var(--text-heading-md);
-  line-height: var(--leading-heading-md);
+.p-section > h2 {
+  margin: 0 0 var(--spacing-24);
+  font-size: var(--echelle-section);
+  line-height: 1.25;
   scroll-margin-top: var(--spacing-16);
 }
 
@@ -82,7 +90,7 @@ ul.p-prose {
 
 .p-prose h3 {
   margin: var(--spacing-32) 0 var(--spacing-8);
-  font-size: var(--text-body);
+  font-size: var(--echelle-texte);
   line-height: var(--leading-body);
   font-weight: var(--font-weight-semibold);
 }
@@ -99,7 +107,7 @@ ul.p-prose {
   max-width: var(--measure);
   margin: var(--spacing-8) 0 0;
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -111,7 +119,6 @@ ul.p-prose {
 .p-fiche {
   display: grid;
   gap: var(--spacing-4) var(--spacing-16);
-  max-width: var(--measure);
   margin: 0;
 }
 
@@ -151,186 +158,7 @@ ul.p-prose {
   padding: var(--card-padding);
 }
 
-/* --- Accueil -------------------------------------------------------------------- */
-
-.p-accueil__titre {
-  max-width: 19em;
-  font-size: var(--text-heading-lg);
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-}
-
-.p-accueil__chapo {
-  max-width: 38em;
-}
-
-.p-accueil__action {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-12) var(--spacing-20);
-  margin-top: var(--spacing-32);
-}
-
-.p-accueil__action .v-bouton {
-  min-height: 48px;
-  padding-inline: var(--spacing-24);
-  font-size: var(--text-body);
-}
-
-.p-accueil__rassurance {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
-  line-height: var(--leading-body-sm);
-}
-
-/* Échéance et constats des jurys : un panneau, deux colonnes séparées d'un filet. */
-.p-faits {
-  display: grid;
-  gap: var(--spacing-24);
-  margin-top: var(--spacing-36);
-}
-
-.p-fait__libelle {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
-  line-height: var(--leading-body-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.p-fait__valeur {
-  margin: var(--spacing-4) 0 0;
-  font-size: var(--text-heading-sm);
-  line-height: var(--leading-heading-sm);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: var(--tracking-heading-sm);
-}
-
-.p-fait__texte {
-  margin: var(--spacing-8) 0 0;
-}
-
-.p-fait__source {
-  margin: var(--spacing-8) 0 0;
-  font-size: var(--text-body-sm);
-  line-height: var(--leading-body-sm);
-}
-
-@media (min-width: 48rem) {
-  .p-faits {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 0;
-  }
-
-  .p-faits > * + * {
-    padding-left: var(--card-padding);
-    margin-left: var(--card-padding);
-    border-left: 1px solid var(--color-border);
-  }
-}
-
-@media (max-width: 47.99rem) {
-  .p-faits > * + * {
-    padding-top: var(--spacing-24);
-    border-top: 1px solid var(--color-border);
-  }
-}
-
-/* Étapes : une vraie séquence, numérotée par la liste elle-même. */
-.p-etapes {
-  max-width: var(--measure);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  counter-reset: etape;
-}
-
-.p-etapes > li {
-  position: relative;
-  padding-left: 48px;
-  counter-increment: etape;
-}
-
-.p-etapes > li + li {
-  margin-top: var(--spacing-24);
-}
-
-.p-etapes > li::before {
-  content: counter(etape);
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-pills);
-  font-size: var(--text-body-sm);
-  font-weight: var(--font-weight-semibold);
-  line-height: 30px;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-}
-
-.p-etapes h3 {
-  margin: 4px 0 var(--spacing-4);
-  font-size: var(--text-body);
-  line-height: var(--leading-body);
-  font-weight: var(--font-weight-semibold);
-}
-
-.p-etapes p {
-  margin: 0;
-  color: var(--color-text-muted);
-}
-
-/* Extrait du rapport : le vrai composant, rendu au build. */
-.p-extrait {
-  max-width: 52rem;
-  margin: 0;
-}
-
-.p-extrait figcaption {
-  margin-top: var(--spacing-8);
-  color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
-  line-height: var(--leading-body-sm);
-}
-
-/* Liste des contrôles par groupe : deux colonnes sur grand écran. */
-.p-controles {
-  display: grid;
-  gap: var(--spacing-24) var(--spacing-32);
-  margin: 0;
-}
-
-.p-controles h3 {
-  margin: 0 0 var(--spacing-8);
-  font-size: var(--text-body);
-  line-height: var(--leading-body);
-  font-weight: var(--font-weight-semibold);
-}
-
-.p-controles ul {
-  margin: 0;
-  padding-left: var(--spacing-20);
-}
-
-.p-controles li + li {
-  margin-top: var(--spacing-4);
-}
-
-.p-controles + .p-aide {
-  margin-top: var(--spacing-24);
-}
-
-@media (min-width: 48rem) {
-  .p-controles {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-}
-
+/* Fin de page : une phrase et le bouton. */
 .p-fin {
   display: flex;
   flex-wrap: wrap;
@@ -352,7 +180,7 @@ ul.p-prose {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-cards);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -385,7 +213,7 @@ ul.p-prose {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-8) var(--spacing-20);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -416,7 +244,7 @@ ul.p-prose {
 .p-regle__titre {
   max-width: var(--measure);
   margin: 0;
-  font-size: var(--text-body);
+  font-size: var(--echelle-texte);
   line-height: var(--leading-body);
   font-weight: var(--font-weight-semibold);
 }
@@ -424,7 +252,7 @@ ul.p-prose {
 .p-regle__id {
   margin-right: var(--spacing-8);
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   font-weight: var(--font-weight-semibold);
   font-variant-numeric: tabular-nums;
 }
@@ -437,9 +265,8 @@ ul.p-prose {
 .p-regle__details {
   display: grid;
   gap: var(--spacing-8);
-  max-width: var(--measure);
   margin: var(--spacing-12) 0 0;
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -449,6 +276,7 @@ ul.p-prose {
 }
 
 .p-regle__details dd {
+  max-width: var(--measure);
   margin: 2px 0 0;
 }
 
@@ -467,26 +295,6 @@ ul.p-prose {
 /* --- Petits écrans ---------------------------------------------------------------- */
 
 @media (max-width: 40rem) {
-  .p-page {
-    padding-top: var(--spacing-16);
-  }
-
-  .p-titre {
-    font-size: 30px;
-  }
-
-  .p-accueil__titre {
-    font-size: 32px;
-  }
-
-  .p-chapo {
-    font-size: var(--text-body);
-  }
-
-  .p-section {
-    margin-top: var(--spacing-36);
-  }
-
   .p-regle,
   .p-panneau {
     padding-inline: var(--spacing-16);

@@ -1,8 +1,6 @@
 ---
-// Accueil : variante B du hero (panneau papier) avec le titre de la variante A, retenue après comparaison des captures.
-// Les pages src/pages/essais/ restent jusqu'à validation, puis seront supprimées.
 import Base from '../layouts/Base.astro';
-import HeroB from '../components/accueil/HeroB.astro';
+import Hero from '../components/accueil/Hero.astro';
 import SuiteAccueil from '../components/accueil/SuiteAccueil.astro';
 import { PAGES_DU_SITE } from '../content/site';
 import '../styles/verificateur.css';
@@ -12,8 +10,8 @@ const page = PAGES_DU_SITE.accueil;
 ---
 
 <Base titre={page.titre} description={page.description} chemin={page.chemin}>
-  <div class="accueil accueil--b">
-    <HeroB />
+  <div class="accueil">
+    <Hero />
     <SuiteAccueil />
   </div>
 </Base>

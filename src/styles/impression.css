@@ -59,8 +59,16 @@
     margin-top: 0.6cm;
   }
 
-  .v-controle__corps,
-  .v-checklist__texte,
+  /* Toute la largeur de la feuille : la colonne et la longueur des lignes de l'écran ne s'appliquent pas. */
+  .v-page,
+  .v-controle__titre,
+  .v-controle__regle,
+  .v-controle__details,
+  .v-controle__details dd,
+  .v-checklist__texte > *,
+  .v-groupe__intro,
+  .v-resume__phrase,
+  .v-aide,
   .v-intro {
     max-width: none;
   }

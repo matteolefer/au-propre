@@ -20,24 +20,31 @@
 
 /* --- Page --------------------------------------------------------------------- */
 
+/* Échelle du site : colonne de 680 px centrée, comme les pages de contenu. */
 .v-page {
-  padding-top: var(--spacing-24);
+  max-width: var(--mesure-texte);
+  margin-inline: auto;
+  padding-top: var(--ecart-haut);
 }
 
 .v-page__titre {
   margin: 0;
-  font-size: var(--text-heading);
+  font-size: var(--echelle-titre);
   line-height: 1.15;
+  text-wrap: balance;
 }
 
 .v-page__chapo {
   max-width: var(--measure);
-  margin: var(--spacing-12) 0 0;
+  margin: var(--spacing-24) 0 0;
   color: var(--color-text-muted);
+  font-size: var(--echelle-accroche);
+  line-height: 1.5;
 }
 
+/* Comme l'aperçu sous le hero de l'accueil : 64 px, 36 sur mobile. */
 .v-verificateur {
-  margin-top: var(--spacing-32);
+  margin-top: var(--spacing-64);
 }
 
 /* --- Indicateur d'étapes -------------------------------------------------- */
@@ -56,7 +63,7 @@
   align-items: center;
   gap: var(--spacing-8);
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -67,7 +74,7 @@
   height: 24px;
   border: 1px solid var(--color-border-champ);
   border-radius: var(--radius-pills);
-  font-size: var(--text-caption);
+  font-size: var(--echelle-petit);
   font-weight: var(--font-weight-semibold);
   font-variant-numeric: tabular-nums;
 }
@@ -95,10 +102,9 @@
 }
 
 .v-etape__titre {
-  margin: 0 0 var(--spacing-16);
-  font-size: var(--text-heading-sm);
-  line-height: var(--leading-heading-sm);
-  letter-spacing: var(--tracking-heading-sm);
+  margin: 0 0 var(--spacing-24);
+  font-size: var(--echelle-section);
+  line-height: 1.25;
 }
 
 .v-etape__titre:focus,
@@ -121,7 +127,7 @@
 
 .v-sous-titre {
   margin: 0 0 var(--spacing-8);
-  font-size: var(--text-body);
+  font-size: var(--echelle-texte);
   line-height: var(--leading-body);
   font-weight: var(--font-weight-semibold);
 }
@@ -130,7 +136,7 @@
   max-width: var(--measure);
   margin: var(--spacing-8) 0 0;
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -142,7 +148,7 @@
   padding: var(--spacing-12) var(--spacing-16);
   border-radius: var(--radius-buttons);
   background: var(--color-info-bg);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -170,7 +176,7 @@
 
 .v-libelle {
   font-weight: var(--font-weight-semibold);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -210,7 +216,7 @@
 .v-erreur-champ {
   margin: 0;
   color: var(--color-erreur);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
   font-weight: var(--font-weight-medium);
 }
@@ -276,7 +282,7 @@
 
 .v-depot__poids {
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
 }
 
 /* Sur écran tactile, on ne propose pas de glisser un fichier. */
@@ -289,7 +295,7 @@
 .v-confidentialite {
   max-width: var(--measure);
   margin: var(--spacing-4) 0 0;
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
   font-weight: var(--font-weight-medium);
 }
@@ -330,14 +336,14 @@
 }
 
 .v-message__titre {
-  font-size: var(--text-body);
+  font-size: var(--echelle-texte);
   line-height: var(--leading-body);
   font-weight: var(--font-weight-bold);
 }
 
 h2.v-message__titre {
-  font-size: var(--text-heading-sm);
-  line-height: var(--leading-heading-sm);
+  font-size: var(--echelle-accroche);
+  line-height: 1.3;
 }
 
 /* --- Lecture ----------------------------------------------------------------- */
@@ -413,7 +419,7 @@ h2.v-message__titre {
   min-height: 1.25rem;
   margin: 0;
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -436,7 +442,7 @@ h2.v-message__titre {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: 1.6;
 }
 
@@ -446,7 +452,7 @@ h2.v-message__titre {
 
 .v-section-pages__titre {
   margin: 0 0 var(--spacing-8);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
   font-weight: var(--font-weight-semibold);
 }
@@ -487,15 +493,15 @@ h2.v-message__titre {
   overflow: hidden;
   background: var(--color-surface-muted);
   color: var(--color-text-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
+  font-size: var(--echelle-petit);
+  line-height: var(--leading-body-sm);
   overflow-wrap: anywhere;
 }
 
 .v-miniature__numero {
   color: var(--color-text-muted);
-  font-size: var(--text-caption);
-  line-height: var(--leading-caption);
+  font-size: var(--echelle-petit);
+  line-height: var(--leading-body-sm);
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -510,7 +516,7 @@ h2.v-message__titre {
   display: grid;
   gap: var(--spacing-4);
   margin: 0;
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -550,7 +556,7 @@ h2.v-message__titre {
 }
 
 .v-compteur__nombre {
-  font-size: var(--text-heading-sm);
+  font-size: var(--echelle-accroche);
   line-height: 1;
   font-weight: var(--font-weight-bold);
   font-variant-numeric: tabular-nums;
@@ -599,7 +605,7 @@ h2.v-message__titre {
   align-items: center;
   gap: var(--spacing-8);
   margin: 0 0 var(--spacing-8);
-  font-size: var(--text-subheading);
+  font-size: var(--echelle-accroche);
   line-height: 1.3;
   font-weight: var(--font-weight-bold);
 }
@@ -609,7 +615,7 @@ h2.v-message__titre {
   padding: 0 var(--spacing-8);
   border-radius: var(--radius-pills);
   background: var(--color-info-bg);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: 1.6;
   font-weight: var(--font-weight-semibold);
   text-align: center;
@@ -652,12 +658,17 @@ h2.v-message__titre {
 
 .v-controle__corps {
   min-width: 0;
+}
+
+.v-controle__titre,
+.v-controle__regle,
+.v-controle__details dd {
   max-width: var(--measure);
 }
 
 .v-controle__titre {
   margin: 0;
-  font-size: var(--text-body);
+  font-size: var(--echelle-texte);
   line-height: var(--leading-body);
   font-weight: var(--font-weight-semibold);
 }
@@ -665,7 +676,7 @@ h2.v-message__titre {
 .v-controle__regle {
   margin: 0;
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -682,7 +693,7 @@ h2.v-message__titre {
 
 .v-controle__details dt {
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
   font-weight: var(--font-weight-semibold);
 }
@@ -709,7 +720,7 @@ h2.v-message__titre {
 
 .v-controle__sources,
 .v-checklist__sources {
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -723,10 +734,11 @@ h2.v-message__titre {
 }
 
 .v-controle--compact .v-controle__details {
+  max-width: var(--measure);
   gap: var(--spacing-4);
   margin-top: var(--spacing-4);
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 
@@ -752,7 +764,7 @@ h2.v-message__titre {
 
 .v-checklist__compteur {
   margin: 0 0 var(--spacing-12);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   font-weight: var(--font-weight-medium);
   font-variant-numeric: tabular-nums;
 }
@@ -787,10 +799,15 @@ h2.v-message__titre {
 
 .v-checklist__texte {
   min-width: 0;
+}
+
+.v-checklist__texte > * {
   max-width: var(--measure);
 }
 
+/* En bloc : la longueur de ligne (--measure) ne s'applique pas à un élément en ligne. */
 .v-checklist__texte label {
+  display: block;
   cursor: pointer;
 }
 
@@ -807,8 +824,13 @@ h2.v-message__titre {
 /* --- Mobile -------------------------------------------------------------------- */
 
 @media (max-width: 40rem) {
-  .v-page__titre {
-    font-size: 30px;
+  /* Sur mobile, le chapo en 16 px : le formulaire reste dans le premier écran. */
+  .v-page__chapo {
+    font-size: var(--echelle-texte);
+  }
+
+  .v-verificateur {
+    margin-top: var(--spacing-36);
   }
 
   .v-etapes ol {
@@ -841,12 +863,12 @@ h2.v-message__titre {
 /* --- Inscription facultative, sous le rapport --------------------------------- */
 
 .v-inscription {
-  margin-top: var(--section-gap);
+  margin-top: var(--ecart-sections);
 }
 
 .v-inscription__independance {
   margin: var(--spacing-8) 0 0;
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
   font-weight: var(--font-weight-medium);
 }
@@ -888,7 +910,7 @@ h2.v-message__titre {
 .v-apercu-page figcaption {
   margin-top: var(--spacing-4);
   color: var(--color-text-muted);
-  font-size: var(--text-body-sm);
+  font-size: var(--echelle-petit);
   line-height: var(--leading-body-sm);
 }
 

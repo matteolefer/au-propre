@@ -1,11 +1,11 @@
 /*
- * Page d'accueil refondue : hero centré, aperçu du rapport, puis une colonne
- * de texte de 680 px. Cinq tailles de texte par écran (tokens --echelle-*),
+ * Page d'accueil : hero centré, aperçu du rapport, puis une colonne de 680 px.
+ * Échelle du site (tokens --echelle-*) : cinq tailles de texte par écran,
  * 112 px entre les sections (96 px sur mobile), fond papier.
  */
 
 .accueil {
-  padding-top: var(--spacing-64);
+  padding-top: var(--ecart-haut);
 }
 
 .accueil-section + .accueil-section {
@@ -82,18 +82,6 @@
 .accueil-hero__apercu {
   margin-top: var(--spacing-64);
   text-align: left;
-}
-
-/* Variante B : titre plus court en 56 px, aperçu dans un panneau papier coupé en bas. */
-.accueil--b {
-  --echelle-titre: 56px;
-}
-
-/* Sur mobile, 36 px au lieu de 40 : « Le dossier RAEP, » tient sur une ligne. */
-@media (max-width: 40rem) {
-  .accueil--b {
-    --echelle-titre: 36px;
-  }
 }
 
 /*
@@ -186,11 +174,7 @@
   text-align: center;
 }
 
-/* Le rapport sur l'échelle de l'accueil. */
-.apercu .v-compteur__nombre {
-  font-size: var(--echelle-accroche);
-}
-
+/* Le rapport, resserré dans la feuille. */
 .apercu .v-groupe {
   margin-top: var(--spacing-24);
 }
@@ -272,6 +256,7 @@
 
 .accueil-etapes p,
 .accueil-blocs p {
+  max-width: var(--measure);
   color: var(--color-text-muted);
 }
 
@@ -293,10 +278,6 @@
 /* --- Petits écrans --------------------------------------------------------------- */
 
 @media (max-width: 40rem) {
-  .accueil {
-    padding-top: var(--spacing-36);
-  }
-
   .accueil-hero__apercu {
     margin-top: var(--spacing-36);
   }

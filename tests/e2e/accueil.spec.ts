@@ -1,7 +1,7 @@
 /**
  * Accueil refondu : contraintes mesurées sur la page livrée (bureau et mobile).
  * Hero centré, aperçu du rapport, une seule source, 5 tailles de texte par écran,
- * texte de 640 à 720 px, 96 à 128 px entre les sections, fond blanc.
+ * texte de 640 à 720 px, 96 à 128 px entre les sections, fond papier.
  */
 import { expect, test } from '@playwright/test';
 

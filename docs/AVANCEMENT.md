@@ -2,6 +2,10 @@
 
 Mis à jour le 31 octobre 2026. Objectif : V1 en ligne vers le 10 novembre 2026, dépôt des dossiers au plus tard le 3 décembre 2026 à 23 h 59.
 
+**Où en est le projet** : les 20 règles (R00 à R19), le vérificateur complet, les pages du site et l'identité Au propre sont faits. Toutes les pages suivent l'échelle de l'accueil (validé le 31 octobre). Version `v0.9.0` étiquetée sur GitHub. Reste l'étape 6, la mise en ligne, qui attend d'abord les informations de l'éditeur (voir « Points en suspens »).
+
+**Tests** : 519 tests Vitest, 194 tests Playwright (4 ignorés exprès en mobile), tous au vert.
+
 ## Étape 1 : terminée
 
 Socle technique, extraction du PDF et cinq premières règles. Pas encore d'interface : la page d'accueil est provisoire.
@@ -9,7 +13,7 @@ Socle technique, extraction du PDF et cinq premières règles. Pas encore d'inte
 **Projet**
 
 - Astro 7 (site statique) avec un îlot React 19 prévu pour le vérificateur, TypeScript 6 en mode `strictest`, Vitest 5.
-- Dépôt Git : https://github.com/matteolefer/RAEP-check (public), branche `main`.
+- Dépôt Git : https://github.com/matteolefer/au-propre (public), branche `main`. Renommé depuis `RAEP-check` (l'ancienne adresse redirige).
 - Commandes : `npm test`, `npm run test:e2e` (Playwright, construit et sert le site), `npm run check` (types), `npm run build`, `npm run dev`.
 
 **Variables CSS** (`src/styles/tokens.css`)
@@ -147,7 +151,7 @@ L'interface complète du vérificateur, sur la page `/verifier/` : paramètres, 
 
 ## Étape 5 : terminée
 
-Pages de contenu, référencement, inscription facultative, sources du CPE, PDF protégés. Le produit s'appelle désormais **Au propre** (sous-titre « Vérifiez votre dossier RAEP avant le dépôt ») ; l'ancien nom n'apparaît plus nulle part, sauf dans l'adresse du dépôt GitHub.
+Pages de contenu, référencement, inscription facultative, sources du CPE, PDF protégés. Le produit s'appelle désormais **Au propre** (sous-titre « Vérifiez votre dossier RAEP avant le dépôt ») ; l'ancien nom n'apparaît plus nulle part (le dépôt GitHub a depuis été renommé `au-propre`).
 
 **Identité** (`src/content/site.ts`, seule source de vérité)
 
@@ -300,11 +304,11 @@ Kit d'IDENTITE.md intégré. Le site reste en thème clair en V1.
   - l'accueil, au premier rendu (lissage du texte) : identique à l'œil, et au pixel près sur une capture refaite à part.
 - Défaut corrigé : l'anneau de focus des liens de navigation collait au texte. Ajout d'une marge intérieure compensée, sans décalage.
 
-## Refonte de l'accueil : en attente de validation
+## Refonte de l'accueil : terminée
 
-Accueil refait d'après DESIGN.md et les captures de référence (pages de Notion, déposées dans `docs/design/`). Le reste du site n'a pas encore la nouvelle échelle.
+Validée par l'éditeur le 31 octobre 2026 : variante B avec le titre de A, telle qu'elle est en ligne. Accueil refait d'après DESIGN.md et les captures de référence (pages de Notion, gardées en local dans `docs/design/`, hors du dépôt). L'échelle a ensuite été étendue au reste du site (voir « Échelle étendue au site »).
 
-**Deux variantes comparées** (pages temporaires `src/pages/essais/accueil-a/` et `accueil-b/`, non indexées, à supprimer après validation)
+**Deux variantes comparées** (pages temporaires `src/pages/essais/accueil-a/` et `accueil-b/`, non indexées, supprimées après la validation avec `HeroA.astro` ; `HeroB.astro` est devenu `Hero.astro`)
 
 - **A, « fenêtre sous le titre »** : titre de 64 px, rapport complet juste sous le hero.
 - **B, « panneau papier »** : titre de 56 px, rapport dans un panneau papier coupé en bas.
@@ -331,11 +335,11 @@ Accueil refait d'après DESIGN.md et les captures de référence (pages de Notio
 | Mesure | Ordinateur | Mobile |
 | --- | --- | --- |
 | Tailles de texte | 14, 16, 20, 32 et 56 px | 14, 16, 20, 24 et 36 px |
-| Largeur du texte | 680 px | — |
+| Largeur du texte | 680 px (paragraphes limités à 32 em depuis l'extension de l'échelle) | — |
 | Écart entre sections | 112 px | 96 px |
 
-- Fond blanc (`Base.astro`, prop `fond="blanc"`) ; le pied de page garde le papier sur toute la largeur.
-- Logo à 32 px.
+- Fond blanc (`Base.astro`, prop `fond="blanc"`) ; le pied de page garde le papier sur toute la largeur. *Remplacé le 31/10 par le papier `#FBFAF7` sur tout le site (« Un site plus chaleureux »).*
+- Logo à 32 px. *Remplacé le 31/10 : 36 px.*
 
 **Tests**
 
@@ -353,8 +357,8 @@ Accueil refait d'après DESIGN.md et les captures de référence (pages de Notio
 
 **Écarts et limites**
 
-- **Fond blanc** : DESIGN.md demande le papier ; le fond blanc est demandé et suit les références.
-- **Logo** : 32 px et non 28, car à 28 px il ne mesurerait que 117 px de large, sous le minimum de 120 px d'IDENTITE.md.
+- **Fond blanc** : DESIGN.md demande le papier ; le fond blanc est demandé et suit les références. *Remplacé le 31/10 : papier sur tout le site.*
+- **Logo** : 32 px et non 28, car à 28 px il ne mesurerait que 117 px de large, sous le minimum de 120 px d'IDENTITE.md. *Remplacé le 31/10 : 36 px.*
 - **Accroche** : 3 lignes sur mobile (un écran de 390 px ne contient pas 60 caractères en 20 px).
 - **Chiffre sourcé** : sur une ligne à partir d'environ 900 px de large.
 
@@ -421,6 +425,53 @@ Titres à empattements, encre et papier, logo plus grand, zones en faute surlign
 
 **Captures relues** (`test-results/accueil/`, `test-results/rapport/`) : accueil sur ordinateur et mobile, page des règles, rapport réel et impression.
 
+## Échelle étendue au site : terminée
+
+L'échelle de l'accueil s'applique désormais aux pages des règles, de confidentialité, des mentions légales, à la 404 et au vérificateur.
+
+**Échelle** (`tokens.css`)
+
+| Rôle | Ordinateur | Mobile | Token |
+| --- | --- | --- | --- |
+| Titre de page (h1) | 56 px | 36 px | `--echelle-titre` |
+| Titre de section (h2) | 32 px | 24 px | `--echelle-section` |
+| Chapo, titres des groupes du rapport, compteurs | 20 px | 20 px | `--echelle-accroche` |
+| Texte courant | 16 px | 16 px | `--echelle-texte` |
+| Petit texte | 14 px | 14 px | `--echelle-petit` |
+
+- Cinq tailles par écran, mesurées sur chaque page et à chaque étape du vérificateur. Disparaissent : 12 px (numéros des étapes et des aperçus, passés en 14), 22 px (titres d'étape, compteurs), 40 et 30 px (anciens h1), 24 px sur ordinateur.
+- Colonne de 680 px centrée (`--mesure-texte`) : `.p-page--document` et `.v-page`.
+- **Paragraphes de moins de 80 caractères** : `--measure` passe de `68ch` à `32em` (512 px en 16 px). `68ch` donnait jusqu'à 103 caractères par ligne, car 1ch est la largeur du chiffre 0. La limite est posée sur les éléments de texte (paragraphes, valeurs, libellés), plus sur leurs conteneurs. Ainsi, le petit texte (14 px) a sa propre limite de 448 px. Ligne la plus longue mesurée : 77 caractères.
+- Écarts : 112 px entre les sections, 96 sur mobile (`--ecart-sections`) ; 64 px entre l'en-tête et le titre, 36 sur mobile (`--ecart-haut`). Dans le vérificateur, l'outil suit le chapo à 64 px (36 sur mobile), comme l'aperçu sous le hero ; l'inscription est à 112 px du rapport.
+- **Vérificateur dans la colonne de 680 px** : le rapport tenait déjà dans environ 600 px ; le découpage montre 3 aperçus par ligne au lieu de 5. Sur mobile, le chapo reste en 16 px pour garder le formulaire dans le premier écran.
+- À l'impression, la colonne et la longueur de ligne sont levées : le rapport occupe toute la largeur de la feuille.
+
+**Ménage**
+
+- Supprimés : `src/pages/essais/`, `HeroA.astro`, les classes `.accueil--b` et `.accueil-hero--b`. `HeroB.astro` devient `Hero.astro` ; `--echelle-titre` vaut 56 et 36 px dans `tokens.css`.
+- Retiré de `pages.css` : les styles de l'ancien accueil (`p-accueil__*`, `p-faits`, `p-etapes`, `p-extrait`, `p-controles`, `p-h2`). Le bloc de boutons de la 404 devient `.p-actions`.
+
+**Tests**
+
+- `tests/e2e/echelle.spec.ts` (18 tests sur Chromium, Firefox et mobile). Il vérifie sur chaque page et à chaque étape du vérificateur :
+  - 5 tailles au plus, toutes dans l'échelle ;
+  - h1 et h2 aux tailles prévues ;
+  - colonne de 680 px ;
+  - 112 ou 96 px entre les sections ;
+  - aucune ligne de 80 caractères ou plus, accueil compris.
+- 519 tests Vitest ; 194 tests Playwright passent, 4 ignorés exprès en mobile.
+
+**Captures relues** (1280 et 390 px, toutes les pages, découpage et rapport). Défauts corrigés :
+
+- Ligne de 82 caractères dans la checklist : le libellé, élément en ligne, ignorait la limite (passé en bloc).
+- Premier écran mobile du vérificateur sans le choix de la discipline : chapo de 6 lignes en 20 px (ramené à 16 px sur mobile).
+- 79 caractères sur l'accueil avec une limite de 32,5 em, trop près de 80 (limite ramenée à 32 em).
+
+**Limites connues**
+
+- En 56 px dans 680 px, le titre du vérificateur tient sur 2 lignes et celui des règles sur 3.
+- Dans les contrôles conformes du rapport, les sources passent souvent sur 2 lignes (448 px en 14 px).
+
 ## Décisions prises
 
 | Date | Décision | Raison |
@@ -428,11 +479,11 @@ Titres à empattements, encre et papier, logo plus grand, zones en faute surlign
 | 30/10/2026 | Gravité `bloquant` ajoutée et `source` remplacé par `sources[]` dans `ResultatRegle` (CLAUDE.md mis à jour) | SPEC classe R00 « Bloquant » sans source, et R02 à R11 citent deux sources (S1, S2). Un scan n'enfreint aucune règle : R00 affiche « Analyse impossible », pas une erreur |
 | 30/10/2026 | R11 : erreur pour les parties 1 et 2, avertissement pour la couverture et les annexes ; A4 paysage accepté | SPEC limite par défaut les mesures aux parties ; une annexe scannée peut avoir un autre format et la règle y est moins certaine |
 | 30/10/2026 | Couleurs ajustées pour le contraste AA (vérifié par `tests/styles/contraste.test.ts`) | Voir ci-dessous |
-| 30/10/2026 | Un seul accent : la palette d'accents décoratifs de DESIGN.md (corail, jaune, bleu ciel, nuit) n'est pas reprise, ni la police à empattements | CLAUDE.md l'emporte sur DESIGN.md |
+| 30/10/2026 | Un seul accent : la palette d'accents décoratifs de DESIGN.md (corail, jaune, bleu ciel, nuit) n'est pas reprise, ni la police à empattements. *En partie remplacé le 31/10 : titres h1 et h2 en Source Serif 4* | CLAUDE.md l'emporte sur DESIGN.md |
 | 30/10/2026 | Exception de licence pour des dépendances indirectes de build : sharp / libvips (LGPL-3.0, via Astro), lightningcss (MPL-2.0, via Vite), BlueOak-1.0.0, CC0-1.0 (CLAUDE.md, règle 6) | Outils exécutés au build uniquement, jamais livrés au navigateur. Le site livré ne contient que notre code, React (MIT) et pdf.js (Apache-2.0). Aucune GPL ni AGPL |
 | 30/10/2026 | Node 24 LTS, installé avec nvm ; `.node-version` = 24 pour Cloudflare Pages | Vitest 5 ne prend pas en charge Node 23. Homebrew ne peut plus compiler Node 24 sur macOS 12 ; le binaire officiel, que nvm télécharge, fonctionne |
 | 30/10/2026 | Le champ `police` garde le nom PostScript sans préfixe de sous-ensemble (`LiberationSans-Bold`, `Carlito-Regular`) | Le rapprochement avec une famille (Arial, substituts) relève de R05 |
-| 30/10/2026 | Aucune police web embarquée pour l'instant (pile système, Inter si installée localement) | Inter est sous OFL-1.1, licence absente de la liste de CLAUDE.md |
+| 30/10/2026 | Aucune police web embarquée pour l'instant (pile système, Inter si installée localement). *Remplacé le 31/10 : Source Serif 4 (OFL-1.1) est servie par le site pour les titres ; le texte courant garde Inter si installée, sinon la police système* | Inter est sous OFL-1.1, licence absente de la liste de CLAUDE.md |
 | 30/10/2026 | R05 : la police majoritaire décide ; toute autre police utilisée sur du texte donne un avertissement ; les polices de puces (Symbol, Wingdings, OpenSymbol…) sont ignorées ; l'italique d'Arial est accepté ; Arial Narrow et Arial Black donnent une erreur (validé) | Lecture de SPEC (« police majoritaire ») sans laisser passer un passage dans une autre police, et sans fausse alerte sur les listes à puces |
 | 30/10/2026 | R05 : une police non nommée dans le PDF donne un avertissement, pas une erreur (validé) | Mesure incertaine (CLAUDE.md, règle 5) |
 | 30/10/2026 | R06 : avertissement aussi pour le texte plus petit que le corps (notes, passages réduits) ; fragments de 3 caractères ou moins ignorés (exposants, appels de note, numéros) | Les jurys sanctionnent la police réduite pour gagner de la place |
@@ -460,26 +511,30 @@ Titres à empattements, encre et papier, logo plus grand, zones en faute surlign
 | 31/10/2026 | Inscription par e-mail : lien vers un formulaire Brevo hébergé, ouvert sans paramètre ni référent ; encart masqué tant que l'adresse est vide (non bloquant) | Rien n'est saisi ni stocké sur le site ; l'e-mail ne peut pas être lié au dossier. Clôt le point en suspens « SPEC §4.5 contre hors périmètre » (CLAUDE.md précisé) |
 | 31/10/2026 | Conservation des adresses : jusqu'à l'envoi de l'annonce, puis suppression ; désinscription à tout moment | Finalité unique (proposée dans le plan de l'étape 5) |
 | 31/10/2026 | CPE : S10 et S11 pour R02, R03, R05 à R11 ; S11 pour R04, qui redevient une erreur ; S11 ajoutée à R15 et R16 ; R12 et R13 gardent S8 et S7 avec la mention « bonne pratique » | Le rapport du jury CPE 2026 confirme ces règles (p. 17 à 20) mais ne parle ni de pagination ni de couleur (CLAUDE.md, règle 5) |
-| 31/10/2026 | Pas de police web : Inter si installée, sinon police système | Inter est sous OFL-1.1, hors de la liste de CLAUDE.md ; aucune requête de plus |
+| 31/10/2026 | Pas de police web : Inter si installée, sinon police système. *Remplacé le même jour : Source Serif 4 pour les titres (exception OFL-1.1) ; toujours pas d'Inter embarquée* | Inter est sous OFL-1.1, hors de la liste de CLAUDE.md ; aucune requête de plus |
 | 31/10/2026 | pypdf (BSD-3-Clause) pour créer les fixtures protégées, outil de développement hors de `package.json` ; chiffrement RC4 128 bits | L'AES demanderait le paquet `cryptography` ; Ghostscript (AGPL) écarté |
 | 31/10/2026 | « Officiel » permis quand il qualifie les textes, jamais le site ni l'outil (CLAUDE.md, règle 2 précisée) | Le titre « Les règles officielles du RAEP » est demandé par SPEC §9 |
 | 31/10/2026 | Sitemap et robots.txt écrits à la main (points d'accès statiques), sans `@astrojs/sitemap` | 5 pages ; aucune dépendance de plus |
 | 31/10/2026 | Accent du site : bleu encre de la marque `#1E4A9A`, survol `#183B7B`, à la place du bleu de DESIGN.md (validé) | Un seul bleu, celui du logo (IDENTITE.md) ; meilleur contraste que `#0075de` |
 | 31/10/2026 | V1 en thème clair seulement : `logo-clair.svg`, `color-scheme: only light`, `theme-color` clair seul ; `logo-sombre.svg` et `#8CB4FF` gardés pour le thème sombre (validé) | Un logo sombre sur un site resté clair serait illisible ; le `theme-color` sombre teinterait la barre du navigateur au-dessus d'une page claire |
-| 31/10/2026 | Logo à 32 px de haut (134 px de large) | Minimum de 120 px de large fixé par IDENTITE.md |
+| 31/10/2026 | Logo à 32 px de haut (134 px de large). *Remplacé le même jour : 36 px (151 px de large)* | Minimum de 120 px de large fixé par IDENTITE.md |
 | 31/10/2026 | `SITE.url` garde l'adresse provisoire, signalée « à compléter » par `domaineDefinitif: false` | Canonique, sitemap et image de partage exigent une adresse absolue valide |
 | 31/10/2026 | Titres h1 et h2 en Source Serif 4 (OFL-1.1, exception à la règle 6) ; l'interdit vise la combinaison terre cuite, crème et serif, pas notre serif avec le bleu encre | Demande de l'éditeur : site trop froid ; police du logo |
 | 31/10/2026 | Encre `#37352F` et papier `#FBFAF7` sur tout le site ; panneau de l'exemple `#F2F5FB` ; logo à 36 px | Couleurs d'IDENTITE.md ; contrastes AA vérifiés |
 | 31/10/2026 | Jaune surligneur `#FFF1A8` : couleur fonctionnelle (zones en faute), jamais en titre ni en décoration (IDENTITE.md, CLAUDE.md) | Situer un défaut sur la page sans ajouter d'accent |
 | 31/10/2026 | Les zones surlignées sont dans le vrai rapport (R08, R09, R10, R13), pas seulement dans l'exemple (validé) | L'accueil ne montre que ce que l'outil fait vraiment |
 | 31/10/2026 | Tests de bout en bout sur le port 4329 (et non 4321) | `npm run dev` occupe 4321 ; Playwright réutilisait ce serveur de développement, dont la barre d'outils ajoute titres et liens, et les tests échouaient |
-| 31/10/2026 | Accueil : variante B (panneau papier) avec le titre de A, fond blanc, échelle de 5 tailles par écran, chiffre sourcé unique (CPE 2026) | Plus court, moins de texte et de sources visibles, aperçu du produit dès le premier écran (voir « Refonte de l'accueil ») |
+| 31/10/2026 | Accueil : variante B (panneau papier) avec le titre de A, fond blanc, échelle de 5 tailles par écran, chiffre sourcé unique (CPE 2026). *Validé le même jour ; fond blanc remplacé par le papier* | Plus court, moins de texte et de sources visibles, aperçu du produit dès le premier écran (voir « Refonte de l'accueil ») |
+| 31/10/2026 | Échelle de l'accueil étendue à tout le site : colonne de 680 px centrée, paragraphes limités à 32 em (moins de 80 caractères), 112 px entre les sections, 96 sur mobile (validé) | 680 px en texte de 16 px donnait jusqu'à 103 caractères par ligne, contre moins de 80 demandés par CLAUDE.md. Le choix de l'éditeur garde la colonne et limite les paragraphes |
+| 31/10/2026 | Vérificateur dans la même colonne de 680 px, découpage et rapport compris | Le rapport tenait déjà dans environ 600 px ; le découpage passe de 5 à 3 aperçus par ligne, sans autre changement. Pas besoin d'une colonne plus large |
+| 31/10/2026 | Sur mobile, le chapo du vérificateur reste en 16 px | En 20 px (6 lignes), le premier écran ne montrait plus que le choix du concours |
+| 31/10/2026 | Captures d'écran hors du dépôt (`docs/design/`, `Capture d'écran*`, `Screenshot*` dans `.gitignore`) | Dépôt public ; les références de design sont des pages de Notion |
 
-**Couleurs ajustées**
+**Couleurs ajustées** (30/10). *En partie remplacé le 31/10 : le bleu de DESIGN.md (`#0075de`, `#005fb8`, `#e6f3fe`) a laissé la place au bleu encre `#1E4A9A` et à sa teinte `#E8EEF8`, et le fond `#f6f5f4` au papier `#FBFAF7` (voir « Identité visuelle » et « Un site plus chaleureux »). Le texte secondaire `#615d59` et les couleurs d'état restent en vigueur.*
 
-- `#757575` (Stone) et `#0075de` (bleu) n'atteignent pas 4,5:1 sur le fond `#f6f5f4` (environ 4,2:1). Texte secondaire : `#615d59`. Liens et texte en bleu : `#005fb8`.
-- Le bleu `#0075de` reste la couleur des boutons principaux : texte blanc sur bleu, 4,57:1.
-- Le bouton secondaire de DESIGN.md (texte `#0075de` sur `#e6f3fe`, 4,05:1) n'est pas conforme : utiliser `--color-accent-text` sur `--color-accent-soft`.
+- `#757575` (Stone) et `#0075de` (bleu) n'atteignent pas 4,5:1 sur le fond `#f6f5f4` (environ 4,2:1). Texte secondaire : `#615d59`. Liens et texte en bleu : `#005fb8`. *Liens remplacés par `#1E4A9A`.*
+- Le bleu `#0075de` reste la couleur des boutons principaux : texte blanc sur bleu, 4,57:1. *Remplacé par `#1E4A9A` (8,4:1).*
+- Le bouton secondaire de DESIGN.md (texte `#0075de` sur `#e6f3fe`, 4,05:1) n'est pas conforme : utiliser `--color-accent-text` sur `--color-accent-soft`. *Toujours vrai, avec les valeurs du bleu encre.*
 - Couleurs d'état, absentes de DESIGN.md : erreur `#b42318` (vermillon assombri), avertissement `#8a5a00` (safran assombri), conforme `#1f7a3d` (vert ajouté, DESIGN.md n'en a pas). Chacune a un fond clair associé.
 
 ## Améliorations prévues après le lancement
@@ -505,7 +560,7 @@ Titres à empattements, encre et papier, logo plus grand, zones en faute surlign
 - Adresse du formulaire Brevo (`SITE.inscription.formulaireUrl`) : l'encart et la section de la politique de confidentialité apparaîtront d'eux-mêmes. Régler dans Brevo la case de consentement et la double confirmation.
 - Brevo : vérifier sur son site le lieu d'hébergement des données avant de le mentionner. Le téléchargement de sa politique a été refusé par l'outil de permissions ; la page ne dit que « société française ».
 - S10 : la page refuse la lecture automatique (403). Les sources du CPE reposent sur la décision validée et sur le rapport S11, relu.
-- Renommer le dépôt GitHub `RAEP-check` si souhaité.
+- Le dépôt GitHub s'appelle désormais `au-propre`. L'adresse du dépôt distant de cette copie de travail pointe encore vers `RAEP-check`, qui redirige : la mettre à jour avec `git remote set-url origin https://github.com/matteolefer/au-propre.git`.
 
 **Fixtures à ajouter** (voir `tests/fixtures/README.md`)
 
@@ -532,12 +587,7 @@ Titres à empattements, encre et papier, logo plus grand, zones en faute surlign
 
 ## Étape suivante prévue
 
-**Après validation de l'accueil**
-
-- Étendre l'échelle (5 tailles, 680 px, 112 px entre sections, fond blanc) aux pages des règles, de confidentialité, des mentions légales, à la 404 et au vérificateur.
-- Supprimer `src/pages/essais/` et la variante A.
-
-**Étape 6 (à planifier en mode Plan) : mise en ligne**
+**Étape 6 (à planifier en mode Plan, dans une nouvelle session) : mise en ligne**
 
 1. Renseigner les champs bloquants de `src/content/site.ts`.
 2. Essai manuel dans Safari (vérificateur, impression, pages de contenu).
