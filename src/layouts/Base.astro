@@ -3,18 +3,25 @@
 import '@fontsource/source-serif-4/latin-600.css';
 import '../styles/tokens.css';
 import '../styles/base.css';
-import { PAGES_DU_SITE, SITE, titreDOnglet, urlAbsolue } from '../content/site';
+import { PAGES_DU_SITE, SITE, statistiquesActives, titreDOnglet, urlAbsolue } from '../content/site';
 
 interface Props {
   titre: string;
   description: string;
   /** Chemin de la page, pour l'adresse canonique (ex. « /regles/ »). */
   chemin: string;
-  /** Faux pour les pages à ne pas référencer (404). */
+  /** Faux pour les pages à ne pas référencer (404, mentions légales). */
   indexer?: boolean;
+  /**
+   * Faux pour le vérificateur : aucun script tiers ne s'exécute sur la page où
+   * le PDF est lu. Ailleurs, la balise de Cloudflare Web Analytics (sans cookie)
+   * est ajoutée si son jeton est renseigné.
+   */
+  statistiques?: boolean;
 }
 
-const { titre, description, chemin, indexer = true } = Astro.props;
+const { titre, description, chemin, indexer = true, statistiques = true } = Astro.props;
+const baliseStatistiques = statistiques && statistiquesActives();
 const titreComplet = titreDOnglet(titre);
 const canonique = urlAbsolue(chemin);
 const image = urlAbsolue('/og-image.png');
@@ -38,7 +45,7 @@ const liensPied = [
     <title>{titreComplet}</title>
     <meta name="description" content={description} />
     {indexer ? <link rel="canonical" href={canonique} /> : <meta name="robots" content="noindex" />}
-    <!-- V1 en thème clair : pas de variante sombre (IDENTITE.md, thème sombre prévu après le lancement). -->
+    {/* V1 en thème clair : pas de variante sombre (IDENTITE.md, thème sombre prévu après le lancement). */}
     <meta name="color-scheme" content="only light" />
     <meta name="theme-color" content="#FBFAF7" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -57,6 +64,16 @@ const liensPied = [
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content={`${SITE.nom} — ${SITE.sousTitre}`} />
     <meta name="twitter:card" content="summary_large_image" />
+    {
+      baliseStatistiques && (
+        <script
+          is:inline
+          defer
+          src={SITE.statistiques.script}
+          data-cf-beacon={JSON.stringify({ token: SITE.statistiques.jeton })}
+        />
+      )
+    }
   </head>
   <body>
     <a class="evitement" href="#contenu">Aller au contenu</a>

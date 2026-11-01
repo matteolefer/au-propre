@@ -1,4 +1,7 @@
-/** Consignes aux robots d'indexation : tout le site, et l'adresse du plan du site. */
+/**
+ * Consignes aux robots d'indexation : tout le site, et l'adresse du plan du site.
+ * Les mentions légales ne sont pas bloquées : un robot doit pouvoir y lire le `noindex`.
+ */
 import type { APIRoute } from 'astro';
 import { urlAbsolue } from '../content/site';
 

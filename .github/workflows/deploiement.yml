@@ -1,0 +1,142 @@
+# Tests, puis déploiement sur Cloudflare Workers (assets statiques).
+#
+# Le site est construit une fois (job « build ») ; les tests de bout en bout et
+# le déploiement portent sur ce même dist/. Rien n'est déployé si un test échoue.
+# Actions épinglées par empreinte de commit (version en commentaire).
+name: Tests et déploiement
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Construction
+    # Ubuntu épinglé : Playwright 1.52 ne connaît pas les versions plus récentes.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      # Vérification des types (astro check), puis construction.
+      - run: npm run build
+      # Aucun nom, aucune métadonnée d'auteur, aucun champ « à compléter » dans le site livré.
+      - run: npm run verifier:livraison
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+          retention-days: 7
+
+  vitest:
+    name: Vitest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  playwright:
+    name: Playwright (${{ matrix.projet }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    # Image officielle de Playwright 1.52.0 : navigateurs déjà installés, aucun
+    # « playwright install » (voir l'alerte GHSA-7mvr-c777-76hp dans docs/AVANCEMENT.md).
+    # Playwright reste épinglé en 1.52.0, comme en local (macOS 12).
+    container:
+      image: mcr.microsoft.com/playwright:v1.52.0-noble
+      # Même utilisateur que l'espace de travail de GitHub, comme le recommande Playwright.
+      options: --user 1001
+    strategy:
+      fail-fast: false
+      matrix:
+        projet: [chromium, firefox, webkit, mobile]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
+      # En CI, le serveur des tests sert ce dist/ sans le reconstruire (playwright.config.ts).
+      - run: npm run test:e2e -- --project=${{ matrix.projet }}
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: traces-${{ matrix.projet }}
+          path: test-results/
+          retention-days: 7
+
+  deploiement:
+    name: Déploiement
+    needs: [build, vitest, playwright]
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # Un seul déploiement à la fois ; un déploiement commencé n'est jamais annulé.
+    concurrency:
+      group: deploiement-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
+      # wrangler (MIT OR Apache-2.0) : outil de CI seulement, absent de package.json,
+      # jamais livré au navigateur. Configuration : wrangler.jsonc.
+      - uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.156.0'
+          command: deploy
+
+  production:
+    name: Vérifications en production
+    needs: deploiement
+    # Activé une fois le domaine rattaché : variable de dépôt PRODUCTION_ACTIVE = true.
+    if: vars.PRODUCTION_ACTIVE == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.52.0-noble
+      options: --user 1001
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - run: npm ci
+      - run: npm run test:prod
+      - if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: traces-production
+          path: test-results/
+          retention-days: 7

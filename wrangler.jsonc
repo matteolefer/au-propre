@@ -1,0 +1,19 @@
+// Hébergement sur Cloudflare Workers : assets statiques seuls, sans script.
+// Déployé par la CI (.github/workflows/deploiement.yml) avec `wrangler deploy`.
+// Le domaine au-propre.fr est rattaché à la main dans le tableau de bord
+// (docs/LANCEMENT.md) : le jeton de déploiement n'a aucun droit sur la zone.
+{
+  "name": "au-propre",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    // Page 404 du site, servie avec le statut 404.
+    "not_found_handling": "404-page",
+    // /regles redirige vers /regles/ (fichiers regles/index.html).
+    "html_handling": "auto-trailing-slash"
+  },
+  // Aucune autre adresse que au-propre.fr : ni sous-domaine workers.dev (qui
+  // porte le nom du compte), ni adresses d'aperçu.
+  "workers_dev": false,
+  "preview_urls": false
+}

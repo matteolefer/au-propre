@@ -7,10 +7,10 @@ import '../styles/pages.css';
 const page = PAGES_DU_SITE.mentionsLegales;
 ---
 
-<Base titre={page.titre} description={page.description} chemin={page.chemin}>
+<Base titre={page.titre} description={page.description} chemin={page.chemin} indexer={false}>
   <div class="p-page p-page--document">
     <h1 class="p-titre">Mentions légales</h1>
-    <p class="p-maj">Mises à jour le 31&nbsp;octobre 2026.</p>
+    <p class="p-maj">Mises à jour le 1er&nbsp;novembre 2026.</p>
 
     <section class="p-section" aria-labelledby="editeur">
       <h2 id="editeur">Éditeur</h2>
@@ -20,13 +20,15 @@ const page = PAGES_DU_SITE.mentionsLegales;
         <dt>Adresse</dt>
         <dd><ValeurSite valeur={SITE.domaineDefinitif ? SITE.url.replace('https://', '') : A_COMPLETER} /></dd>
         <dt>Éditeur</dt>
-        <dd><ValeurSite valeur={SITE.editeur.nom} /></dd>
-        <dt>Statut</dt>
         <dd><ValeurSite valeur={SITE.editeur.statut} /></dd>
+        <dt>Anonymat</dt>
+        <dd>
+          L’éditeur garde l’anonymat, comme le permet l’<a class="p-source" href={SITE.editeur.anonymat.url}
+            >{SITE.editeur.anonymat.libelle}</a
+          >. Ses éléments d’identification ont été communiqués à l’hébergeur.
+        </dd>
         <dt>Contact</dt>
         <dd><ValeurSite valeur={SITE.contact} email /></dd>
-        <dt>Directeur de la publication</dt>
-        <dd><ValeurSite valeur={SITE.directeurPublication} /></dd>
       </dl>
     </section>
 
@@ -42,6 +44,9 @@ const page = PAGES_DU_SITE.mentionsLegales;
         <dt>Site</dt>
         <dd><a href={SITE.hebergeur.url}>{SITE.hebergeur.url.replace('https://', '')}</a></dd>
       </dl>
+      <p class="p-aide">
+        Source&nbsp;: <a class="p-source" href={SITE.hebergeur.source.url}>{SITE.hebergeur.source.libelle}</a>.
+      </p>
     </section>
 
     <section class="p-section" aria-labelledby="independance">

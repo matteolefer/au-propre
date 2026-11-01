@@ -12,12 +12,15 @@ import { defineConfig, devices } from '@playwright/test';
 // Port propre aux tests : `npm run dev` occupe 4321 (port par défaut d'Astro), et
 // Playwright réutiliserait ce serveur de développement, barre d'outils d'Astro comprise.
 const PORT = 4329;
+// En CI, le site est construit une seule fois (job « build ») : les tests portent
+// sur le dist/ qui sera déployé, servi tel quel.
+const CI = !!process.env['CI'];
 
 export default defineConfig({
   testDir: 'tests/e2e',
   testMatch: '*.spec.ts',
   fullyParallel: true,
-  forbidOnly: !!process.env['CI'],
+  forbidOnly: CI,
   retries: 0,
   reporter: [['list']],
   timeout: 60_000,
@@ -29,18 +32,19 @@ export default defineConfig({
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
     { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    // Pas de WebKit : sous macOS 12, Playwright 1.52 n'a qu'un ancien WebKit
-    // qui refuse son protocole (« Unknown setting »). Safari se teste à la main
-    // en attendant une machine plus récente.
+    // WebKit en CI seulement (Linux) : sous macOS 12, Playwright 1.52 n'a qu'un
+    // ancien WebKit qui refuse son protocole (« Unknown setting »). Safari se
+    // teste aussi à la main (docs/LANCEMENT.md).
+    ...(CI ? [{ name: 'webkit', use: { ...devices['Desktop Safari'] } }] : []),
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
     // --ignore-lock : quand Astro détecte un agent (assistant de code), il lance
     // sinon le serveur en arrière-plan et rend la main, ce que Playwright prend
     // pour un échec. Cette option le garde au premier plan.
-    command: `npx astro build && npx astro preview --port ${PORT} --ignore-lock`,
+    command: `${CI ? '' : 'npx astro build && '}npx astro preview --port ${PORT} --ignore-lock`,
     url: `http://localhost:${PORT}/verifier/`,
-    reuseExistingServer: !process.env['CI'],
+    reuseExistingServer: !CI,
     timeout: 180_000,
   },
 });

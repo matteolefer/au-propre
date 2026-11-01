@@ -1,10 +1,10 @@
 # Avancement — Au propre
 
-Mis à jour le 31 octobre 2026. Objectif : V1 en ligne vers le 10 novembre 2026, dépôt des dossiers au plus tard le 3 décembre 2026 à 23 h 59.
+Mis à jour le 1er novembre 2026. Objectif : V1 en ligne vers le 10 novembre 2026, dépôt des dossiers au plus tard le 3 décembre 2026 à 23 h 59.
 
-**Où en est le projet** : les 20 règles (R00 à R19), le vérificateur complet, les pages du site et l'identité Au propre sont faits. Toutes les pages suivent l'échelle de l'accueil (validé le 31 octobre). Version `v0.9.0` étiquetée sur GitHub. Reste l'étape 6, la mise en ligne, qui attend d'abord les informations de l'éditeur (voir « Points en suspens »).
+**Où en est le projet** : les 20 règles (R00 à R19), le vérificateur complet, les pages du site et l'identité Au propre sont faits. Toutes les pages suivent l'échelle de l'accueil (validé le 31 octobre). Version `v0.9.0` étiquetée sur GitHub. L'étape 6, la mise en ligne sur https://au-propre.fr, est codée et testée en local. Elle attend les réglages à faire à la main dans Cloudflare et GitHub : voir la checklist `docs/LANCEMENT.md`.
 
-**Tests** : 519 tests Vitest, 194 tests Playwright (4 ignorés exprès en mobile), tous au vert.
+**Tests** : 523 tests Vitest, 209 tests Playwright (4 ignorés exprès en mobile), tous au vert en local. En CI, WebKit s'y ajoute. 11 tests de production (`npm run test:prod`, Chromium et Firefox), à lancer une fois le domaine rattaché.
 
 ## Étape 1 : terminée
 
@@ -13,7 +13,7 @@ Socle technique, extraction du PDF et cinq premières règles. Pas encore d'inte
 **Projet**
 
 - Astro 7 (site statique) avec un îlot React 19 prévu pour le vérificateur, TypeScript 6 en mode `strictest`, Vitest 5.
-- Dépôt Git : https://github.com/matteolefer/au-propre (public), branche `main`. Renommé depuis `RAEP-check` (l'ancienne adresse redirige).
+- Dépôt Git : https://github.com/matteolefer/au-propre (privé), branche `main`.
 - Commandes : `npm test`, `npm run test:e2e` (Playwright, construit et sert le site), `npm run check` (types), `npm run build`, `npm run dev`.
 
 **Variables CSS** (`src/styles/tokens.css`)
@@ -155,7 +155,7 @@ Pages de contenu, référencement, inscription facultative, sources du CPE, PDF 
 
 **Identité** (`src/content/site.ts`, seule source de vérité)
 
-- Nom, sous-titre, domaine provisoire `https://au-propre.pages.dev` (repris par `astro.config.mjs` pour `site`), logo (voir « Identité visuelle »), éditeur, contact, directeur de la publication, hébergeur (Cloudflare, Inc., adresse vérifiée sur sa politique de confidentialité), formulaire d'inscription, titres et descriptions des pages.
+- Nom, sous-titre, domaine `https://au-propre.fr` (repris par `astro.config.mjs` pour `site`), logo (voir « Identité visuelle »), éditeur, contact, directeur de la publication, hébergeur (Cloudflare, Inc., adresse vérifiée sur sa politique de confidentialité), formulaire d'inscription, titres et descriptions des pages.
 - `champsACompleter()` liste les champs « à compléter », affichés surlignés sur les pages tant qu'ils ne sont pas fournis.
 
 **Pages** (`src/pages/`, styles dans `src/styles/pages.css`)
@@ -472,6 +472,77 @@ L'échelle de l'accueil s'applique désormais aux pages des règles, de confiden
 - En 56 px dans 680 px, le titre du vérificateur tient sur 2 lignes et celui des règles sur 3.
 - Dans les contrôles conformes du rapport, les sources passent souvent sur 2 lignes (448 px en 14 px).
 
+## Étape 6 : codée, mise en ligne en attente
+
+Mise en ligne sur https://au-propre.fr, sur Cloudflare Workers. Le code et les tests sont faits ; les réglages à faire à la main et les vérifications en ligne sont dans `docs/LANCEMENT.md`.
+
+**Déploiement** (`wrangler.jsonc`, `.github/workflows/deploiement.yml`)
+
+- Worker sans script, assets statiques de `dist/` :
+  - page 404 servie avec le statut 404 (`not_found_handling: "404-page"`) ;
+  - `/regles` redirigé vers `/regles/` (`html_handling: "auto-trailing-slash"`) ;
+  - ni sous-domaine workers.dev (qui porte le nom du compte) ni adresses d'aperçu.
+- GitHub Actions, sur Ubuntu 24.04 et Node 24 (`.node-version`) :
+  - `build` : `astro check`, construction, contrôle du site livré, `dist/` publié comme artefact ;
+  - `vitest` ;
+  - `playwright` : Chromium, Firefox, WebKit et mobile, dans l'image officielle `mcr.microsoft.com/playwright:v1.52.0-noble` (navigateurs déjà installés, aucun `playwright install`), sur le même `dist/` ;
+  - `deploiement` : seulement sur `main`, si tout est vert ; `wrangler deploy` (wrangler 4.156.0, épinglé) ;
+  - `production` : `npm run test:prod` après le déploiement, si la variable `PRODUCTION_ACTIVE` vaut `true`.
+- Actions épinglées par empreinte de commit ; droits du jeton GitHub limités à la lecture.
+- `playwright.config.ts` : projet `webkit` en CI seulement ; en CI, le serveur des tests sert le `dist/` fourni sans le reconstruire.
+
+**Identité définitive** (`src/content/site.ts`)
+
+- `url: 'https://au-propre.fr'`, `domaineDefinitif: true` ; `champsACompleter()` renvoie une liste vide (vérifié par un test).
+- Éditeur : « Particulier, à titre non professionnel », anonyme selon l'article 1-1, II de la LCEN (créé par la loi n° 2024-449, art. 48 ; texte relu sur Légifrance). Plus de nom ni de directeur de la publication.
+- Contact : contact@au-propre.fr. Formulaire Brevo renseigné : l'encart et la section de la politique de confidentialité s'affichent.
+- Hébergeur : raison sociale, adresse et téléphone repris de la politique de confidentialité de Cloudflare (version du 4 novembre 2025), source affichée sous le bloc.
+
+**Pages**
+
+- Mentions légales : ligne « Anonymat » avec le lien vers la LCEN, plus de directeur de la publication, source de l'hébergeur. Page en `noindex`, sans canonique, retirée du sitemap (`PAGES_DU_SITE.mentionsLegales.indexer`, `estIndexee()`). robots.txt ne la bloque pas, pour que le `noindex` soit lu.
+- Confidentialité :
+  - « Si vous nous écrivez » : routage d'e-mails de Cloudflare, boîte Gmail, réponses par Brevo, conservation de 12 mois au plus après le dernier échange, serveurs hors de l'UE ;
+  - « Statistiques de fréquentation » : affichée seulement quand le jeton de la balise est renseigné. Sans cookie ni stockage, d'après la page Web Analytics de Cloudflare citée ; aucune statistique sur le vérificateur.
+
+**Statistiques** : Cloudflare Web Analytics, balise ajoutée par `Base.astro` sur toutes les pages sauf `/verifier/` (prop `statistiques={false}`), seulement si `SITE.statistiques.jeton` est renseigné.
+
+**En-têtes**
+
+- Politique de sécurité du contenu native d'Astro 7 (`security.csp`, sans dépendance) : balise meta avec les empreintes des scripts et styles d'Astro. `script-src 'self'` et le script de Cloudflare ; `connect-src 'self' https://cloudflareinsights.com` ; `img-src` avec `blob:` pour les aperçus ; `style-src-attr 'unsafe-inline'` pour les zones surlignées de l'accueil ; `object-src 'none'`.
+- `public/_headers` : `frame-ancestors 'none'`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, HSTS d'un an (sans `includeSubDomains` ni `preload`), cache immuable sur `/_astro/*`.
+- Le commentaire HTML du thème clair n'est plus livré.
+
+**Site livré** : `outils/verifier-livraison.mjs` (`npm run verifier:livraison`, lancé par la CI) échoue sur :
+
+- une balise `author` ou `generator`, un commentaire HTML autre que les marqueurs vides d'Astro ;
+- une clé inattendue dans le manifeste, des métadonnées dans un PNG ou un SVG ;
+- « à compléter », une adresse provisoire, l'ancien nom du projet.
+
+En local, il cherche aussi les noms lus dans `git config`, le compte de l'ordinateur et `NOMS_INTERDITS`, sans jamais les écrire. Le site livré n'en contient aucun.
+
+**Anciens noms** : le dépôt distant pointe sur `au-propre.git` ; plus aucune mention de l'adresse provisoire ni de l'ancien nom dans les fichiers suivis.
+
+**Tests**
+
+- Vitest (523) : identité définitive, éditeur anonyme, hébergeur sourcé, pages indexées, jeton de statistiques.
+- Playwright (209 en local, 4 ignorés exprès en mobile) :
+  - `securite.spec.ts` : aucune violation de la politique sur chaque page, pendant le parcours complet et à l'impression ; un script en ligne imprévu et un `fetch` vers un autre site sont bloqués et signalés ;
+  - `reseau.spec.ts` : sur les pages de contenu, seule la balise de statistiques vient d'ailleurs ; aucun script tiers sur le vérificateur ;
+  - `pages.spec.ts` : `noindex` des mentions légales, sitemap, LCEN, contact, sections de la politique de confidentialité.
+  - Branche « statistiques actives » vérifiée avec un faux jeton temporaire : balise présente partout sauf sur `/verifier/`, aucune violation.
+- Production (`tests/production/production.spec.ts`, 11 tests, Chromium et Firefox) :
+  - aucun `Set-Cookie` sur les pages, la 404, les fichiers, le sitemap et les redirections, et aucun cookie dans le navigateur après un parcours ;
+  - vraie 404 ; `/_headers` non servi ;
+  - redirections (barre finale, https, www vers le domaine) ; sitemap et robots ;
+  - en-têtes de sécurité ;
+  - aucun script `/cdn-cgi/` injecté, lien `mailto:` intact ;
+  - vraie balise de statistiques sans violation ni cookie ;
+  - analyse de 01 et 04 sans aucune requête hors du domaine ; impression.
+  - La partie navigateur a été essayée sur le site servi en local ; le reste attend le domaine.
+
+**Captures relues** (mentions légales, confidentialité, 1280 et 390 px). Défaut corrigé : le « er » en exposant de « 1er novembre » créait une sixième taille de texte (11,7 px), relevée par `echelle.spec.ts`.
+
 ## Décisions prises
 
 | Date | Décision | Raison |
@@ -481,7 +552,7 @@ L'échelle de l'accueil s'applique désormais aux pages des règles, de confiden
 | 30/10/2026 | Couleurs ajustées pour le contraste AA (vérifié par `tests/styles/contraste.test.ts`) | Voir ci-dessous |
 | 30/10/2026 | Un seul accent : la palette d'accents décoratifs de DESIGN.md (corail, jaune, bleu ciel, nuit) n'est pas reprise, ni la police à empattements. *En partie remplacé le 31/10 : titres h1 et h2 en Source Serif 4* | CLAUDE.md l'emporte sur DESIGN.md |
 | 30/10/2026 | Exception de licence pour des dépendances indirectes de build : sharp / libvips (LGPL-3.0, via Astro), lightningcss (MPL-2.0, via Vite), BlueOak-1.0.0, CC0-1.0 (CLAUDE.md, règle 6) | Outils exécutés au build uniquement, jamais livrés au navigateur. Le site livré ne contient que notre code, React (MIT) et pdf.js (Apache-2.0). Aucune GPL ni AGPL |
-| 30/10/2026 | Node 24 LTS, installé avec nvm ; `.node-version` = 24 pour Cloudflare Pages | Vitest 5 ne prend pas en charge Node 23. Homebrew ne peut plus compiler Node 24 sur macOS 12 ; le binaire officiel, que nvm télécharge, fonctionne |
+| 30/10/2026 | Node 24 LTS, installé avec nvm ; `.node-version` = 24 pour Cloudflare Pages. *Depuis le 01/11/2026, `.node-version` sert à la CI (setup-node) : le site est construit par GitHub Actions et déployé sur Workers* | Vitest 5 ne prend pas en charge Node 23. Homebrew ne peut plus compiler Node 24 sur macOS 12 ; le binaire officiel, que nvm télécharge, fonctionne |
 | 30/10/2026 | Le champ `police` garde le nom PostScript sans préfixe de sous-ensemble (`LiberationSans-Bold`, `Carlito-Regular`) | Le rapprochement avec une famille (Arial, substituts) relève de R05 |
 | 30/10/2026 | Aucune police web embarquée pour l'instant (pile système, Inter si installée localement). *Remplacé le 31/10 : Source Serif 4 (OFL-1.1) est servie par le site pour les titres ; le texte courant garde Inter si installée, sinon la police système* | Inter est sous OFL-1.1, licence absente de la liste de CLAUDE.md |
 | 30/10/2026 | R05 : la police majoritaire décide ; toute autre police utilisée sur du texte donne un avertissement ; les polices de puces (Symbol, Wingdings, OpenSymbol…) sont ignorées ; l'italique d'Arial est accepté ; Arial Narrow et Arial Black donnent une erreur (validé) | Lecture de SPEC (« police majoritaire ») sans laisser passer un passage dans une autre police, et sans fausse alerte sur les listes à puces |
@@ -502,12 +573,12 @@ L'échelle de l'accueil s'applique désormais aux pages des règles, de confiden
 | 31/10/2026 | Playwright épinglé en 1.52.0 (Apache-2.0, développement) | Dernière version dont les navigateurs tournent sous macOS 12. Alerte `npm audit` (GHSA-7mvr-c777-76hp) : elle ne concerne que le téléchargement des navigateurs (`playwright install`), déjà en cache ici. Ne pas lancer `playwright install` sur un réseau non fiable ; mettre à jour en changeant de machine |
 | 31/10/2026 | `npm run test:e2e` = `PW_DISABLE_TS_ESM=1 playwright test`, imports en `.ts` dans `tests/e2e` | Le chargeur TypeScript de Playwright 1.52 se bloque sous Node 24 ; Node lit lui-même les fichiers .ts |
 | 31/10/2026 | Serveur des tests : `astro preview --ignore-lock` | Quand Astro 7 détecte un agent (assistant de code), `astro preview` passe en arrière-plan et rend la main ; Playwright croyait à un échec et laissait un serveur orphelin |
-| 31/10/2026 | Pas de test WebKit automatisé | Sous macOS 12, le WebKit de Playwright 1.52 refuse son protocole (« Unknown setting ») |
+| 31/10/2026 | Pas de test WebKit automatisé. *Remplacé le 01/11/2026 : WebKit en CI seulement, sous Linux* | Sous macOS 12, le WebKit de Playwright 1.52 refuse son protocole (« Unknown setting ») |
 | 31/10/2026 | Analyse impossible (scan) affichée en style neutre, pas en erreur | Un scan n'enfreint aucune règle (décision du 30/10 sur R00) |
 | 31/10/2026 | À l'impression, adresses des sources listées une fois à la fin | Répétées sous chaque contrôle, elles doublaient la longueur du rapport imprimé |
 | 31/10/2026 | Liens vers les sources dans un nouvel onglet | Quitter la page ferait perdre le rapport, qui n'est enregistré nulle part |
 | 31/10/2026 | Pas d'axe-core | Licence MPL-2.0, absente de la liste de CLAUDE.md ; accessibilité vérifiée par les tests clavier et focus, les contrastes et les captures |
-| 31/10/2026 | Nom du produit : « Au propre », sous-titre « Vérifiez votre dossier RAEP avant le dépôt » ; domaine provisoire `au-propre.pages.dev` ; identité centralisée dans `src/content/site.ts` | Décision de l'éditeur ; le domaine n'est pas encore réservé |
+| 31/10/2026 | Nom du produit : « Au propre », sous-titre « Vérifiez votre dossier RAEP avant le dépôt » ; domaine provisoire sur une adresse gratuite de Cloudflare ; identité centralisée dans `src/content/site.ts`. *Domaine remplacé le 01/11/2026 par au-propre.fr* | Décision de l'éditeur ; le domaine n'est pas encore réservé |
 | 31/10/2026 | Inscription par e-mail : lien vers un formulaire Brevo hébergé, ouvert sans paramètre ni référent ; encart masqué tant que l'adresse est vide (non bloquant) | Rien n'est saisi ni stocké sur le site ; l'e-mail ne peut pas être lié au dossier. Clôt le point en suspens « SPEC §4.5 contre hors périmètre » (CLAUDE.md précisé) |
 | 31/10/2026 | Conservation des adresses : jusqu'à l'envoi de l'annonce, puis suppression ; désinscription à tout moment | Finalité unique (proposée dans le plan de l'étape 5) |
 | 31/10/2026 | CPE : S10 et S11 pour R02, R03, R05 à R11 ; S11 pour R04, qui redevient une erreur ; S11 ajoutée à R15 et R16 ; R12 et R13 gardent S8 et S7 avec la mention « bonne pratique » | Le rapport du jury CPE 2026 confirme ces règles (p. 17 à 20) mais ne parle ni de pagination ni de couleur (CLAUDE.md, règle 5) |
@@ -518,7 +589,7 @@ L'échelle de l'accueil s'applique désormais aux pages des règles, de confiden
 | 31/10/2026 | Accent du site : bleu encre de la marque `#1E4A9A`, survol `#183B7B`, à la place du bleu de DESIGN.md (validé) | Un seul bleu, celui du logo (IDENTITE.md) ; meilleur contraste que `#0075de` |
 | 31/10/2026 | V1 en thème clair seulement : `logo-clair.svg`, `color-scheme: only light`, `theme-color` clair seul ; `logo-sombre.svg` et `#8CB4FF` gardés pour le thème sombre (validé) | Un logo sombre sur un site resté clair serait illisible ; le `theme-color` sombre teinterait la barre du navigateur au-dessus d'une page claire |
 | 31/10/2026 | Logo à 32 px de haut (134 px de large). *Remplacé le même jour : 36 px (151 px de large)* | Minimum de 120 px de large fixé par IDENTITE.md |
-| 31/10/2026 | `SITE.url` garde l'adresse provisoire, signalée « à compléter » par `domaineDefinitif: false` | Canonique, sitemap et image de partage exigent une adresse absolue valide |
+| 31/10/2026 | `SITE.url` garde l'adresse provisoire, signalée « à compléter » par `domaineDefinitif: false`. *Remplacé le 01/11/2026 : `https://au-propre.fr`, `domaineDefinitif: true`* | Canonique, sitemap et image de partage exigent une adresse absolue valide |
 | 31/10/2026 | Titres h1 et h2 en Source Serif 4 (OFL-1.1, exception à la règle 6) ; l'interdit vise la combinaison terre cuite, crème et serif, pas notre serif avec le bleu encre | Demande de l'éditeur : site trop froid ; police du logo |
 | 31/10/2026 | Encre `#37352F` et papier `#FBFAF7` sur tout le site ; panneau de l'exemple `#F2F5FB` ; logo à 36 px | Couleurs d'IDENTITE.md ; contrastes AA vérifiés |
 | 31/10/2026 | Jaune surligneur `#FFF1A8` : couleur fonctionnelle (zones en faute), jamais en titre ni en décoration (IDENTITE.md, CLAUDE.md) | Situer un défaut sur la page sans ajouter d'accent |
@@ -529,6 +600,15 @@ L'échelle de l'accueil s'applique désormais aux pages des règles, de confiden
 | 31/10/2026 | Vérificateur dans la même colonne de 680 px, découpage et rapport compris | Le rapport tenait déjà dans environ 600 px ; le découpage passe de 5 à 3 aperçus par ligne, sans autre changement. Pas besoin d'une colonne plus large |
 | 31/10/2026 | Sur mobile, le chapo du vérificateur reste en 16 px | En 20 px (6 lignes), le premier écran ne montrait plus que le choix du concours |
 | 31/10/2026 | Captures d'écran hors du dépôt (`docs/design/`, `Capture d'écran*`, `Screenshot*` dans `.gitignore`) | Dépôt public ; les références de design sont des pages de Notion |
+| 01/11/2026 | Hébergement sur Cloudflare Workers (assets statiques, sans script) et non Pages ; CLAUDE.md mis à jour (validé) | La doc de Pages dit « Start new projects with Workers ». Un projet Pages en upload direct ne peut jamais être relié à Git ; un Worker peut l'être plus tard (Workers Builds). workers.dev et aperçus désactivés |
+| 01/11/2026 | Jeton de déploiement limité à Account › Workers Scripts › Edit ; domaine rattaché à la main | Le jeton n'a aucun droit sur la zone ni sur le DNS |
+| 01/11/2026 | wrangler en CI seulement (wrangler-action, version épinglée), absent de `package.json` | Aucune dépendance ajoutée au projet ; rien de livré au navigateur |
+| 01/11/2026 | Playwright 1.52.0 en CI dans l'image officielle `v1.52.0-noble`, sur Ubuntu 24.04 épinglé | Navigateurs déjà installés : pas de téléchargement (GHSA-7mvr-c777-76hp). Même version qu'en local |
+| 01/11/2026 | Cloudflare Web Analytics, balise manuelle, sur toutes les pages sauf le vérificateur (validé) | Sur la page où le PDF est lu, aucun script tiers : la promesse reste vérifiable par un test |
+| 01/11/2026 | Politique de sécurité du contenu d'Astro (balise meta) et `public/_headers` | Native, sans dépendance. `connect-src` limite les requêtes au site et aux statistiques : un envoi vers un autre site est bloqué (testé) |
+| 01/11/2026 | Éditeur anonyme (LCEN, art. 1-1, II), sans nom ni directeur de la publication ; mentions légales en `noindex` (validé) | Particulier éditant à titre non professionnel ; identité connue de l'hébergeur |
+| 01/11/2026 | E-mails de contact conservés le temps de répondre, puis 12 mois au plus après le dernier échange (validé) | Couvre une question reposée d'une session à l'autre |
+| 01/11/2026 | « 1er » sans exposant dans les dates | L'exposant ajoutait une sixième taille de texte à l'échelle |
 
 **Couleurs ajustées** (30/10). *En partie remplacé le 31/10 : le bleu de DESIGN.md (`#0075de`, `#005fb8`, `#e6f3fe`) a laissé la place au bleu encre `#1E4A9A` et à sa teinte `#E8EEF8`, et le fond `#f6f5f4` au papier `#FBFAF7` (voir « Identité visuelle » et « Un site plus chaleureux »). Le texte secondaire `#615d59` et les couleurs d'état restent en vigueur.*
 
@@ -548,19 +628,18 @@ L'échelle de l'accueil s'applique désormais aux pages des règles, de confiden
 
 ## Points en suspens
 
-**Bloquant pour la mise en ligne** (dans `src/content/site.ts`)
+**Bloquant pour la mise en ligne** : les réglages à faire à la main, listés dans `docs/LANCEMENT.md` (jeton d'API, secrets GitHub, réglages de la zone, domaine personnalisé, redirection de www, statistiques).
 
-- Éditeur : nom et statut (particulier, entreprise individuelle avec SIRET…).
-- Adresse e-mail de contact.
-- Directeur de la publication.
-- Domaine définitif (`SITE.url`, puis `domaineDefinitif: true`) : il fixe les adresses canoniques, le sitemap et l'image de partage.
+**À l'attention de l'éditeur** (non tranché par le code)
+
+- Anonymat (article 1-1, II de la LCEN) : il suppose que l'hébergeur a reçu nom, prénoms, adresse et téléphone. Remplir le profil du compte Cloudflare (`docs/LANCEMENT.md`).
+- RGPD, article 13 : il demande « l'identité et les coordonnées du responsable du traitement » dès qu'il y a collecte (e-mails de contact, inscription). L'anonymat de la LCEN couvre les mentions légales, pas forcément cette obligation. Consigne suivie : aucun nom sur le site. À faire vérifier en cas de doute.
 
 **Non bloquant**
 
-- Adresse du formulaire Brevo (`SITE.inscription.formulaireUrl`) : l'encart et la section de la politique de confidentialité apparaîtront d'eux-mêmes. Régler dans Brevo la case de consentement et la double confirmation.
-- Brevo : vérifier sur son site le lieu d'hébergement des données avant de le mentionner. Le téléchargement de sa politique a été refusé par l'outil de permissions ; la page ne dit que « société française ».
+- Jeton de la balise de statistiques (`SITE.statistiques.jeton`) : tant qu'il est vide, aucune balise n'est ajoutée et la politique de confidentialité ne montre pas la section « Statistiques de fréquentation ».
+- Brevo : lieu d'hébergement des données non vérifié (sa politique est une page en JavaScript, illisible par l'outil) ; la page ne dit que « société française ». Le mentionner seulement avec une source.
 - S10 : la page refuse la lecture automatique (403). Les sources du CPE reposent sur la décision validée et sur le rapport S11, relu.
-- Le dépôt GitHub s'appelle désormais `au-propre`. L'adresse du dépôt distant de cette copie de travail pointe encore vers `RAEP-check`, qui redirige : la mettre à jour avec `git remote set-url origin https://github.com/matteolefer/au-propre.git`.
 
 **Fixtures à ajouter** (voir `tests/fixtures/README.md`)
 
@@ -574,10 +653,9 @@ L'échelle de l'accueil s'applique désormais aux pages des règles, de confiden
 - Un PDF partiellement scanné (quelques pages sans texte dans les parties) n'est pas encore traité : R00 ne bloque que si le document entier est sans texte, et les règles de mise en page ne disent « contrôle impossible » que si toutes les pages des parties sont sans texte.
 - R16 et R15 ne lisent que le texte : un rapport ou un CV joint sous forme d'image (scan) n'est pas détecté. R17 ne détecte pas les QR codes.
 - R12 ne reconnaît que les numéros en chiffres arabes, seuls ou avec « Page », « - n - », « n/N » ou « n sur N », sur la première ou la dernière ligne de la page.
-- Le Worker est testé dans Chromium et Firefox par Playwright. Safari n'est testé ni automatiquement ni à la main : à essayer dans Safari (OffscreenCanvas dans un Worker, glisser-déposer, impression) avant la mise en ligne.
+- Le Worker est testé dans Chromium et Firefox par Playwright en local, et dans WebKit en CI. Safari reste à essayer à la main (OffscreenCanvas dans un Worker, glisser-déposer, impression) : `docs/LANCEMENT.md`.
 - Un PDF lâché sur la page avant l'hydratation de l'îlot (connexion très lente) ouvrirait le PDF dans l'onglet ; les champs, eux, restent désactivés jusqu'à l'hydratation.
-- Le build Cloudflare Pages avec Node 24 reste à vérifier au premier déploiement.
-- Après le déploiement, vérifier qu'aucun cookie n'est posé (en-têtes `Set-Cookie`), comme l'affirme la politique de confidentialité.
+- L'absence de cookie (`Set-Cookie`, cookies du navigateur), la 404, les redirections et les en-têtes ne se vérifient qu'en ligne : `npm run test:prod`.
 - Le cas « PDF protégé » est désormais testé sur une vraie fixture chiffrée en RC4 ; Word et LibreOffice chiffrent en AES, que pdf.js lit aussi.
 
 **À vérifier dans les textes officiels** (d'après `docs/Dossier RAEP – … règles officielles,.md`)
@@ -587,9 +665,9 @@ L'échelle de l'accueil s'applique désormais aux pages des règles, de confiden
 
 ## Étape suivante prévue
 
-**Étape 6 (à planifier en mode Plan, dans une nouvelle session) : mise en ligne**
+**Fin de l'étape 6 : mise en ligne** (checklist `docs/LANCEMENT.md`)
 
-1. Renseigner les champs bloquants de `src/content/site.ts`.
-2. Essai manuel dans Safari (vérificateur, impression, pages de contenu).
-3. Lighthouse accessibilité ≥ 95 sur chaque page.
-4. Déploiement sur Cloudflare Pages ; vérifier le build Node 24, les en-têtes (aucun `Set-Cookie`), la 404 et le sitemap en ligne.
+1. Réglages à la main : jeton d'API, secrets GitHub, profil du compte Cloudflare, réglages de la zone, site Web Analytics (jeton de la balise à reporter dans `src/content/site.ts`).
+2. Commit et push sur `main` : premier déploiement par la CI, avec WebKit.
+3. Domaine personnalisé, redirection de www, variable `PRODUCTION_ACTIVE`, puis `npm run test:prod`.
+4. Vérifications à la main : Safari, Lighthouse, Search Console, e-mails, statistiques côté serveur.

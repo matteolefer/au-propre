@@ -4,10 +4,35 @@ import react from '@astrojs/react';
 import { SITE } from './src/content/site.ts';
 
 export default defineConfig({
-  // Adresse du site (provisoire tant que le domaine n'est pas réservé) : URL canoniques, sitemap.
+  // Adresse du site : URL canoniques, sitemap, image de partage.
   site: SITE.url,
   output: 'static',
   integrations: [react()],
+  security: {
+    // Politique de sécurité du contenu, native dans Astro : une balise meta par page,
+    // avec les empreintes des scripts et styles en ligne d'Astro. Les en-têtes
+    // qu'une balise meta ne peut pas porter (frame-ancestors…) sont dans public/_headers.
+    csp: {
+      directives: [
+        "default-src 'self'",
+        // Aperçus des pages du PDF : adresses blob: créées dans le navigateur.
+        "img-src 'self' data: blob:",
+        // Seule requête vers un autre site : les statistiques, absentes du vérificateur.
+        "connect-src 'self' https://cloudflareinsights.com",
+        "worker-src 'self'",
+        "object-src 'none'",
+        "base-uri 'self'",
+        "form-action 'self'",
+      ],
+      scriptDirective: {
+        resources: ["'self'", 'https://static.cloudflareinsights.com'],
+      },
+      styleDirective: {
+        // Attributs style de l'exemple de l'accueil, rendu au build : position des zones surlignées.
+        resources: ["'self'", { resource: "'unsafe-inline'", kind: 'attribute' }],
+      },
+    },
+  },
   vite: {
     // pdf.js est un module ES : le Worker du vérificateur doit l'être aussi.
     worker: { format: 'es' },

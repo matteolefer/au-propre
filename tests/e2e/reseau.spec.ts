@@ -4,6 +4,7 @@
  * vers le site lui-même, pour charger ses propres fichiers.
  */
 import { expect, test, type Request } from '@playwright/test';
+import { SITE, statistiquesActives } from '../../src/content/site.ts';
 import {
   cheminFixture,
   confirmerDecoupage,
@@ -40,6 +41,8 @@ test('aucune requête réseau ne transporte le PDF', async ({ page, baseURL }) =
 
   expect(refusees).toEqual([]);
   expect(websockets).toEqual([]);
+  // Pas de statistiques sur le vérificateur : aucun script venu d'un autre site.
+  await expect(page.locator('script[src^="http"]')).toHaveCount(0);
   for (const requete of requetes) {
     const url = new URL(requete.url());
     // Les aperçus des pages sont des adresses locales (blob:), créées dans le navigateur.
@@ -53,19 +56,32 @@ test('aucune requête réseau ne transporte le PDF', async ({ page, baseURL }) =
   for (const requete of apres) expect(requete.url(), requete.url()).toMatch(/\/_astro\/.+\.js$/);
 });
 
-test('pages de contenu : aucune requête vers un autre site (ni mesure d’audience, ni police externe)', async ({ page, baseURL }) => {
+test('pages de contenu : seule requête vers un autre site, la balise de statistiques (ni police externe, ni autre script)', async ({
+  page,
+  baseURL,
+}) => {
   const origine = new URL(baseURL ?? 'http://localhost:4329').origin;
   const requetes: Request[] = [];
   page.on('request', (requete) => requetes.push(requete));
+  // La balise de Cloudflare est servie vide : le test ne dépend pas du réseau et n'envoie rien.
+  await page.route(SITE.statistiques.script, (route) => route.fulfill({ contentType: 'text/javascript', body: '' }));
   for (const chemin of ['/', '/regles/', '/confidentialite/', '/mentions-legales/', '/page-inexistante/']) {
     await page.goto(chemin);
     await page.waitForLoadState('networkidle');
+    const balise = page.locator(`script[src="${SITE.statistiques.script}"]`);
+    if (statistiquesActives()) {
+      await expect(balise, chemin).toHaveAttribute('data-cf-beacon', JSON.stringify({ token: SITE.statistiques.jeton }));
+    } else {
+      await expect(balise, chemin).toHaveCount(0);
+    }
   }
   for (const requete of requetes) {
     if (/^(blob|data):/.test(requete.url())) continue;
-    expect(new URL(requete.url()).origin, requete.url()).toBe(origine);
     expect(requete.method(), requete.url()).toBe('GET');
+    if (requete.url() === SITE.statistiques.script) continue;
+    expect(new URL(requete.url()).origin, requete.url()).toBe(origine);
   }
-  // Les pages de contenu n'embarquent aucun script.
-  expect(requetes.filter((r) => r.resourceType() === 'script')).toEqual([]);
+  // Le seul script des pages de contenu est la balise de statistiques.
+  const scripts = requetes.filter((r) => r.resourceType() === 'script').map((r) => r.url());
+  expect(new Set(scripts)).toEqual(new Set(statistiquesActives() ? [SITE.statistiques.script] : []));
 });

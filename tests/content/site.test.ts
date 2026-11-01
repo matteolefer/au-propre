@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { A_COMPLETER, champsACompleter, inscriptionActive, PAGES_DU_SITE, SITE, titreDOnglet, urlAbsolue } from '../../src/content/site';
+import {
+  champsACompleter,
+  estIndexee,
+  inscriptionActive,
+  PAGES_DU_SITE,
+  SITE,
+  statistiquesActives,
+  titreDOnglet,
+  urlAbsolue,
+} from '../../src/content/site';
 import { erreursTypographiques } from '../helpers/typographie';
 
 describe('identité du site (src/content/site.ts)', () => {
@@ -8,22 +17,48 @@ describe('identité du site (src/content/site.ts)', () => {
     expect(SITE.sousTitre).toBe('Vérifiez votre dossier RAEP avant le dépôt');
   });
 
-  it('liste les champs encore « à compléter », bloquants pour la mise en ligne', () => {
-    const attendus = Object.entries({
-      domaine: SITE.domaineDefinitif ? SITE.url : A_COMPLETER,
-      'éditeur (nom)': SITE.editeur.nom,
-      'éditeur (statut)': SITE.editeur.statut,
-      contact: SITE.contact,
-      'directeur de la publication': SITE.directeurPublication,
-    })
-      .filter(([, valeur]) => valeur === A_COMPLETER)
-      .map(([nom]) => nom);
-    expect(champsACompleter()).toEqual(attendus);
+  it('aucun champ « à compléter » : le site peut être mis en ligne', () => {
+    expect(champsACompleter()).toEqual([]);
   });
 
-  it('le domaine reste à compléter tant que l’adresse est provisoire', () => {
-    expect(SITE.domaineDefinitif).toBe(false);
-    expect(champsACompleter()).toContain('domaine');
+  it('domaine définitif, sans www ni barre finale', () => {
+    expect(SITE.url).toBe('https://au-propre.fr');
+    expect(SITE.domaineDefinitif).toBe(true);
+  });
+
+  it('éditeur anonyme : aucun nom de personne, fondement légal cité (LCEN, art. 1-1, II)', () => {
+    expect(SITE.editeur).toEqual({
+      statut: 'Particulier, à titre non professionnel',
+      anonymat: {
+        libelle: 'article 1-1, II de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l’économie numérique (LCEN)',
+        url: 'https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000801164',
+      },
+    });
+    expect(SITE).not.toHaveProperty('directeurPublication');
+    expect(SITE.contact).toBe('contact@au-propre.fr');
+  });
+
+  it('hébergeur repris de la politique de confidentialité de Cloudflare, source citée', () => {
+    expect(SITE.hebergeur).toMatchObject({
+      nom: 'Cloudflare, Inc.',
+      adresse: '101 Townsend St., San Francisco, CA 94107, États-Unis',
+      telephone: '+1 (650) 319-8930',
+    });
+    expect(SITE.hebergeur.source.url).toBe('https://www.cloudflare.com/policies/privacy/');
+  });
+
+  it('mentions légales en noindex ; les autres pages publiques sont indexées', () => {
+    const nonIndexees = Object.values(PAGES_DU_SITE)
+      .filter((page) => !estIndexee(page))
+      .map((page) => page.chemin);
+    expect(nonIndexees).toEqual(['/mentions-legales/']);
+  });
+
+  it('statistiques actives seulement avec un jeton de balise valide', () => {
+    expect(statistiquesActives('')).toBe(false);
+    expect(statistiquesActives('pas-un-jeton')).toBe(false);
+    expect(statistiquesActives('0123456789abcdef0123456789abcdef')).toBe(true);
+    expect(SITE.statistiques.script).toBe('https://static.cloudflareinsights.com/beacon.min.js');
   });
 
   it('logo horizontal clair (IDENTITE.md), au moins 120 px de large à 36 px de haut', () => {

@@ -1,11 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
 import ValeurSite from '../components/pages/ValeurSite.astro';
-import { inscriptionActive, PAGES_DU_SITE, SITE } from '../content/site';
+import { inscriptionActive, PAGES_DU_SITE, SITE, statistiquesActives } from '../content/site';
 import '../styles/pages.css';
 
 const page = PAGES_DU_SITE.confidentialite;
 const inscription = inscriptionActive();
+// Section affichée seulement quand la balise de statistiques est réellement ajoutée aux pages.
+const statistiques = statistiquesActives();
 ---
 
 <Base titre={page.titre} description={page.description} chemin={page.chemin}>
@@ -15,7 +17,7 @@ const inscription = inscriptionActive();
       Votre dossier est analysé dans votre navigateur et n’est jamais envoyé. Cette page dit ce que le site
       traite, où, et ce qu’il ne collecte jamais.
     </p>
-    <p class="p-maj">Mise à jour le 31&nbsp;octobre 2026.</p>
+    <p class="p-maj">Mise à jour le 1er&nbsp;novembre 2026.</p>
 
     <section class="p-section" aria-labelledby="dossier">
       <h2 id="dossier">Votre dossier</h2>
@@ -40,9 +42,54 @@ const inscription = inscriptionActive();
       <ul class="p-prose">
         <li>Votre fichier, son contenu ou son nom.</li>
         <li>Le rapport, le concours ou la discipline choisis.</li>
-        <li>Aucun compte, aucun cookie déposé par le site, aucun outil de mesure d’audience ni de publicité.</li>
+        <li>
+          {
+            statistiques
+              ? 'Aucun compte, aucun cookie, aucune publicité.'
+              : 'Aucun compte, aucun cookie, aucun outil de mesure d’audience ni de publicité.'
+          }
+        </li>
       </ul>
     </section>
+
+    {
+      statistiques && (
+        <section class="p-section" aria-labelledby="statistiques">
+          <h2 id="statistiques">Statistiques de fréquentation</h2>
+          <div class="p-prose">
+            <p>
+              Pour savoir combien de personnes consultent le site, toutes ses pages sauf le vérificateur chargent la
+              mesure d’audience de Cloudflare, {SITE.statistiques.service}.
+            </p>
+            <p>
+              <strong>La page du vérificateur n’en charge aucune.</strong> Là où votre PDF est lu, aucun script venu
+              d’un autre site ne s’exécute.
+            </p>
+            <p>
+              Selon Cloudflare, cette mesure n’utilise ni cookie ni stockage dans votre navigateur, et ne cherche pas à
+              reconnaître les visiteurs par leur adresse IP ou leur navigateur (<a href={SITE.statistiques.sourceUrl}
+                >présentation de Web Analytics</a
+              >).
+            </p>
+            <dl>
+              <dt>Ce qui est compté</dt>
+              <dd>
+                Des totaux&nbsp;: pages vues et visites, page concernée, site de provenance, pays, type d’appareil,
+                navigateur, système d’exploitation, temps de chargement.
+              </dd>
+              <dt>Base légale</dt>
+              <dd>L’intérêt légitime de l’éditeur&nbsp;: connaître la fréquentation du site.</dd>
+              <dt>Prestataire</dt>
+              <dd>
+                Cloudflare, qui traite ces données selon <a href={SITE.hebergeur.politiqueUrl}
+                  >sa politique de confidentialité</a
+                >.
+              </dd>
+            </dl>
+          </div>
+        </section>
+      )
+    }
 
     <section class="p-section" aria-labelledby="hebergement">
       <h2 id="hebergement">Hébergement</h2>
@@ -56,6 +103,38 @@ const inscription = inscriptionActive();
           Cloudflare les traite selon{' '}
           <a href={SITE.hebergeur.politiqueUrl}>sa politique de confidentialité</a>.
         </p>
+      </div>
+    </section>
+
+    <section class="p-section" aria-labelledby="contact">
+      <h2 id="contact">Si vous nous écrivez</h2>
+      <div class="p-prose">
+        <p>
+          Les messages envoyés à <a href={`mailto:${SITE.contact}`}>{SITE.contact}</a> sont traités ainsi.
+        </p>
+        <dl>
+          <dt>Finalité</dt>
+          <dd>Vous répondre, et rien d’autre.</dd>
+          <dt>Base légale</dt>
+          <dd>L’intérêt légitime de l’éditeur&nbsp;: répondre à votre demande.</dd>
+          <dt>Acheminement</dt>
+          <dd>
+            Le routage d’e-mails de Cloudflare transmet votre message à une boîte {SITE.messagerie.boite}, chez{' '}
+            {SITE.messagerie.boiteSociete}, où il est conservé.
+          </dd>
+          <dt>Réponse</dt>
+          <dd>Envoyée depuis cette boîte par l’intermédiaire de {SITE.inscription.service}, qui achemine l’e-mail.</dd>
+          <dt>Conservation</dt>
+          <dd>{SITE.messagerie.conservation}</dd>
+          <dt>Hors de l’Union européenne</dt>
+          <dd>
+            Cloudflare indique stocker ses données principalement aux États-Unis et dans l’Espace économique
+            européen&nbsp;; {SITE.messagerie.boiteSociete} dispose de serveurs dans le monde entier. Voir leurs
+            politiques de confidentialité&nbsp;: <a href={SITE.hebergeur.politiqueUrl}>Cloudflare</a>,{' '}
+            <a href={SITE.messagerie.boitePolitiqueUrl}>{SITE.messagerie.boiteSociete}</a>,{' '}
+            <a href={SITE.inscription.politiqueUrl}>{SITE.inscription.service}</a>.
+          </dd>
+        </dl>
       </div>
     </section>
 

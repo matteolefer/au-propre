@@ -3,7 +3,7 @@
  * canoniques, balises de partage, typographie, 404, sitemap, robots.txt.
  */
 import { expect, test } from '@playwright/test';
-import { inscriptionActive, PAGES_DU_SITE, SITE } from '../../src/content/site.ts';
+import { estIndexee, inscriptionActive, PAGES_DU_SITE, SITE, statistiquesActives } from '../../src/content/site.ts';
 import { erreursTypographiques } from '../helpers/typographie.ts';
 import { allerAuRapport, attendreSansDefilementHorizontal, cheminFixture } from './outils.ts';
 
@@ -16,7 +16,13 @@ for (const infos of PAGES) {
     const titre = await page.title();
     expect(titre).toBe(infos.chemin === '/' ? infos.titre : `${infos.titre} – ${SITE.nom}`);
     await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', infos.description);
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${SITE.url}${infos.chemin}`);
+    if (estIndexee(infos)) {
+      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', `${SITE.url}${infos.chemin}`);
+      await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
+    } else {
+      await expect(page.locator('link[rel="canonical"]')).toHaveCount(0);
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
+    }
     await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', `${SITE.url}${infos.chemin}`);
     await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', titre);
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', `${SITE.url}/og-image.png`);
@@ -28,8 +34,9 @@ for (const infos of PAGES) {
     const logo = page.getByRole('banner').getByRole('link', { name: 'Au propre' }).locator('img');
     await expect(logo).toHaveAttribute('src', '/brand/logo-clair.svg');
     expect((await logo.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(120);
-    await expect(page.locator('meta[name="robots"]')).toHaveCount(0);
     await expect(page.locator('h1')).toHaveCount(1);
+    // Aucun champ « à compléter » ne reste sur le site mis en ligne.
+    await expect(page.locator('.p-a-completer')).toHaveCount(0);
     await expect(page.getByRole('contentinfo').getByText(INDEPENDANCE)).toBeVisible();
     await attendreSansDefilementHorizontal(page);
     expect(erreursTypographiques(await page.locator('body').innerText())).toEqual([]);
@@ -99,9 +106,12 @@ test('page inexistante : 404 soignée, non indexée', async ({ page }) => {
 test('sitemap.xml et robots.txt', async ({ request }) => {
   const sitemap = await (await request.get('/sitemap.xml')).text();
   const adresses = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
-  expect(adresses).toEqual(PAGES.map((infos) => `${SITE.url}${infos.chemin}`));
+  expect(adresses).toEqual(PAGES.filter(estIndexee).map((infos) => `${SITE.url}${infos.chemin}`));
+  expect(sitemap).not.toContain(PAGES_DU_SITE.mentionsLegales.chemin);
   const robots = await (await request.get('/robots.txt')).text();
   expect(robots).toContain(`Sitemap: ${SITE.url}/sitemap.xml`);
+  // Les mentions légales ne sont pas bloquées : un robot doit pouvoir y lire le noindex.
+  expect(robots).not.toContain('Disallow');
 });
 
 test('favicons, manifeste, image de partage et logo servis', async ({ request }) => {
@@ -117,11 +127,47 @@ test('favicons, manifeste, image de partage et logo servis', async ({ request })
   }
 });
 
-test('mentions légales : hébergeur, indépendance, champs à compléter signalés', async ({ page }) => {
+test('mentions légales : éditeur anonyme (LCEN), contact, hébergeur sourcé, indépendance', async ({ page }) => {
   await page.goto('/mentions-legales/');
-  await expect(page.getByRole('main')).toContainText('Cloudflare, Inc.');
-  await expect(page.getByRole('main')).toContainText('101 Townsend St., San Francisco');
-  await expect(page.getByRole('main')).toContainText(INDEPENDANCE.replace('Outil indépendant', 'Au propre est un outil indépendant'));
+  const principal = page.getByRole('main');
+  await expect(principal).toContainText('Particulier, à titre non professionnel');
+  await expect(principal).toContainText('L’éditeur garde l’anonymat');
+  await expect(principal.getByRole('link', { name: /article 1-1, II de la loi n° 2004-575/ })).toHaveAttribute(
+    'href',
+    SITE.editeur.anonymat.url,
+  );
+  await expect(principal).not.toContainText('Directeur de la publication');
+  await expect(principal.getByRole('link', { name: 'contact@au-propre.fr' })).toHaveAttribute('href', 'mailto:contact@au-propre.fr');
+  await expect(principal).toContainText('Cloudflare, Inc.');
+  await expect(principal).toContainText('101 Townsend St., San Francisco, CA 94107, États-Unis');
+  await expect(principal).toContainText('+1 (650) 319-8930');
+  await expect(principal.getByRole('link', { name: /politique de confidentialité de Cloudflare/ })).toHaveAttribute(
+    'href',
+    SITE.hebergeur.source.url,
+  );
+  await expect(principal).toContainText(INDEPENDANCE.replace('Outil indépendant', 'Au propre est un outil indépendant'));
+});
+
+test('confidentialité : statistiques hors du vérificateur, e-mails de contact, inscription', async ({ page }) => {
+  await page.goto('/confidentialite/');
+  // La section des statistiques n'apparaît que si la balise est réellement ajoutée aux pages.
+  const jamais = page.locator('#jamais').locator('..');
+  if (statistiquesActives()) {
+    const statistiques = page.locator('#statistiques').locator('..');
+    await expect(statistiques).toContainText('La page du vérificateur n’en charge aucune.');
+    await expect(statistiques).toContainText('ni cookie ni stockage dans votre navigateur');
+    await expect(statistiques.getByRole('link', { name: 'présentation de Web Analytics' })).toHaveAttribute(
+      'href',
+      SITE.statistiques.sourceUrl,
+    );
+    await expect(jamais).not.toContainText('mesure d’audience');
+  } else {
+    await expect(page.locator('#statistiques')).toHaveCount(0);
+    await expect(jamais).toContainText('aucun outil de mesure d’audience');
+  }
+  const contact = page.locator('#contact').locator('..');
+  await expect(contact).toContainText('Le temps de vous répondre, puis 12\u00A0mois au plus après le dernier échange.');
+  for (const nom of ['Cloudflare', 'Google', 'Brevo']) await expect(contact.getByRole('link', { name: nom })).toBeVisible();
 });
 
 test('encart d’inscription : absent sans adresse de formulaire, sinon lien direct sans paramètre', async ({ page }) => {

@@ -14,7 +14,9 @@
     "check": "astro check",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:e2e": "PW_DISABLE_TS_ESM=1 playwright test"
+    "test:e2e": "PW_DISABLE_TS_ESM=1 playwright test",
+    "test:prod": "PW_DISABLE_TS_ESM=1 playwright test --config playwright.production.config.ts",
+    "verifier:livraison": "node outils/verifier-livraison.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^7.1.2",

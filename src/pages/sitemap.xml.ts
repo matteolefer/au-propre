@@ -1,9 +1,10 @@
-/** Plan du site pour les moteurs de recherche : les pages publiques, sans la 404. */
+/** Plan du site pour les moteurs de recherche : les pages publiques indexées, sans la 404 ni les mentions légales. */
 import type { APIRoute } from 'astro';
-import { PAGES_DU_SITE, urlAbsolue } from '../content/site';
+import { estIndexee, PAGES_DU_SITE, urlAbsolue } from '../content/site';
 
 export const GET: APIRoute = () => {
   const urls = Object.values(PAGES_DU_SITE)
+    .filter(estIndexee)
     .map((page) => `  <url><loc>${urlAbsolue(page.chemin)}</loc></url>`)
     .join('\n');
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

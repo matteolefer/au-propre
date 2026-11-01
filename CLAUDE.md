@@ -33,8 +33,9 @@ Si une demande contredit l'un de ces documents, le signaler avant d'agir.
 - Un **îlot React** pour le vérificateur (dépôt du fichier, découpage des parties, rapport).
 - **pdfjs-dist** pour lire le PDF dans le navigateur, dans un **Web Worker** pour ne pas bloquer l'interface.
 - **CSS** : variables CSS générées à partir des tokens de `DESIGN.md`. Tailwind est autorisé si sa configuration reprend ces tokens ; pas de bibliothèque de composants au style par défaut reconnaissable.
-- **Tests** : Vitest pour les règles, Playwright pour un parcours de bout en bout.
-- **Hébergement** : Cloudflare Pages. La V1 est 100 % statique. En V1.5 : Cloudflare Pages Functions pour Stripe et l'appel à l'API Anthropic.
+- **Tests** : Vitest pour les règles, Playwright pour un parcours de bout en bout, et `npm run test:prod` sur le site en ligne.
+- **Hébergement** : Cloudflare Workers, avec assets statiques et sans script (`wrangler.jsonc`), sur https://au-propre.fr. GitHub Actions déploie seulement si tous les tests passent (`.github/workflows/deploiement.yml`). La V1 est 100 % statique. En V1.5 : un script Worker pour Stripe et l'appel à l'API Anthropic.
+- **En-têtes** : politique de sécurité du contenu produite par Astro (`security.csp`), autres en-têtes dans `public/_headers`. Toute requête vers un autre site doit y être autorisée explicitement.
 - **Secrets** : uniquement en variables d'environnement. `.env` est dans `.gitignore`.
 
 ## Architecture V1

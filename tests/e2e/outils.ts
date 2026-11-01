@@ -2,6 +2,7 @@
 import { expect, type Page } from '@playwright/test';
 import path from 'node:path';
 import type { Gravite } from '../../src/checker/types.ts';
+import { SITE } from '../../src/content/site.ts';
 
 export const DOSSIER_FIXTURES = path.resolve('tests/fixtures');
 
@@ -63,4 +64,31 @@ export async function controlesDuRapport(page: Page): Promise<{ id: string; grav
 export async function attendreSansDefilementHorizontal(page: Page): Promise<void> {
   const debordement = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
   expect(debordement).toBeLessThanOrEqual(0);
+}
+
+/**
+ * Relève les violations de la politique, signalées par le navigateur, dès le chargement de chaque page.
+ * `baliseReelle` : laisse passer le vrai script de statistiques (test de production seulement).
+ */
+export async function releverViolations(page: Page, { baliseReelle = false } = {}): Promise<() => Promise<string[]>> {
+  const console: string[] = [];
+  page.on('console', (message) => {
+    if (/Content[ -]Security[ -]Policy/i.test(message.text())) console.push(message.text());
+  });
+  await page.addInitScript(() => {
+    const violations: string[] = [];
+    (window as unknown as { __violations: string[] }).__violations = violations;
+    document.addEventListener('securitypolicyviolation', (evenement) => {
+      violations.push(`${evenement.effectiveDirective} : ${evenement.blockedURI}`);
+    });
+  });
+  // La balise de statistiques est servie vide : le test ne dépend pas du réseau
+  // et, en production, ne compte pas de fausses visites.
+  if (!baliseReelle) {
+    await page.route(SITE.statistiques.script, (route) => route.fulfill({ contentType: 'text/javascript', body: '' }));
+  }
+  return async () => [
+    ...(await page.evaluate(() => (window as unknown as { __violations?: string[] }).__violations ?? [])),
+    ...console,
+  ];
 }
