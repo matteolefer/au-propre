@@ -4,7 +4,7 @@
  * pendant le parcours complet du vérificateur, ni à l'impression.
  */
 import { expect, test } from '@playwright/test';
-import { PAGES_DU_SITE } from '../../src/content/site.ts';
+import { PAGES_DU_SITE, SITE } from '../../src/content/site.ts';
 import { allerAuRapport, cheminFixture, releverViolations } from './outils.ts';
 
 test('chaque page : politique de sécurité en balise meta, aucune violation', async ({ page }) => {
@@ -15,6 +15,8 @@ test('chaque page : politique de sécurité en balise meta, aucune violation', a
     const politique = await page.locator('meta[http-equiv="content-security-policy"]').getAttribute('content');
     expect(politique, chemin).toContain("default-src 'self'");
     expect(politique, chemin).toContain("connect-src 'self' https://cloudflareinsights.com");
+    // Seul le fichier exact de la balise est permis, pas tout le domaine de Cloudflare.
+    expect(politique, chemin).toMatch(/script-src [^;]*https:\/\/static\.cloudflareinsights\.com\/beacon\.min\.js[ ;]/);
     expect(politique, chemin).toContain("object-src 'none'");
     expect(await violations(), chemin).toEqual([]);
   }
@@ -61,4 +63,29 @@ test('la politique est appliquée : un script en ligne imprévu et une requête 
   expect(resultat).toEqual({ injecte: false, envoi: 'bloqué' });
   await expect.poll(async () => (await violations()).join('\n')).toMatch(/script-src/);
   await expect.poll(async () => (await violations()).join('\n')).toMatch(/connect-src/);
+});
+
+test('seul le fichier exact de la balise de statistiques peut s’exécuter : une balise ajoutée par Cloudflare est bloquée', async ({
+  page,
+}) => {
+  const violations = await releverViolations(page);
+  // Balise de la configuration automatique de Web Analytics, vue en ligne le 11/11/2026 (adresse versionnée).
+  const ajoutee = `${SITE.statistiques.script}/vce701823e78c4301a35b7e07294d87301792088814092`;
+  let demandee = false;
+  await page.route(ajoutee, (route) => {
+    demandee = true;
+    return route.fulfill({ contentType: 'text/javascript', body: 'window.__ajoutee = true;' });
+  });
+  await page.goto(PAGES_DU_SITE.verifier.chemin);
+  const chargee = await page.evaluate(async (adresse) => {
+    const script = document.createElement('script');
+    script.src = adresse;
+    const fin = new Promise((resoudre) => script.addEventListener('error', resoudre, { once: true }));
+    document.head.append(script);
+    await Promise.race([fin, new Promise((resoudre) => setTimeout(resoudre, 2000))]);
+    return (window as unknown as { __ajoutee?: boolean }).__ajoutee ?? false;
+  }, ajoutee);
+  expect(chargee).toBe(false);
+  expect(demandee).toBe(false);
+  await expect.poll(async () => (await violations()).join('\n')).toMatch(/script-src/);
 });

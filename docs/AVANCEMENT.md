@@ -633,6 +633,21 @@ Lancement visé sous 48 heures : pas de formulaire natif, le lien vers le formul
 - Correction : `src/checker/flux-iterables.ts` ajoute cet itérateur dans le Worker, seulement s'il manque. Il est testé sur un flux sans itérateur, comme dans Safari.
 - Sans le premier passage de WebKit, le vérificateur n'aurait pas fonctionné dans Safari 18 et antérieurs (Mac, iPhone).
 
+**En ligne** (étapes 18 à 21 faites par l'éditeur)
+
+- `curl -sI` :
+  - en-têtes de sécurité présents ;
+  - http vers https et www vers le domaine en 301, chaîne de requête conservée ;
+  - `/regles` vers `/regles/` en 307 ;
+  - vraie 404 ;
+  - aucun `Set-Cookie`.
+- `npm run test:prod` : 22 tests sur 24 passent. Bot Fight Mode ne pose pas de cookie, robots.txt est intact et l'adresse e-mail est en clair.
+- Les 2 échecs viennent de la configuration automatique de Web Analytics : Cloudflare ajoutait sa balise (`beacon.min.js/v…`) à toutes les pages, vérificateur compris. Elle n'était visible qu'avec l'en-tête Accept d'un navigateur ; le test du HTML ne l'envoyait pas.
+- Corrections :
+  - `script-src` n'autorise plus que le fichier exact de notre balise (doc de Web Analytics) : une balise ajoutée est bloquée, vérificateur compris. Un test e2e le montre.
+  - Les tests de production envoient l'en-tête Accept d'un navigateur.
+  - L'éditeur passe Web Analytics en « Enable with JS Snippet installation ».
+
 ## Décisions prises
 
 | Date | Décision | Raison |
@@ -707,6 +722,7 @@ Lancement visé sous 48 heures : pas de formulaire natif, le lien vers le formul
 | 11/11/2026 | Accueil : bénéfice d'abord, confidentialité sans le mot « navigateur » (demandé) | Langage courant pour des candidats non techniciens |
 | 11/11/2026 | Après l'envoi du rappel (1er décembre 2026, 18 h), l'encart ne propose plus que les nouveautés, bouton « M’inscrire » ; changement automatique (demandé) | Une inscription tardive ne doit pas attendre un rappel déjà parti. Calculé dans le navigateur : rien à redéployer à heure fixe |
 | 11/11/2026 | Complément `for await` sur `ReadableStream` dans le Worker (`flux-iterables.ts`), et cause des échecs inattendus écrite dans la console | Safari 18 ne parcourt pas les flux ; pdf.js 6 le suppose. La console reste sur l'ordinateur et aide à comprendre une erreur propre à un navigateur |
+| 11/11/2026 | `script-src` limité au fichier exact `https://static.cloudflareinsights.com/beacon.min.js` ; tests de production avec l'en-tête Accept d'un navigateur | En ligne, la configuration automatique de Web Analytics ajoutait sa balise à toutes les pages, vérificateur compris, seulement pour les navigateurs. La politique la bloque désormais, quel que soit le réglage |
 | 11/11/2026 | Jeton Web Analytics renseigné ; balise du site en `defer` (demandé) | Le tableau de bord propose `type="module"` : même script et même jeton, la balise déjà testée est gardée |
 
 **Couleurs ajustées** (30/10). *En partie remplacé le 31/10 : le bleu de DESIGN.md (`#0075de`, `#005fb8`, `#e6f3fe`) a laissé la place au bleu encre `#1E4A9A` et à sa teinte `#E8EEF8`, et le fond `#f6f5f4` au papier `#FBFAF7` (voir « Identité visuelle » et « Un site plus chaleureux »). Le texte secondaire `#615d59` et les couleurs d'état restent en vigueur.*

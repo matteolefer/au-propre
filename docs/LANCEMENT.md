@@ -38,7 +38,9 @@ S’ils sont retrouvés plus tard :
 
 **Statistiques** (Web Analytics)
 
-- [x] Add site `au-propre.fr`, en installation par extrait JS (JS Snippet), pas la configuration automatique (11/11/2026). Le test de production le vérifie : une seule balise par page, aucune sur le vérificateur.
+- [ ] Web Analytics › au-propre.fr › Manage site › **Enable with JS Snippet installation**. Le 11/11/2026, la configuration automatique était active : Cloudflare ajoutait sa propre balise (`beacon.min.js/v…`) à toutes les pages, vérificateur compris, et en double sur les autres. Ce n'était visible que pour une requête de navigateur (`Accept: text/html`).
+  - Depuis, la politique de sécurité n'autorise que le fichier exact `beacon.min.js` : une balise ajoutée est bloquée, mais une erreur s'affiche dans la console de chaque page tant que le réglage n'est pas changé.
+  - Le test de production le vérifie : une seule balise par page, aucune sur le vérificateur, aucune violation.
 - [x] Jeton de la balise reporté dans `SITE.statistiques.jeton` (`src/content/site.ts`) le 11/11/2026. Il est public : il figure dans le HTML de chaque page. La balise reste celle du site (`defer`), et non la variante `type="module"` du tableau de bord : même script, même jeton.
 
 ## 2. Premier déploiement et domaine
@@ -127,3 +129,5 @@ Le SEO des mentions légales et de la 404 est bas exprès : ces pages sont en `n
 | 11/11/2026 | Jeton, secrets GitHub, profil Cloudflare (étapes 1 à 8) | Faits par l’éditeur ; réglages de la zone introuvables |
 | 11/11/2026 | Rappel et nouveautés par e-mail, politique de confidentialité, site robuste sans réglages de zone, accueil | 527 tests Vitest ; 215 tests Playwright passent, 4 ignorés exprès en mobile ; commit et push sur `main` |
 | 11/11/2026 | Jeton Web Analytics ; encart sans rappel à partir du 1er décembre 18 h | Voir le journal de la CI et `docs/AVANCEMENT.md` |
+| 11/11/2026 | Correction de Safari 18 ; premier déploiement | CI verte sur les 4 navigateurs ; Worker `au-propre` déployé (wrangler 4.156.0) |
+| 11/11/2026 | Étapes 18 à 21 ; `curl -sI` et `npm run test:prod` | En-têtes, redirections (301), 404, aucun `Set-Cookie`, robots.txt et adresse e-mail intacts. Échec : balise de la configuration automatique de Web Analytics chargée sur le vérificateur. Politique resserrée, tests de production envoyés avec l'en-tête Accept d'un navigateur |

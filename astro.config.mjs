@@ -25,7 +25,9 @@ export default defineConfig({
         "form-action 'self'",
       ],
       scriptDirective: {
-        resources: ["'self'", 'https://static.cloudflareinsights.com'],
+        // Le fichier exact de la balise de statistiques (doc de Web Analytics) : une balise
+        // ajoutée par Cloudflare (beacon.min.js/v…) serait bloquée, vérificateur compris.
+        resources: ["'self'", 'https://static.cloudflareinsights.com/beacon.min.js'],
       },
       styleDirective: {
         // Attributs style de l'exemple de l'accueil, rendu au build : position des zones surlignées.

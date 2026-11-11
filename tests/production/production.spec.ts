@@ -17,9 +17,21 @@ const PAGES = Object.values(PAGES_DU_SITE);
 const CHEMINS = [...PAGES.map((page) => page.chemin), '/page-inexistante/'];
 const HOTE = new URL(SITE.url).host;
 
-/** Réponse telle que Cloudflare l'envoie, sans suivre les redirections. */
+/**
+ * En-tête Accept d'un navigateur. Cloudflare ne modifie le HTML (balise de
+ * statistiques ajoutée, adresses e-mail masquées) que pour une requête qui
+ * accepte du HTML : sans lui, les tests ne verraient pas ce que voit un visiteur.
+ */
+const NAVIGATEUR = { Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' };
+
+/** Page telle qu'un navigateur la reçoit, statut compris (404). */
+function pageHtml(request: APIRequestContext, chemin: string): Promise<APIResponse> {
+  return request.get(chemin, { failOnStatusCode: false, headers: NAVIGATEUR });
+}
+
+/** Réponse telle que Cloudflare l'envoie à un navigateur, sans suivre les redirections. */
 function brute(request: APIRequestContext, adresse: string): Promise<APIResponse> {
-  return request.get(adresse, { maxRedirects: 0, failOnStatusCode: false });
+  return request.get(adresse, { maxRedirects: 0, failOnStatusCode: false, headers: NAVIGATEUR });
 }
 
 function cookiesPoses(reponse: APIResponse): string[] {
@@ -49,7 +61,7 @@ test('aucun Set-Cookie : pages, 404, fichiers, sitemap, redirections', async ({ 
     `http://www.${HOTE}/regles/`,
   ]);
   for (const chemin of CHEMINS) {
-    const html = await (await request.get(chemin, { failOnStatusCode: false })).text();
+    const html = await (await pageHtml(request, chemin)).text();
     for (const fichier of fichiersReferences(html)) adresses.add(fichier);
   }
   for (const feuille of [...adresses].filter((adresse) => adresse.endsWith('.css'))) {
@@ -72,7 +84,7 @@ test('aucun cookie dans le navigateur, même après un parcours complet', async 
 });
 
 test('page inexistante : vraie réponse 404, page du site, non indexée', async ({ request }) => {
-  const reponse = await request.get('/page-inexistante/', { failOnStatusCode: false });
+  const reponse = await pageHtml(request, '/page-inexistante/');
   expect(reponse.status()).toBe(404);
   expect(reponse.headers()['content-type']).toContain('text/html');
   const html = await reponse.text();
@@ -99,7 +111,7 @@ test('redirections : barre finale, https, www vers le domaine', async ({ request
   expect(www.status()).toBe(301);
   expect(www.headers()['location']).toBe(`${SITE.url}/regles/?a=1`);
 
-  const depuisHttpWww = await request.get(`http://www.${HOTE}/regles/`);
+  const depuisHttpWww = await request.get(`http://www.${HOTE}/regles/`, { headers: NAVIGATEUR });
   expect(depuisHttpWww.status()).toBe(200);
   expect(depuisHttpWww.url()).toBe(`${SITE.url}/regles/`);
 });
@@ -118,7 +130,7 @@ test('sitemap.xml et robots.txt sur le domaine définitif', async ({ request }) 
 
 test('en-têtes de sécurité sur chaque page, cache long sur les fichiers du build', async ({ request }) => {
   for (const chemin of CHEMINS) {
-    const entetes = (await request.get(chemin, { failOnStatusCode: false })).headers();
+    const entetes = (await pageHtml(request, chemin)).headers();
     expect(entetes['strict-transport-security'], chemin).toContain('max-age=31536000');
     expect(entetes['x-content-type-options'], chemin).toBe('nosniff');
     expect(entetes['referrer-policy'], chemin).toBe('strict-origin-when-cross-origin');
@@ -126,7 +138,7 @@ test('en-têtes de sécurité sur chaque page, cache long sur les fichiers du bu
     expect(entetes['permissions-policy'], chemin).toContain('camera=()');
     expect(entetes['cross-origin-opener-policy'], chemin).toBe('same-origin');
   }
-  const html = await (await request.get(PAGES_DU_SITE.verifier.chemin)).text();
+  const html = await (await pageHtml(request, PAGES_DU_SITE.verifier.chemin)).text();
   const script = fichiersReferences(html).find((fichier) => /^\/_astro\/.+\.js$/.test(fichier));
   expect(script).toBeDefined();
   expect((await request.get(script ?? '')).headers()['cache-control']).toContain('immutable');
@@ -136,7 +148,7 @@ test('HTML tel que livré : aucune injection de Cloudflare, statistiques hors du
   request,
 }) => {
   for (const chemin of CHEMINS) {
-    const html = await (await request.get(chemin, { failOnStatusCode: false })).text();
+    const html = await (await pageHtml(request, chemin)).text();
     expect(html, chemin).not.toContain('/cdn-cgi/');
     expect(html, chemin).toContain('<meta http-equiv="content-security-policy"');
     // Exactement la balise du site : aucune ajoutée par la configuration automatique de Cloudflare.
@@ -146,7 +158,7 @@ test('HTML tel que livré : aucune injection de Cloudflare, statistiques hors du
     expect(html, chemin).toContain(`content="${SITE.url}/og-image.png"`);
   }
   for (const page of PAGES.filter(estIndexee)) {
-    const html = await (await request.get(page.chemin)).text();
+    const html = await (await pageHtml(request, page.chemin)).text();
     expect(html, page.chemin).toContain(`<link rel="canonical" href="${SITE.url}${page.chemin}">`);
   }
 });
@@ -158,7 +170,7 @@ test('adresse de contact en clair, sans obfuscation de Cloudflare ni script emai
   });
   await releverViolations(page);
   for (const infos of [PAGES_DU_SITE.mentionsLegales, PAGES_DU_SITE.confidentialite]) {
-    const html = await (await request.get(infos.chemin)).text();
+    const html = await (await pageHtml(request, infos.chemin)).text();
     // Les commentaires <!--email_off--> sont contrôlés au build ; Cloudflare peut les retirer.
     expect(html, infos.chemin).toContain(`<a href="mailto:${SITE.contact}">${SITE.contact}</a>`);
     expect(html, infos.chemin).not.toMatch(/email-decode|email-protection|__cf_email__|\[email&#160;protected\]|\[email protected\]/);
