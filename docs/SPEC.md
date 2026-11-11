@@ -32,7 +32,7 @@ Le produit **ne rédige jamais** le dossier (voir `CLAUDE.md`, règle absolue n�
    - pour chaque contrôle : titre, ce qui a été mesuré, pages concernées, comment corriger, source officielle (lien) ;
    - une **checklist manuelle** à cocher pour ce qui ne peut pas être vérifié automatiquement (section 6) ;
    - possibilité d'imprimer le rapport.
-5. **Après le rapport** : encart discret présentant la relecture critique à venir, avec inscription facultative par e-mail (consentement explicite, finalité unique). Le bouton ouvre, dans un nouvel onglet et sans paramètre ni référent, un formulaire hébergé par Brevo (double confirmation). Le site ne stocke rien et l'e-mail n'est jamais lié au dossier. Tant que l'adresse du formulaire est vide (`src/content/site.ts`), l'encart ne s'affiche pas.
+5. **Juste après le rapport** : encart d'inscription facultative par e-mail (modifié le 11 novembre 2026). Il propose un rappel avant la clôture du dépôt, date tirée de `src/content/session.ts`, et en option les nouveautés d'Au propre, dont un guide pour préparer l'oral envoyé en janvier. Le formulaire propose une liste par finalité, avec un consentement explicite. Une version compacte figure sur la page des règles. Le bouton ouvre, dans un nouvel onglet et sans paramètre ni référent, un formulaire hébergé par Brevo (double confirmation). Le site ne stocke rien et l'e-mail n'est jamais lié au dossier. Tant que l'adresse du formulaire est vide (`src/content/site.ts`), l'encart ne s'affiche pas.
 
 ## 5. Règles de conformité automatisées (V1)
 

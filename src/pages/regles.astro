@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import InscriptionCompacte from '../components/pages/InscriptionCompacte.astro';
 import ListeSources from '../components/pages/ListeSources.astro';
 import { pointsChecklist } from '../content/checklist.fr';
 import { EXPLICATIONS, GROUPES_REGLES, R04, R12, R13, SOURCES, TEXTES_REGLES, type IdRegleExpliquee } from '../content/rules.fr';
@@ -78,6 +79,7 @@ const toutesLesSources = Object.values(SOURCES);
         </tbody>
       </table>
       <p class="p-aide">Sources&nbsp;: <ListeSources sources={sourcesEnBref} /></p>
+      <InscriptionCompacte />
     </section>
 
     {

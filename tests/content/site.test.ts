@@ -6,6 +6,7 @@ import {
   PAGES_DU_SITE,
   SITE,
   statistiquesActives,
+  texteRobots,
   titreDOnglet,
   urlAbsolue,
 } from '../../src/content/site';
@@ -71,6 +72,14 @@ describe('identité du site (src/content/site.ts)', () => {
     expect(inscriptionActive('')).toBe(false);
     expect(inscriptionActive('http://exemple.fr/formulaire')).toBe(false);
     expect(inscriptionActive('https://exemple.fr/formulaire')).toBe(true);
+  });
+
+  it('conservation des adresses d’inscription sourcée par la CNIL', () => {
+    expect(SITE.inscription.conservationSource.url).toMatch(/^https:\/\/www\.cnil\.fr\/.+gestion-activites-commerciales\.pdf$/);
+  });
+
+  it('robots.txt : tout le site, et le plan du site sur le domaine définitif', () => {
+    expect(texteRobots()).toBe('User-agent: *\nAllow: /\n\nSitemap: https://au-propre.fr/sitemap.xml\n');
   });
 
   it('adresses absolues et titres d’onglet', () => {

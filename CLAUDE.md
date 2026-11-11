@@ -148,4 +148,4 @@ interface ZoneEnFaute { page: number; x: number; y: number; largeur: number; hau
 
 Paiement, comptes utilisateurs, appel à une IA, stockage côté serveur, éditeur de texte intégré. Ne pas les préparer « au cas où » : la V1 doit rester simple.
 
-Seule exception : l'inscription facultative par e-mail sous le rapport (SPEC §4.5). C'est un lien vers un formulaire hébergé par Brevo, qui s'ouvre sans paramètre ni référent. Le site ne stocke rien et l'e-mail n'est jamais lié au dossier.
+Seule exception : l'inscription facultative par e-mail, juste après le rapport et en version compacte sur la page des règles (SPEC §4.5). Elle propose un rappel avant la clôture et, en option, les nouveautés. C'est un lien vers un formulaire hébergé par Brevo, qui s'ouvre sans paramètre ni référent. Le site ne stocke rien et l'e-mail n'est jamais lié au dossier.

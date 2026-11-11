@@ -1,0 +1,27 @@
+---
+/**
+ * Version compacte de l'encart d'inscription (page des règles) : mêmes textes
+ * et même lien que sous le rapport, ouvert tel quel dans un nouvel onglet, sans
+ * référent. Rien ne s'affiche tant que l'adresse du formulaire est vide.
+ */
+import { INSCRIPTION } from '../../content/interface.fr';
+import { inscriptionActive, PAGES_DU_SITE, SITE } from '../../content/site';
+---
+
+{
+  inscriptionActive() && (
+    <aside class="p-panneau p-rappel" aria-labelledby="titre-rappel">
+      <div class="p-fin">
+        <p id="titre-rappel">{INSCRIPTION.titre}</p>
+        <a class="v-bouton v-bouton--secondaire" href={SITE.inscription.formulaireUrl} target="_blank" rel="noopener noreferrer">
+          {INSCRIPTION.bouton}
+          <span class="v-visuellement-cache"> {INSCRIPTION.nouvelOnglet}</span>
+        </a>
+      </div>
+      <p class="p-aide">
+        {INSCRIPTION.texte} {INSCRIPTION.option}{' '}
+        <a href={`${PAGES_DU_SITE.confidentialite.chemin}#inscription`}>{INSCRIPTION.confidentialite}</a>
+      </p>
+    </aside>
+  )
+}

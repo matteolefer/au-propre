@@ -45,12 +45,18 @@ test('titre de 6 à 9 mots, 64 px au plus ; accroche de 2 lignes au plus sur ord
   if (!isMobile) expect(Math.round(hauteur / interligne)).toBeLessThanOrEqual(2);
 });
 
-test('sous le bouton : la date limite et la gratuité', async ({ page }) => {
+test('sous le bouton : la date limite, la gratuité et la confidentialité', async ({ page }) => {
   const bouton = page.locator('.accueil-hero__action').getByRole('link', { name: 'Vérifier mon dossier' });
   await expect(bouton).toHaveAttribute('href', '/verifier/');
   const infos = page.locator('.accueil-hero__infos');
   await expect(infos).toContainText('Date limite : jeudi 3 décembre 2026 à 23 h 59');
-  await expect(infos).toContainText('Gratuit, sans compte. Votre fichier reste sur votre ordinateur.');
+  await expect(infos.locator('span')).toHaveText([
+    'Date limite\u00A0: jeudi 3\u00A0décembre 2026 à 23\u00A0h\u00A059',
+    'Gratuit, sans compte.',
+    'Votre dossier reste sur votre ordinateur\u00A0: il n’est ni envoyé ni conservé.',
+  ]);
+  // Confidentialité en langage courant sur l'accueil : pas de jargon technique.
+  await expect(page.getByRole('main')).not.toContainText('navigateur');
 });
 
 test('aperçu du rapport : vrais composants, trois groupes, données d’exemple annoncées', async ({ page }) => {

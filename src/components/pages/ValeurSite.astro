@@ -1,10 +1,11 @@
 ---
 /** Valeur de src/content/site.ts : signalée visiblement tant qu'elle est « à compléter ». */
+import AdresseEmail from './AdresseEmail.astro';
 import { A_COMPLETER } from '../../content/site';
 
 interface Props {
   valeur: string;
-  /** Une adresse e-mail devient un lien « mailto ». */
+  /** Une adresse e-mail devient un lien « mailto », protégé de l'obfuscation de Cloudflare. */
   email?: boolean;
 }
 
@@ -15,7 +16,7 @@ const { valeur, email = false } = Astro.props;
   valeur === A_COMPLETER ? (
     <span class="p-a-completer">{A_COMPLETER}</span>
   ) : email ? (
-    <a href={`mailto:${valeur}`}>{valeur}</a>
+    <AdresseEmail adresse={valeur} />
   ) : (
     valeur
   )

@@ -172,6 +172,15 @@ ul.p-prose {
   font-weight: var(--font-weight-semibold);
 }
 
+/* Rappel par e-mail, version compacte de l'encart du rapport (page des règles). */
+.p-rappel {
+  margin-top: var(--spacing-32);
+}
+
+.p-rappel .p-aide {
+  margin-top: var(--spacing-12);
+}
+
 /* --- Règles -------------------------------------------------------------------- */
 
 .p-tableau {

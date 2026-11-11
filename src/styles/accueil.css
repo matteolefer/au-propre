@@ -70,13 +70,9 @@
   line-height: 1.6;
 }
 
-/* Une ligne par information ; sur mobile, la seconde phrase passe entière à la ligne. */
+/* Une ligne par information : date limite, gratuité, confidentialité. */
 .accueil-hero__infos > span {
   display: block;
-}
-
-.accueil-hero__phrase {
-  display: inline-block;
 }
 
 .accueil-hero__apercu {

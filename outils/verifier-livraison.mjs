@@ -1,7 +1,8 @@
 /**
  * Contrôle du site livré (dist/) avant le déploiement : aucun nom de personne,
  * aucune métadonnée d'auteur, aucun commentaire de développement, aucun champ
- * « à compléter », aucune adresse provisoire. Échoue (code 1) au moindre défaut.
+ * « à compléter », aucune adresse provisoire, aucune adresse e-mail exposée à
+ * l'obfuscation de Cloudflare. Échoue (code 1) au moindre défaut.
  *
  *     npm run build && npm run verifier:livraison
  *
@@ -18,8 +19,12 @@ import { fileURLToPath } from 'node:url';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const TEXTE = new Set(['.html', '.js', '.mjs', '.css', '.xml', '.txt', '.svg', '.webmanifest', '.json', '']);
-/** Seuls commentaires HTML admis : les marqueurs vides qu'Astro et React insèrent eux-mêmes. */
-const COMMENTAIRES_ADMIS = new Set(['<!-- -->', '<!--astro:end-->']);
+/**
+ * Seuls commentaires HTML admis : les marqueurs vides qu'Astro et React insèrent eux-mêmes,
+ * et ceux qui soustraient une adresse e-mail à l'obfuscation de Cloudflare (AdresseEmail.astro).
+ */
+const COMMENTAIRES_ADMIS = new Set(['<!-- -->', '<!--astro:end-->', '<!--email_off-->', '<!--/email_off-->']);
+const ADRESSE_EMAIL = /[\w.+-]+@[\w-]+(?:\.[\w-]+)+/g;
 const CLES_MANIFESTE = ['background_color', 'description', 'display', 'icons', 'lang', 'name', 'short_name', 'theme_color'];
 /** Blocs PNG qui portent du texte ou des métadonnées (auteur, logiciel, EXIF). */
 const BLOCS_PNG_INTERDITS = new Set(['tEXt', 'zTXt', 'iTXt', 'eXIf']);
@@ -93,6 +98,11 @@ for (const chemin of fichiers(DIST)) {
     if (/<meta[^>]+name=["']?(author|generator)/i.test(texte)) signaler('balise meta author ou generator');
     for (const [commentaire] of texte.matchAll(/<!--[\s\S]*?-->/g)) {
       if (!COMMENTAIRES_ADMIS.has(commentaire)) signaler(`commentaire HTML livré : ${commentaire.slice(0, 60)}`);
+    }
+    // Hors du <head>, Cloudflare réécrirait toute adresse e-mail non protégée et ajouterait un script.
+    const corps = texte.slice(Math.max(0, texte.search(/<body[\s>]/i))).replace(/<!--email_off-->[\s\S]*?<!--\/email_off-->/g, '');
+    for (const [adresse] of corps.matchAll(ADRESSE_EMAIL)) {
+      signaler(`adresse e-mail hors de <!--email_off--> : ${adresse}`);
     }
   }
   if (extension === '.svg' && /<metadata|<!--|sodipodi:|inkscape:|dc:creator/i.test(texte)) {

@@ -3,11 +3,14 @@
  * mentions légales : aucun cookie, vraie page 404, redirections vers
  * https://au-propre.fr, en-têtes de sécurité, aucun script injecté par
  * Cloudflare, et un PDF analysé dans le navigateur sans rien envoyer.
+ * Ces tests ne supposent aucun réglage de la zone Cloudflare : ils vérifient
+ * que l'obfuscation des e-mails, le robots.txt géré ou l'absence de
+ * redirection vers https ne modifient pas le site.
  *
  *     npm run test:prod
  */
 import { expect, test, type APIRequestContext, type APIResponse, type Request } from '@playwright/test';
-import { estIndexee, PAGES_DU_SITE, SITE, statistiquesActives } from '../../src/content/site.ts';
+import { estIndexee, PAGES_DU_SITE, SITE, statistiquesActives, texteRobots } from '../../src/content/site.ts';
 import { allerAuRapport, cheminFixture, controlesDuRapport, releverViolations } from '../e2e/outils.ts';
 
 const PAGES = Object.values(PAGES_DU_SITE);
@@ -84,9 +87,13 @@ test('redirections : barre finale, https, www vers le domaine', async ({ request
   expect([301, 307, 308]).toContain(sansBarre.status());
   expect(new URL(sansBarre.headers()['location'] ?? '', SITE.url).href).toBe(`${SITE.url}/regles/`);
 
-  const http = await brute(request, `http://${HOTE}/regles/`);
+  // Vers https, sans réglage de la zone : règle de redirection (docs/LANCEMENT.md).
+  const httpRacine = await brute(request, `http://${HOTE}/`);
+  expect([301, 308]).toContain(httpRacine.status());
+  expect(httpRacine.headers()['location']).toBe(`${SITE.url}/`);
+  const http = await brute(request, `http://${HOTE}/regles/?a=1`);
   expect([301, 308]).toContain(http.status());
-  expect(http.headers()['location']).toBe(`${SITE.url}/regles/`);
+  expect(http.headers()['location']).toBe(`${SITE.url}/regles/?a=1`);
 
   const www = await brute(request, `https://www.${HOTE}/regles/?a=1`);
   expect(www.status()).toBe(301);
@@ -105,10 +112,8 @@ test('sitemap.xml et robots.txt sur le domaine définitif', async ({ request }) 
 
   const robots = await request.get('/robots.txt');
   expect(robots.headers()['content-type']).toContain('text/plain');
-  const texte = await robots.text();
-  expect(texte).toContain(`Sitemap: ${SITE.url}/sitemap.xml`);
-  // Un robot doit pouvoir lire le noindex des mentions légales.
-  expect(texte).not.toMatch(/Disallow:\s*\/mentions-legales/);
+  // Identique à celui du site : le robots.txt géré de Cloudflare n'y ajoute rien.
+  expect(await robots.text()).toBe(texteRobots());
 });
 
 test('en-têtes de sécurité sur chaque page, cache long sur les fichiers du build', async ({ request }) => {
@@ -142,10 +147,26 @@ test('HTML tel que livré : aucune injection de Cloudflare, statistiques hors du
     const html = await (await request.get(page.chemin)).text();
     expect(html, page.chemin).toContain(`<link rel="canonical" href="${SITE.url}${page.chemin}">`);
   }
-  // Pas d'obfuscation des e-mails par Cloudflare : le lien reste tel quel.
-  for (const page of [PAGES_DU_SITE.mentionsLegales, PAGES_DU_SITE.confidentialite]) {
-    expect(await (await request.get(page.chemin)).text(), page.chemin).toContain(`href="mailto:${SITE.contact}"`);
+});
+
+test('adresse de contact en clair, sans obfuscation de Cloudflare ni script email-decode', async ({ page, request }) => {
+  const scripts: string[] = [];
+  page.on('request', (requete) => {
+    if (requete.resourceType() === 'script') scripts.push(requete.url());
+  });
+  await releverViolations(page);
+  for (const infos of [PAGES_DU_SITE.mentionsLegales, PAGES_DU_SITE.confidentialite]) {
+    const html = await (await request.get(infos.chemin)).text();
+    // Les commentaires <!--email_off--> sont contrôlés au build ; Cloudflare peut les retirer.
+    expect(html, infos.chemin).toContain(`<a href="mailto:${SITE.contact}">${SITE.contact}</a>`);
+    expect(html, infos.chemin).not.toMatch(/email-decode|email-protection|__cf_email__|\[email&#160;protected\]|\[email protected\]/);
+
+    await page.goto(infos.chemin);
+    const liens = page.getByRole('main').getByRole('link', { name: SITE.contact, exact: true });
+    await expect(liens.first()).toBeVisible();
+    for (const lien of await liens.all()) await expect(lien).toHaveAttribute('href', `mailto:${SITE.contact}`);
   }
+  expect(scripts.filter((adresse) => adresse.includes('email-decode'))).toEqual([]);
 });
 
 test('aucune violation de la politique de sécurité sur les pages en ligne', async ({ page }) => {

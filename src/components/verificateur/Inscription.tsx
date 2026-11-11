@@ -1,5 +1,5 @@
 /**
- * Encart d'inscription facultative, sous le rapport. Le lien ouvre le
+ * Encart d'inscription facultative, juste après le rapport. Le lien ouvre le
  * formulaire du service d'e-mail tel quel, dans un nouvel onglet et sans
  * référent : rien du dossier ni du rapport ne lui est transmis.
  */
@@ -13,6 +13,7 @@ export function Inscription({ url }: { url: string }) {
         {INSCRIPTION.titre}
       </h3>
       <p className="v-intro">{INSCRIPTION.texte}</p>
+      <p className="v-intro">{INSCRIPTION.option}</p>
       <a className="v-bouton v-bouton--secondaire" href={url} target="_blank" rel="noopener noreferrer">
         {INSCRIPTION.bouton}
         <span className="v-visuellement-cache"> {INSCRIPTION.nouvelOnglet}</span>

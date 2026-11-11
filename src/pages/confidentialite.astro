@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import AdresseEmail from '../components/pages/AdresseEmail.astro';
 import ValeurSite from '../components/pages/ValeurSite.astro';
 import { inscriptionActive, PAGES_DU_SITE, SITE, statistiquesActives } from '../content/site';
 import '../styles/pages.css';
@@ -17,7 +18,7 @@ const statistiques = statistiquesActives();
       Votre dossier est analysé dans votre navigateur et n’est jamais envoyé. Cette page dit ce que le site
       traite, où, et ce qu’il ne collecte jamais.
     </p>
-    <p class="p-maj">Mise à jour le 1er&nbsp;novembre 2026.</p>
+    <p class="p-maj">Mise à jour le 11&nbsp;novembre 2026.</p>
 
     <section class="p-section" aria-labelledby="dossier">
       <h2 id="dossier">Votre dossier</h2>
@@ -110,7 +111,7 @@ const statistiques = statistiquesActives();
       <h2 id="contact">Si vous nous écrivez</h2>
       <div class="p-prose">
         <p>
-          Les messages envoyés à <a href={`mailto:${SITE.contact}`}>{SITE.contact}</a> sont traités ainsi.
+          Les messages envoyés à <AdresseEmail adresse={SITE.contact} /> sont traités ainsi.
         </p>
         <dl>
           <dt>Finalité</dt>
@@ -144,19 +145,22 @@ const statistiques = statistiquesActives();
           <h2 id="inscription">Inscription facultative par e-mail</h2>
           <div class="p-prose">
             <p>
-              Sous le rapport, vous pouvez demander à être prévenu quand la relecture critique sera disponible.
-              Cette inscription est facultative.
+              Sous le rapport et sur la page des règles, vous pouvez demander un rappel avant la clôture du dépôt
+              et, si vous le choisissez, les nouveautés d’Au propre. Cette inscription est facultative.
             </p>
             <dl>
-              <dt>Finalité</dt>
-              <dd>Vous envoyer cette annonce, et rien d’autre.</dd>
+              <dt>Finalités</dt>
+              <dd>
+                Vous rappeler la date limite de dépôt avant la clôture. Si vous l’avez choisi, vous envoyer les
+                nouveautés d’Au propre, dont un guide pour préparer l’oral.
+              </dd>
               <dt>Base légale</dt>
               <dd>Votre consentement, que vous pouvez retirer à tout moment.</dd>
               <dt>Prestataire</dt>
               <dd>
                 Le formulaire est hébergé par {SITE.inscription.service}, société française qui gère l’envoi des
-                e-mails. Vous y donnez votre adresse et votre accord, puis vous confirmez l’inscription par un lien
-                reçu par e-mail. {SITE.inscription.service} traite ces données selon{' '}
+                e-mails. Vous y cochez les listes qui vous intéressent et donnez votre accord, puis vous confirmez
+                l’inscription par un lien reçu par e-mail. {SITE.inscription.service} traite ces données selon{' '}
                 <a href={SITE.inscription.politiqueUrl}>sa politique de confidentialité</a>.
               </dd>
               <dt>Aucun lien avec votre dossier</dt>
@@ -166,9 +170,13 @@ const statistiques = statistiquesActives();
               </dd>
               <dt>Conservation</dt>
               <dd>
-                Jusqu’à l’envoi de l’annonce, puis suppression. Vous pouvez vous désinscrire à tout moment grâce au
-                lien présent dans chaque e-mail.
+                Jusqu’à votre désinscription, et au plus 3&nbsp;ans après votre dernier contact actif&nbsp;: un clic
+                sur un lien de l’un de nos e-mails, par exemple&nbsp;; la simple ouverture d’un e-mail ne compte pas.
+                C’est la durée prévue par le{' '}
+                <a href={SITE.inscription.conservationSource.url}>{SITE.inscription.conservationSource.libelle}</a>.
               </dd>
+              <dt>Désinscription</dt>
+              <dd>En un clic, par le lien présent dans chaque e-mail.</dd>
             </dl>
           </div>
         </section>

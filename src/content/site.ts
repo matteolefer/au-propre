@@ -64,6 +64,15 @@ export const SITE = {
       'https://c2547e2f.sibforms.com/serve/MUIFAG7uOMqnIlNWeWHh5-mtsRkyGbkQHjYNcosuFD7D_VUu_-KWHS5OCBbyVjVJvHoc9LD4uX-JEWbClW39zMN0RnRsUnzQ_qOliJz5eGNZR9HJGMRRYAOStVaiJLUwT7rFQXzVcMtwQdR_xaHPNygcxM_B3fwYvGrqe4PyACNa7t7WhYxQsDYBvo3n_7ZPuWQfTzB7_1NfkTDx8g==',
     service: 'Brevo',
     politiqueUrl: 'https://www.brevo.com/fr/legal/privacypolicy/',
+    /**
+     * Durée de conservation des adresses : jusqu'à la désinscription, et au plus
+     * 3 ans après le dernier contact émanant de la personne (référentiel relu le
+     * 11 novembre 2026, partie sur les durées de conservation).
+     */
+    conservationSource: {
+      libelle: 'référentiel de la CNIL sur la gestion des activités commerciales',
+      url: 'https://www.cnil.fr/sites/cnil/files/atoms/files/referentiel_traitements-donnees-caractere-personnel_gestion-activites-commerciales.pdf',
+    },
   },
   /**
    * Raison sociale, adresse et téléphone repris de la politique de
@@ -132,6 +141,15 @@ export function titreDOnglet(titre: string): string {
 /** Adresse absolue d'un chemin du site. */
 export function urlAbsolue(chemin: string): string {
   return new URL(chemin, `${SITE.url}/`).href;
+}
+
+/**
+ * Contenu de robots.txt : tout le site, et l'adresse du plan du site. Les mentions
+ * légales ne sont pas bloquées : un robot doit pouvoir y lire le `noindex`. Les tests
+ * de production vérifient que Cloudflare sert ce texte tel quel.
+ */
+export function texteRobots(): string {
+  return `User-agent: *\nAllow: /\n\nSitemap: ${urlAbsolue('/sitemap.xml')}\n`;
 }
 
 /** Faux pour une page en `noindex` (mentions légales) : ni adresse canonique, ni sitemap. */

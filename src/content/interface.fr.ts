@@ -9,6 +9,7 @@ import type { CleGroupe } from '../checker/report';
 import type { ErreurDecoupage, Section } from '../checker/split';
 import type { Gravite, Plage } from '../checker/types';
 import { nPages, plageEnTexte } from './rules.fr';
+import { SESSION } from './session';
 
 const ESP = ' ';
 const FINE = ' ';
@@ -249,14 +250,19 @@ export const RAPPORT = {
   },
 } as const;
 
-/** Encart d'inscription facultative, sous le rapport (affiché si l'adresse du formulaire est renseignée). */
+/**
+ * Inscription facultative par e-mail, affichée si l'adresse du formulaire est renseignée :
+ * encart juste après le rapport, version compacte sur la page des règles. Le formulaire
+ * Brevo propose deux listes à cocher : le rappel avant la clôture et les nouveautés.
+ */
 export const INSCRIPTION = {
-  titre: 'Être prévenu quand la relecture critique sera disponible',
-  texte: `Ce rapport porte sur la présentation. Une relecture critique du contenu, selon les critères des jurys, est en préparation${FINE}; elle sera payante.`,
-  bouton: 'M’inscrire par e-mail',
+  titre: 'Recevez un rappel avant la clôture',
+  texte: `Le dépôt dans Cyclades ferme le ${SESSION.cloture.date} à ${SESSION.cloture.heure}. Nous vous envoyons un e-mail de rappel avant cette date.`,
+  option: `En option${ESP}: les nouveautés d’Au propre, dont un guide pour préparer l’oral, envoyé en janvier.`,
+  bouton: 'M’inscrire au rappel',
   nouvelOnglet: '(nouvel onglet)',
   independance: 'Votre e-mail n’est jamais lié à votre dossier.',
   note: (service: string) =>
-    `Le formulaire, hébergé par ${service}, vous demande votre accord puis la confirmation de votre adresse par e-mail.`,
+    `Le formulaire, hébergé par ${service}, vous laisse cocher le rappel, les nouveautés ou les deux, puis vous demande de confirmer votre adresse. Désinscription en un clic dans chaque e-mail.`,
   confidentialite: 'Politique de confidentialité',
 } as const;

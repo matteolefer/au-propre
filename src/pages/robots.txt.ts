@@ -1,11 +1,8 @@
-/**
- * Consignes aux robots d'indexation : tout le site, et l'adresse du plan du site.
- * Les mentions légales ne sont pas bloquées : un robot doit pouvoir y lire le `noindex`.
- */
+/** robots.txt, dont le texte est défini dans src/content/site.ts. */
 import type { APIRoute } from 'astro';
-import { urlAbsolue } from '../content/site';
+import { texteRobots } from '../content/site';
 
 export const GET: APIRoute = () =>
-  new Response(`User-agent: *\nAllow: /\n\nSitemap: ${urlAbsolue('/sitemap.xml')}\n`, {
+  new Response(texteRobots(), {
     headers: { 'Content-Type': 'text/plain; charset=utf-8' },
   });

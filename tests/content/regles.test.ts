@@ -32,6 +32,7 @@ describe('page des règles', () => {
       ...pointsChecklist({ sansDiscipline: false, pagesAnnexesEnImage: [] }).map((point) => point.texte),
       INSCRIPTION.titre,
       INSCRIPTION.texte,
+      INSCRIPTION.option,
       INSCRIPTION.independance,
       INSCRIPTION.note('Brevo'),
     ];

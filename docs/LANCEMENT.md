@@ -6,27 +6,35 @@ Checklist de la mise en ligne sur https://au-propre.fr (étape 6, voir `docs/AVA
 
 **Cloudflare, jeton d’API** (My Profile › API Tokens › Create Token › Custom token)
 
-- [ ] Nom : `au-propre-deploiement-github`.
-- [ ] Permission unique : Account › Workers Scripts › Edit. Account Resources : Include › le compte. Aucune ressource de zone.
-- [ ] Pas de filtre d’adresse IP (celles de GitHub changent). Expiration : 30 juin 2027.
+- [x] Nom : `au-propre-deploiement-github`. (11/11/2026)
+- [x] Permission unique : Account › Workers Scripts › Edit. Account Resources : Include › le compte. Aucune ressource de zone.
+- [x] Pas de filtre d’adresse IP (celles de GitHub changent). Expiration : 30 juin 2027 (à renouveler avant : section 4).
 - Si wrangler refuse une opération faute de droit, ajouter seulement la permission qu’il nomme.
 
 **GitHub** (dépôt › Settings › Secrets and variables › Actions)
 
-- [ ] Secret `CLOUDFLARE_API_TOKEN` : le jeton, collé directement dans l’interface web.
-- [ ] Secret `CLOUDFLARE_ACCOUNT_ID` : Workers & Pages, colonne de droite.
+- [x] Secret `CLOUDFLARE_API_TOKEN` : le jeton, collé directement dans l’interface web. (11/11/2026)
+- [x] Secret `CLOUDFLARE_ACCOUNT_ID` : Workers & Pages, colonne de droite. (11/11/2026)
 
 **Compte Cloudflare** (condition de l’anonymat, article 1-1, II de la LCEN)
 
-- [ ] Profil du compte (facturation) rempli avec nom, prénoms, adresse et téléphone. Sans ces éléments chez l’hébergeur, la mention « Ses éléments d’identification ont été communiqués à l’hébergeur » serait fausse.
+- [x] Profil du compte (facturation) rempli avec nom, prénoms, adresse et téléphone (11/11/2026). Sans ces éléments chez l’hébergeur, la mention « Ses éléments d’identification ont été communiqués à l’hébergeur » serait fausse.
 
-**Réglages de la zone au-propre.fr**
+**Réglages de la zone au-propre.fr** (facultatifs depuis le 11/11/2026)
 
-- [ ] Security › Bots : Bot Fight Mode désactivé (il pose le cookie `__cf_bm`).
-- [ ] Scrape Shield › Email Address Obfuscation désactivé : sinon Cloudflare réécrit le lien `mailto:` et injecte un script, bloqué par la politique de sécurité.
-- [ ] Rocket Loader et Zaraz désactivés.
-- [ ] SSL/TLS › Edge Certificates › Always Use HTTPS activé.
-- [ ] « Managed robots.txt » (AI Crawl Control) : à décider. S’il est actif, Cloudflare ajoute des lignes à notre robots.txt ; les tests de production vérifient seulement la ligne `Sitemap:` et que les mentions légales ne sont pas bloquées.
+Le site ne dépend plus de ces réglages, introuvables dans le tableau de bord le 11/11 :
+
+- chaque adresse e-mail est entourée de `<!--email_off-->` et `<!--/email_off-->`, que l’obfuscation de Cloudflare respecte ([doc](https://developers.cloudflare.com/waf/tools/scrape-shield/email-address-obfuscation/)). `outils/verifier-livraison.mjs` bloque le déploiement si une adresse en sort ;
+- la redirection vers https passe par une règle de redirection (section 2) ;
+- les tests de production signalent ce que ces réglages changeraient : adresse masquée ou script `email-decode`, cookie, robots.txt différent du nôtre, script `/cdn-cgi/`.
+
+S’ils sont retrouvés plus tard :
+
+- [ ] Email Address Obfuscation (Security › Settings, d’après la doc) : peut être désactivé, sans effet sur le site.
+- [ ] Always Use HTTPS (SSL/TLS › Edge Certificates) : peut être activé en plus de la règle.
+- [ ] Bot Fight Mode : s’il pose le cookie `__cf_bm`, le test de production « aucun Set-Cookie » échoue ; le désactiver alors.
+- [ ] Rocket Loader et Zaraz : désactivés par défaut ; un script `/cdn-cgi/` injecté ferait échouer un test de production.
+- [ ] « Managed robots.txt » (AI Crawl Control) : s’il est actif, Cloudflare modifie notre robots.txt et le test de production « robots.txt identique » échoue. Le désactiver, ou accepter ses lignes et adapter le test.
 
 **Statistiques** (Web Analytics)
 
@@ -38,7 +46,14 @@ Checklist de la mise en ligne sur https://au-propre.fr (étape 6, voir `docs/AVA
 - [ ] Commit et push sur `main` : la CI construit, teste (Vitest, Playwright sur Chromium, Firefox, WebKit, mobile) puis déploie. Le Worker `au-propre` est créé sans adresse publique (`workers_dev` et `preview_urls` désactivés).
 - [ ] Workers & Pages › au-propre › Settings › Domains & Routes › Add › Custom Domain › `au-propre.fr`. L’enregistrement DNS et le certificat sont créés par Cloudflare.
 - [ ] DNS › Add record : `www`, AAAA, `100::`, proxifié.
-- [ ] Rules › Redirect Rules › modèle « Redirect from WWW to root » : 301, chaîne de requête conservée.
+- [ ] Rules › Redirect Rules (Single Redirects), deux règles, dans cet ordre ([exemples de la doc](https://developers.cloudflare.com/rules/url-forwarding/single-redirects/examples/)) :
+
+  | Nom de la règle | When incoming requests match | Then |
+  | --- | --- | --- |
+  | `HTTP vers HTTPS` | Wildcard pattern, Request URL : `http://*` | Target URL : `https://${1}` ; Status code : 301 ; Preserve query string : coché |
+  | `www vers le domaine` | Wildcard pattern, Request URL : `https://www.*` | Target URL : `https://${1}` ; Status code : 301 ; Preserve query string : coché |
+
+  `http://www.au-propre.fr/` passe par les deux : https d’abord, puis le domaine. Le test de production vérifie les deux redirections, chaîne de requête comprise, et l’arrivée sur `https://au-propre.fr/`.
 - [ ] Variable GitHub `PRODUCTION_ACTIVE` = `true` (Settings › Secrets and variables › Actions › Variables) : le job « production » tourne alors après chaque déploiement.
 - [ ] `npm run test:prod` en local (Chromium et Firefox) : tout au vert.
 - [ ] Relancer la CI (Actions › Tests et déploiement › Run workflow) : job « production » au vert.
@@ -95,8 +110,18 @@ Le SEO des mentions légales et de la 404 est bas exprès : ces pages sont en `n
   - S’il existe, noter ici où le lire. Le chemin `/_astro/extract.worker-….js` n’est chargé qu’au moment où un PDF est lu : il approche le nombre d’analyses, cache du navigateur mis à part.
   - Sinon, on s’en passe.
 
-## 4. Journal
+## 4. Après le lancement
+
+- [ ] Programmer dans Brevo la campagne de rappel du 1er décembre (liste « Rappel 3 décembre »).
+  - Après l’envoi, l’encart promet encore un rappel avant la clôture : reformuler ou retirer `INSCRIPTION` (`src/content/interface.fr.ts`), puis déployer.
+- [ ] Guide de l’oral, envoyé en janvier (liste « Nouveautés Au propre »), comme l’annoncent l’encart et la politique de confidentialité.
+- [ ] Formulaire natif dans la page, après le lancement, à la place du lien vers le formulaire hébergé par Brevo. À prévoir : `form-action` dans la politique de sécurité (`astro.config.mjs`), politique de confidentialité, tests réseau.
+- [ ] Renouveler le jeton d’API Cloudflare avant le 30 juin 2027, date de son expiration, puis remplacer le secret GitHub `CLOUDFLARE_API_TOKEN`. Sans cela, le déploiement échoue.
+
+## 5. Journal
 
 | Date | Étape | Résultat |
 | --- | --- | --- |
 | 01/11/2026 | Code de l’étape 6, tests locaux | 523 tests Vitest ; 209 tests Playwright passent, 4 ignorés exprès en mobile |
+| 11/11/2026 | Jeton, secrets GitHub, profil Cloudflare (étapes 1 à 8) | Faits par l’éditeur ; réglages de la zone introuvables |
+| 11/11/2026 | Rappel et nouveautés par e-mail, politique de confidentialité, site robuste sans réglages de zone, accueil | 527 tests Vitest ; 215 tests Playwright passent, 4 ignorés exprès en mobile ; commit et push sur `main` |

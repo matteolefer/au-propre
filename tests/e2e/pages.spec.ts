@@ -3,7 +3,7 @@
  * canoniques, balises de partage, typographie, 404, sitemap, robots.txt.
  */
 import { expect, test } from '@playwright/test';
-import { estIndexee, inscriptionActive, PAGES_DU_SITE, SITE, statistiquesActives } from '../../src/content/site.ts';
+import { estIndexee, inscriptionActive, PAGES_DU_SITE, SITE, statistiquesActives, texteRobots } from '../../src/content/site.ts';
 import { erreursTypographiques } from '../helpers/typographie.ts';
 import { allerAuRapport, attendreSansDefilementHorizontal, cheminFixture } from './outils.ts';
 
@@ -54,7 +54,7 @@ test('les titres de page sont tous différents', async ({ page }) => {
 
 test('accueil : le bouton « Vérifier mon dossier » mène au vérificateur', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Vérifiez votre dossier\u00A0RAEP avant de le\u00A0déposer');
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Vérifiez votre dossier\u00A0RAEP en une\u00A0minute');
   await page.getByRole('main').getByRole('link', { name: 'Vérifier mon dossier' }).first().click();
   await expect(page).toHaveURL(/\/verifier\/$/);
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Vérifier mon dossier RAEP');
@@ -109,7 +109,7 @@ test('sitemap.xml et robots.txt', async ({ request }) => {
   expect(adresses).toEqual(PAGES.filter(estIndexee).map((infos) => `${SITE.url}${infos.chemin}`));
   expect(sitemap).not.toContain(PAGES_DU_SITE.mentionsLegales.chemin);
   const robots = await (await request.get('/robots.txt')).text();
-  expect(robots).toContain(`Sitemap: ${SITE.url}/sitemap.xml`);
+  expect(robots).toBe(texteRobots());
   // Les mentions légales ne sont pas bloquées : un robot doit pouvoir y lire le noindex.
   expect(robots).not.toContain('Disallow');
 });
@@ -168,11 +168,33 @@ test('confidentialité : statistiques hors du vérificateur, e-mails de contact,
   const contact = page.locator('#contact').locator('..');
   await expect(contact).toContainText('Le temps de vous répondre, puis 12\u00A0mois au plus après le dernier échange.');
   for (const nom of ['Cloudflare', 'Google', 'Brevo']) await expect(contact.getByRole('link', { name: nom })).toBeVisible();
+
+  if (!inscriptionActive()) return;
+  const inscription = page.locator('#inscription').locator('..');
+  await expect(inscription).toContainText('Vous rappeler la date limite de dépôt avant la clôture.');
+  await expect(inscription).toContainText('Si vous l’avez choisi, vous envoyer les nouveautés d’Au propre');
+  await expect(inscription).toContainText('Votre consentement, que vous pouvez retirer à tout moment.');
+  await expect(inscription).toContainText('Jusqu’à votre désinscription, et au plus 3\u00A0ans après votre dernier contact actif');
+  await expect(inscription).toContainText('En un clic, par le lien présent dans chaque e-mail.');
+  await expect(inscription.getByRole('link', { name: SITE.inscription.conservationSource.libelle })).toHaveAttribute(
+    'href',
+    SITE.inscription.conservationSource.url,
+  );
+  // Plus de promesse d'un seul e-mail suivi de la suppression de l'adresse.
+  await expect(page.getByRole('main')).not.toContainText(/annonce|puis suppression|un seul e-mail/);
+});
+
+test('adresses e-mail protégées de l’obfuscation de Cloudflare dans le HTML livré', async ({ request }) => {
+  for (const infos of [PAGES_DU_SITE.mentionsLegales, PAGES_DU_SITE.confidentialite]) {
+    const html = await (await request.get(infos.chemin)).text();
+    const protegees = html.match(/<!--email_off--><a href="mailto:contact@au-propre\.fr">contact@au-propre\.fr<\/a><!--\/email_off-->/g);
+    expect(protegees?.length, infos.chemin).toBe(html.match(/contact@au-propre\.fr<\/a>/g)?.length);
+  }
 });
 
 test('encart d’inscription : absent sans adresse de formulaire, sinon lien direct sans paramètre', async ({ page }) => {
   await allerAuRapport(page, { fichier: cheminFixture('01_conforme_word.pdf') });
-  const titre = page.getByRole('heading', { name: 'Être prévenu quand la relecture critique sera disponible' });
+  const titre = page.getByRole('heading', { name: 'Recevez un rappel avant la clôture' });
   if (!inscriptionActive()) {
     await expect(titre).toHaveCount(0);
     await page.goto('/confidentialite/');
@@ -180,11 +202,35 @@ test('encart d’inscription : absent sans adresse de formulaire, sinon lien dir
     return;
   }
   await expect(titre).toBeVisible();
-  const lien = page.getByRole('link', { name: /M’inscrire par e-mail/ });
+  const lien = page.getByRole('link', { name: /M’inscrire au rappel/ });
   await expect(lien).toHaveAttribute('href', SITE.inscription.formulaireUrl);
   await expect(lien).toHaveAttribute('target', '_blank');
   await expect(lien).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(page.getByText('Votre e-mail n’est jamais lié à votre dossier.')).toBeVisible();
+  await expect(page.locator('.v-inscription')).toContainText('Le dépôt dans Cyclades ferme le jeudi 3\u00A0décembre 2026 à 23\u00A0h\u00A059.');
+  // Juste après le rapport : la checklist le précède, rien d'affiché ne le suit.
+  const suivants = await page.locator('.v-inscription ~ *').evaluateAll((elements) =>
+    elements.filter((element) => getComputedStyle(element).display !== 'none').length,
+  );
+  expect(suivants).toBe(0);
+  await expect(page.locator('.v-checklist + .v-inscription, .v-checklist ~ .v-inscription')).toHaveCount(1);
+});
+
+test('page des règles : version compacte de l’encart, même lien sans référent', async ({ page }) => {
+  await page.goto('/regles/');
+  const encart = page.getByRole('complementary', { name: 'Recevez un rappel avant la clôture' });
+  if (!inscriptionActive()) {
+    await expect(encart).toHaveCount(0);
+    return;
+  }
+  await expect(encart).toBeVisible();
+  await expect(encart).toContainText('Le dépôt dans Cyclades ferme le jeudi 3\u00A0décembre 2026 à 23\u00A0h\u00A059.');
+  await expect(encart).toContainText('dont un guide pour préparer l’oral, envoyé en janvier.');
+  const lien = encart.getByRole('link', { name: /M’inscrire au rappel/ });
+  await expect(lien).toHaveAttribute('href', SITE.inscription.formulaireUrl);
+  await expect(lien).toHaveAttribute('target', '_blank');
+  await expect(lien).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(encart.getByRole('link', { name: 'Politique de confidentialité' })).toHaveAttribute('href', '/confidentialite/#inscription');
 });
 
 test('bouton principal : variante de survol et anneau de focus visible', async ({ page, isMobile }) => {

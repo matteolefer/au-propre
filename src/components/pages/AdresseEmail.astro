@@ -1,0 +1,16 @@
+---
+/**
+ * Adresse e-mail en lien « mailto », entourée des commentaires qui la
+ * soustraient à l'obfuscation des e-mails de Cloudflare. Sans eux, Cloudflare
+ * réécrirait le lien et ajouterait un script, que la politique de sécurité
+ * bloquerait. Toute adresse e-mail du site passe par ce composant
+ * (contrôlé par outils/verifier-livraison.mjs).
+ */
+interface Props {
+  adresse: string;
+}
+
+const { adresse } = Astro.props;
+---
+
+<!--email_off--><a href={`mailto:${adresse}`}>{adresse}</a><!--/email_off-->

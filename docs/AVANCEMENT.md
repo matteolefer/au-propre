@@ -1,10 +1,10 @@
 # Avancement — Au propre
 
-Mis à jour le 1er novembre 2026. Objectif : V1 en ligne vers le 10 novembre 2026, dépôt des dossiers au plus tard le 3 décembre 2026 à 23 h 59.
+Mis à jour le 11 novembre 2026. Objectif : V1 en ligne sous 48 heures (prévue vers le 10 novembre 2026), dépôt des dossiers au plus tard le 3 décembre 2026 à 23 h 59.
 
-**Où en est le projet** : les 20 règles (R00 à R19), le vérificateur complet, les pages du site et l'identité Au propre sont faits. Toutes les pages suivent l'échelle de l'accueil (validé le 31 octobre). Version `v0.9.0` étiquetée sur GitHub. L'étape 6, la mise en ligne sur https://au-propre.fr, est codée et testée en local. Elle attend les réglages à faire à la main dans Cloudflare et GitHub : voir la checklist `docs/LANCEMENT.md`.
+**Où en est le projet** : les 20 règles (R00 à R19), le vérificateur complet, les pages du site et l'identité Au propre sont faits. Toutes les pages suivent l'échelle de l'accueil (validé le 31 octobre). Version `v0.9.0` étiquetée sur GitHub. L'étape 6, la mise en ligne sur https://au-propre.fr, est codée, avec les derniers changements demandés avant le lancement (11 novembre). Le jeton, les secrets GitHub et le profil Cloudflare sont faits ; le code est poussé sur `main`. Restent le domaine personnalisé, les redirections et les vérifications en ligne : voir la checklist `docs/LANCEMENT.md`.
 
-**Tests** : 523 tests Vitest, 209 tests Playwright (4 ignorés exprès en mobile), tous au vert en local. En CI, WebKit s'y ajoute. 11 tests de production (`npm run test:prod`, Chromium et Firefox), à lancer une fois le domaine rattaché.
+**Tests** : 527 tests Vitest, 215 tests Playwright (4 ignorés exprès en mobile), tous au vert en local. En CI, WebKit s'y ajoute. 12 tests de production (`npm run test:prod`, Chromium et Firefox), à lancer une fois le domaine rattaché.
 
 ## Étape 1 : terminée
 
@@ -543,6 +543,68 @@ En local, il cherche aussi les noms lus dans `git config`, le compte de l'ordina
 
 **Captures relues** (mentions légales, confidentialité, 1280 et 390 px). Défaut corrigé : le « er » en exposant de « 1er novembre » créait une sixième taille de texte (11,7 px), relevée par `echelle.spec.ts`.
 
+### Avant la mise en ligne (11 novembre)
+
+Lancement visé sous 48 heures : pas de formulaire natif, le lien vers le formulaire hébergé par Brevo reste.
+
+**Rappel et nouveautés par e-mail**
+
+- Le formulaire Brevo a deux listes : « Rappel 3 décembre » et « Nouveautés Au propre ».
+- L'encart « Recevez un rappel avant la clôture », juste après le rapport (après la checklist), annonce :
+  - la clôture du dépôt, tirée de `src/content/session.ts`, nouvelle configuration de la session ;
+  - en option, les nouveautés d'Au propre, dont un guide pour préparer l'oral envoyé en janvier.
+- Bouton « M’inscrire au rappel ».
+- Version compacte sur la page des règles, sous « En bref » (`InscriptionCompacte.astro`) : mêmes textes, même lien sans référent.
+- L'annonce de la relecture critique payante a disparu de l'encart.
+
+**Politique de confidentialité**, section « Inscription facultative par e-mail » :
+
+- finalités : rappel avant la date limite et, si la personne l'a choisi, nouveautés ;
+- base légale : consentement ;
+- conservation : jusqu'à la désinscription, et au plus 3 ans après le dernier contact actif. Une simple ouverture d'e-mail ne compte pas, d'après le référentiel de la CNIL sur la gestion des activités commerciales, cité en lien et relu le 11/11 ;
+- désinscription en un clic dans chaque e-mail ;
+- la promesse « un seul e-mail, puis suppression » est retirée du site et de SPEC §4.5.
+
+**Robuste sans les réglages de la zone**, introuvables dans le tableau de bord :
+
+- `AdresseEmail.astro` entoure chaque adresse de `<!--email_off-->` et `<!--/email_off-->`, qu'Astro conserve au build (vérifié dans `dist/`). `verifier-livraison.mjs` refuse toute adresse e-mail hors de ces balises dans le `<body>`, essai négatif fait.
+- Le texte de robots.txt est défini par `texteRobots()` (`site.ts`). Le test de production vérifie que Cloudflare le sert à l'identique.
+- Le test de production des e-mails vérifie que l'adresse de contact est en clair, sans adresse masquée ni script `email-decode`.
+- Le test des redirections vérifie que http vers https fonctionne sur la racine et avec une chaîne de requête. La règle de redirection est décrite dans `docs/LANCEMENT.md`.
+
+**Accueil**
+
+- Le bénéfice d'abord : « Vérifiez votre dossier RAEP en une minute », puis « Dès le brouillon, voyez s’il respecte les règles de forme du jury et ce qu’il faut corriger. »
+- Confidentialité en langage courant : « Votre dossier reste sur votre ordinateur : il n’est ni envoyé ni conservé. » Le mot « navigateur » est absent de l'accueil, ce qu'un test vérifie.
+- La mention « aucune mesure d’audience » est retirée : elle deviendra fausse avec Web Analytics.
+- Sous le bouton, une ligne par information (la phrase dépassait 80 caractères).
+
+**LANCEMENT.md** :
+
+- étapes 1 à 8 cochées ;
+- réglages de la zone devenus facultatifs ;
+- deux règles de redirection, http vers https et www vers le domaine ;
+- nouvelle section « Après le lancement » :
+  - campagne de rappel du 1er décembre ;
+  - guide de l'oral en janvier ;
+  - formulaire natif ;
+  - renouvellement du jeton Cloudflare avant le 30 juin 2027.
+
+**Tests** :
+
+- Vitest : 527 tests. Nouveaux :
+  - date de clôture tirée de la session ;
+  - aucune promesse d'un seul e-mail ;
+  - source CNIL ;
+  - texte de robots.txt.
+- Playwright : 215 tests passent, 4 ignorés exprès en mobile. Nouveaux :
+  - encart juste après le rapport ;
+  - version compacte de la page des règles ;
+  - section d'inscription de la politique de confidentialité ;
+  - adresses protégées dans le HTML ;
+  - accueil.
+- Production : 12 tests.
+
 ## Décisions prises
 
 | Date | Décision | Raison |
@@ -580,7 +642,7 @@ En local, il cherche aussi les noms lus dans `git config`, le compte de l'ordina
 | 31/10/2026 | Pas d'axe-core | Licence MPL-2.0, absente de la liste de CLAUDE.md ; accessibilité vérifiée par les tests clavier et focus, les contrastes et les captures |
 | 31/10/2026 | Nom du produit : « Au propre », sous-titre « Vérifiez votre dossier RAEP avant le dépôt » ; domaine provisoire sur une adresse gratuite de Cloudflare ; identité centralisée dans `src/content/site.ts`. *Domaine remplacé le 01/11/2026 par au-propre.fr* | Décision de l'éditeur ; le domaine n'est pas encore réservé |
 | 31/10/2026 | Inscription par e-mail : lien vers un formulaire Brevo hébergé, ouvert sans paramètre ni référent ; encart masqué tant que l'adresse est vide (non bloquant) | Rien n'est saisi ni stocké sur le site ; l'e-mail ne peut pas être lié au dossier. Clôt le point en suspens « SPEC §4.5 contre hors périmètre » (CLAUDE.md précisé) |
-| 31/10/2026 | Conservation des adresses : jusqu'à l'envoi de l'annonce, puis suppression ; désinscription à tout moment | Finalité unique (proposée dans le plan de l'étape 5) |
+| 31/10/2026 | Conservation des adresses : jusqu'à l'envoi de l'annonce, puis suppression ; désinscription à tout moment. *Remplacé le 11/11/2026 : deux listes, conservation jusqu'à la désinscription et 3 ans au plus après le dernier contact actif* | Finalité unique (proposée dans le plan de l'étape 5) |
 | 31/10/2026 | CPE : S10 et S11 pour R02, R03, R05 à R11 ; S11 pour R04, qui redevient une erreur ; S11 ajoutée à R15 et R16 ; R12 et R13 gardent S8 et S7 avec la mention « bonne pratique » | Le rapport du jury CPE 2026 confirme ces règles (p. 17 à 20) mais ne parle ni de pagination ni de couleur (CLAUDE.md, règle 5) |
 | 31/10/2026 | Pas de police web : Inter si installée, sinon police système. *Remplacé le même jour : Source Serif 4 pour les titres (exception OFL-1.1) ; toujours pas d'Inter embarquée* | Inter est sous OFL-1.1, hors de la liste de CLAUDE.md ; aucune requête de plus |
 | 31/10/2026 | pypdf (BSD-3-Clause) pour créer les fixtures protégées, outil de développement hors de `package.json` ; chiffrement RC4 128 bits | L'AES demanderait le paquet `cryptography` ; Ghostscript (AGPL) écarté |
@@ -609,6 +671,12 @@ En local, il cherche aussi les noms lus dans `git config`, le compte de l'ordina
 | 01/11/2026 | Éditeur anonyme (LCEN, art. 1-1, II), sans nom ni directeur de la publication ; mentions légales en `noindex` (validé) | Particulier éditant à titre non professionnel ; identité connue de l'hébergeur |
 | 01/11/2026 | E-mails de contact conservés le temps de répondre, puis 12 mois au plus après le dernier échange (validé) | Couvre une question reposée d'une session à l'autre |
 | 01/11/2026 | « 1er » sans exposant dans les dates | L'exposant ajoutait une sixième taille de texte à l'échelle |
+| 11/11/2026 | Lancement sous 48 heures, sans formulaire natif : le lien vers le formulaire Brevo reste (demandé) | Le formulaire natif est reporté après le lancement (`docs/LANCEMENT.md`) |
+| 11/11/2026 | Inscription en deux listes : rappel avant la clôture, nouveautés en option ; encart juste après le rapport et version compacte sur la page des règles ; SPEC §4.5 et CLAUDE.md mis à jour (demandé) | Le rappel sert le candidat avant le 3 décembre ; la liste des nouveautés prépare l'oral |
+| 11/11/2026 | Adresses d'inscription conservées jusqu'à la désinscription, et au plus 3 ans après le dernier contact actif ; base légale : consentement (demandé) | Durée du référentiel de la CNIL sur la gestion des activités commerciales, cité dans la politique |
+| 11/11/2026 | Date de clôture du dépôt dans `src/content/session.ts` | Une seule configuration de la session pour l'encart ; les autres mentions de la date restent à y rattacher (session 2028) |
+| 11/11/2026 | Site indépendant des réglages de la zone : adresses en `<!--email_off-->`, redirection http vers https par règle, robots.txt comparé au nôtre en production (demandé) | Les réglages de la zone sont introuvables dans le tableau de bord ; l'obfuscation des e-mails est active par défaut selon la doc de Cloudflare |
+| 11/11/2026 | Accueil : bénéfice d'abord, confidentialité sans le mot « navigateur » (demandé) | Langage courant pour des candidats non techniciens |
 
 **Couleurs ajustées** (30/10). *En partie remplacé le 31/10 : le bleu de DESIGN.md (`#0075de`, `#005fb8`, `#e6f3fe`) a laissé la place au bleu encre `#1E4A9A` et à sa teinte `#E8EEF8`, et le fond `#f6f5f4` au papier `#FBFAF7` (voir « Identité visuelle » et « Un site plus chaleureux »). Le texte secondaire `#615d59` et les couleurs d'état restent en vigueur.*
 
@@ -628,7 +696,7 @@ En local, il cherche aussi les noms lus dans `git config`, le compte de l'ordina
 
 ## Points en suspens
 
-**Bloquant pour la mise en ligne** : les réglages à faire à la main, listés dans `docs/LANCEMENT.md` (jeton d'API, secrets GitHub, réglages de la zone, domaine personnalisé, redirection de www, statistiques).
+**Bloquant pour la mise en ligne** : les étapes à faire à la main après le premier déploiement, listées dans `docs/LANCEMENT.md` : domaine personnalisé, `www`, deux règles de redirection, variable `PRODUCTION_ACTIVE`. Ensuite, `npm run test:prod` au vert.
 
 **À l'attention de l'éditeur** (non tranché par le code)
 
@@ -640,6 +708,9 @@ En local, il cherche aussi les noms lus dans `git config`, le compte de l'ordina
 - Jeton de la balise de statistiques (`SITE.statistiques.jeton`) : tant qu'il est vide, aucune balise n'est ajoutée et la politique de confidentialité ne montre pas la section « Statistiques de fréquentation ».
 - Brevo : lieu d'hébergement des données non vérifié (sa politique est une page en JavaScript, illisible par l'outil) ; la page ne dit que « société française ». Le mentionner seulement avec une source.
 - S10 : la page refuse la lecture automatique (403). Les sources du CPE reposent sur la décision validée et sur le rapport S11, relu.
+- Encart de rappel : il promet un e-mail avant la clôture. Après l'envoi de la campagne du 1er décembre, reformuler ou retirer le texte (`docs/LANCEMENT.md`, section 4). Une inscription faite le 2 ou le 3 décembre ne recevrait plus de rappel.
+- « En une minute » (accueil) : promesse de durée de l'outil, pas un chiffre sourcé. L'analyse elle-même prend quelques secondes ; le parcours complet ajoute le choix du concours et la confirmation du découpage.
+- La date de clôture est encore écrite en dur ailleurs que dans `session.ts` : accueil, vérificateur, page des règles, checklist. À rattacher avant la session 2028.
 
 **Fixtures à ajouter** (voir `tests/fixtures/README.md`)
 
@@ -667,7 +738,8 @@ En local, il cherche aussi les noms lus dans `git config`, le compte de l'ordina
 
 **Fin de l'étape 6 : mise en ligne** (checklist `docs/LANCEMENT.md`)
 
-1. Réglages à la main : jeton d'API, secrets GitHub, profil du compte Cloudflare, réglages de la zone, site Web Analytics (jeton de la balise à reporter dans `src/content/site.ts`).
-2. Commit et push sur `main` : premier déploiement par la CI, avec WebKit.
-3. Domaine personnalisé, redirection de www, variable `PRODUCTION_ACTIVE`, puis `npm run test:prod`.
+1. Premier passage de la CI après le push du 11 novembre, avec WebKit pour la première fois, puis premier déploiement.
+2. Domaine personnalisé, `www`, règles de redirection (http vers https, www vers le domaine), variable `PRODUCTION_ACTIVE`, puis `npm run test:prod`.
+3. Web Analytics : jeton de la balise à reporter dans `src/content/site.ts` (pas encore fourni).
 4. Vérifications à la main : Safari, Lighthouse, Search Console, e-mails, statistiques côté serveur.
+5. Après le lancement : campagne de rappel du 1er décembre, guide de l'oral en janvier, formulaire natif, renouvellement du jeton avant le 30 juin 2027.
