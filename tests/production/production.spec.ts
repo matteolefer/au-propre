@@ -139,8 +139,10 @@ test('HTML tel que livré : aucune injection de Cloudflare, statistiques hors du
     const html = await (await request.get(chemin, { failOnStatusCode: false })).text();
     expect(html, chemin).not.toContain('/cdn-cgi/');
     expect(html, chemin).toContain('<meta http-equiv="content-security-policy"');
-    const balise = html.includes(`src="${SITE.statistiques.script}"`);
-    expect(balise, chemin).toBe(statistiquesActives() && chemin !== PAGES_DU_SITE.verifier.chemin);
+    // Exactement la balise du site : aucune ajoutée par la configuration automatique de Cloudflare.
+    const balises = html.split(new URL(SITE.statistiques.script).host + new URL(SITE.statistiques.script).pathname).length - 1;
+    expect(balises, chemin).toBe(statistiquesActives() && chemin !== PAGES_DU_SITE.verifier.chemin ? 1 : 0);
+    if (balises === 1) expect(html, chemin).toContain(`src="${SITE.statistiques.script}"`);
     expect(html, chemin).toContain(`content="${SITE.url}/og-image.png"`);
   }
   for (const page of PAGES.filter(estIndexee)) {

@@ -3,25 +3,49 @@
  * Version compacte de l'encart d'inscription (page des règles) : mêmes textes
  * et même lien que sous le rapport, ouvert tel quel dans un nouvel onglet, sans
  * référent. Rien ne s'affiche tant que l'adresse du formulaire est vide.
+ *
+ * Les deux périodes sont dans la page : la variante visible est celle de la
+ * date de construction, puis le script corrige selon l'heure de l'ordinateur.
+ * Ainsi le rappel n'est plus proposé une fois envoyé, sans nouveau déploiement.
  */
 import { INSCRIPTION } from '../../content/interface.fr';
+import { rappelEnvoye, SESSION } from '../../content/session';
 import { inscriptionActive, PAGES_DU_SITE, SITE } from '../../content/site';
+
+const variantes = [
+  { cle: 'rappel', textes: INSCRIPTION.avantRappel, visible: !rappelEnvoye() },
+  { cle: 'nouveautes', textes: INSCRIPTION.apresRappel, visible: rappelEnvoye() },
+];
 ---
 
 {
   inscriptionActive() && (
-    <aside class="p-panneau p-rappel" aria-labelledby="titre-rappel">
-      <div class="p-fin">
-        <p id="titre-rappel">{INSCRIPTION.titre}</p>
-        <a class="v-bouton v-bouton--secondaire" href={SITE.inscription.formulaireUrl} target="_blank" rel="noopener noreferrer">
-          {INSCRIPTION.bouton}
-          <span class="v-visuellement-cache"> {INSCRIPTION.nouvelOnglet}</span>
-        </a>
-      </div>
-      <p class="p-aide">
-        {INSCRIPTION.texte} {INSCRIPTION.option}{' '}
-        <a href={`${PAGES_DU_SITE.confidentialite.chemin}#inscription`}>{INSCRIPTION.confidentialite}</a>
-      </p>
+    <aside class="p-panneau p-rappel" aria-label="Inscription par e-mail" data-envoi-rappel={SESSION.rappel.iso}>
+      {variantes.map(({ cle, textes, visible }) => (
+        <div data-variante={cle} hidden={!visible}>
+          <div class="p-fin">
+            <p>{textes.titre}</p>
+            <a class="v-bouton v-bouton--secondaire" href={SITE.inscription.formulaireUrl} target="_blank" rel="noopener noreferrer">
+              {textes.bouton}
+              <span class="v-visuellement-cache"> {INSCRIPTION.nouvelOnglet}</span>
+            </a>
+          </div>
+          <p class="p-aide">
+            {textes.texte} {textes.option}{' '}
+            <a href={`${PAGES_DU_SITE.confidentialite.chemin}#inscription`}>{INSCRIPTION.confidentialite}</a>
+          </p>
+        </div>
+      ))}
     </aside>
   )
 }
+
+<script>
+  // Même calcul que rappelEnvoye() (src/content/session.ts), sans charger ce module dans la page.
+  for (const encart of document.querySelectorAll<HTMLElement>('[data-envoi-rappel]')) {
+    const envoye = Date.now() >= Date.parse(encart.dataset['envoiRappel'] ?? '');
+    for (const variante of encart.querySelectorAll<HTMLElement>('[data-variante]')) {
+      variante.hidden = (variante.dataset['variante'] === 'nouveautes') !== envoye;
+    }
+  }
+</script>

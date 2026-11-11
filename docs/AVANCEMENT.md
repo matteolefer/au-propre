@@ -4,7 +4,7 @@ Mis à jour le 11 novembre 2026. Objectif : V1 en ligne sous 48 heures (prévue 
 
 **Où en est le projet** : les 20 règles (R00 à R19), le vérificateur complet, les pages du site et l'identité Au propre sont faits. Toutes les pages suivent l'échelle de l'accueil (validé le 31 octobre). Version `v0.9.0` étiquetée sur GitHub. L'étape 6, la mise en ligne sur https://au-propre.fr, est codée, avec les derniers changements demandés avant le lancement (11 novembre). Le jeton, les secrets GitHub et le profil Cloudflare sont faits ; le code est poussé sur `main`. Restent le domaine personnalisé, les redirections et les vérifications en ligne : voir la checklist `docs/LANCEMENT.md`.
 
-**Tests** : 527 tests Vitest, 215 tests Playwright (4 ignorés exprès en mobile), tous au vert en local. En CI, WebKit s'y ajoute. 12 tests de production (`npm run test:prod`, Chromium et Firefox), à lancer une fois le domaine rattaché.
+**Tests** : 529 tests Vitest, 221 tests Playwright (4 ignorés exprès en mobile), tous au vert en local. En CI, WebKit s'y ajoute. 12 tests de production (`npm run test:prod`, Chromium et Firefox), à lancer une fois le domaine rattaché.
 
 ## Étape 1 : terminée
 
@@ -605,6 +605,22 @@ Lancement visé sous 48 heures : pas de formulaire natif, le lien vers le formul
   - accueil.
 - Production : 12 tests.
 
+**Décisions de l'éditeur, le même jour**
+
+- Mise à jour de SPEC §4.5 et de CLAUDE.md : validée. « En une minute » : validé.
+- Web Analytics :
+  - jeton de la balise renseigné (`SITE.statistiques.jeton`) ;
+  - la balise s'ajoute à toutes les pages sauf `/verifier/` ;
+  - la section « Statistiques de fréquentation » de la politique de confidentialité s'affiche.
+- Rappel automatique :
+  - `SESSION.rappel` (`src/content/session.ts`) vaut le 1er décembre 2026 à 18 h, heure de Paris, date d'envoi du rappel ;
+  - à partir de cette heure, l'encart ne propose plus que les nouveautés (« Recevez les nouveautés d’Au propre », guide de l'oral), avec le bouton « M’inscrire » ;
+  - sous le rapport, le texte suit l'heure de l'ordinateur (`textesInscription()`) ;
+  - sur la page des règles, les deux variantes sont dans la page et un petit script, livré depuis le site, choisit la bonne ;
+  - aucun déploiement n'est nécessaire ;
+  - tests : Vitest à la seconde près, Playwright avec une horloge fixée avant et après l'envoi.
+- Bot Fight Mode : le test de production tranchera.
+
 ## Décisions prises
 
 | Date | Décision | Raison |
@@ -677,6 +693,8 @@ Lancement visé sous 48 heures : pas de formulaire natif, le lien vers le formul
 | 11/11/2026 | Date de clôture du dépôt dans `src/content/session.ts` | Une seule configuration de la session pour l'encart ; les autres mentions de la date restent à y rattacher (session 2028) |
 | 11/11/2026 | Site indépendant des réglages de la zone : adresses en `<!--email_off-->`, redirection http vers https par règle, robots.txt comparé au nôtre en production (demandé) | Les réglages de la zone sont introuvables dans le tableau de bord ; l'obfuscation des e-mails est active par défaut selon la doc de Cloudflare |
 | 11/11/2026 | Accueil : bénéfice d'abord, confidentialité sans le mot « navigateur » (demandé) | Langage courant pour des candidats non techniciens |
+| 11/11/2026 | Après l'envoi du rappel (1er décembre 2026, 18 h), l'encart ne propose plus que les nouveautés, bouton « M’inscrire » ; changement automatique (demandé) | Une inscription tardive ne doit pas attendre un rappel déjà parti. Calculé dans le navigateur : rien à redéployer à heure fixe |
+| 11/11/2026 | Jeton Web Analytics renseigné ; balise du site en `defer` (demandé) | Le tableau de bord propose `type="module"` : même script et même jeton, la balise déjà testée est gardée |
 
 **Couleurs ajustées** (30/10). *En partie remplacé le 31/10 : le bleu de DESIGN.md (`#0075de`, `#005fb8`, `#e6f3fe`) a laissé la place au bleu encre `#1E4A9A` et à sa teinte `#E8EEF8`, et le fond `#f6f5f4` au papier `#FBFAF7` (voir « Identité visuelle » et « Un site plus chaleureux »). Le texte secondaire `#615d59` et les couleurs d'état restent en vigueur.*
 
@@ -705,11 +723,8 @@ Lancement visé sous 48 heures : pas de formulaire natif, le lien vers le formul
 
 **Non bloquant**
 
-- Jeton de la balise de statistiques (`SITE.statistiques.jeton`) : tant qu'il est vide, aucune balise n'est ajoutée et la politique de confidentialité ne montre pas la section « Statistiques de fréquentation ».
 - Brevo : lieu d'hébergement des données non vérifié (sa politique est une page en JavaScript, illisible par l'outil) ; la page ne dit que « société française ». Le mentionner seulement avec une source.
 - S10 : la page refuse la lecture automatique (403). Les sources du CPE reposent sur la décision validée et sur le rapport S11, relu.
-- Encart de rappel : il promet un e-mail avant la clôture. Après l'envoi de la campagne du 1er décembre, reformuler ou retirer le texte (`docs/LANCEMENT.md`, section 4). Une inscription faite le 2 ou le 3 décembre ne recevrait plus de rappel.
-- « En une minute » (accueil) : promesse de durée de l'outil, pas un chiffre sourcé. L'analyse elle-même prend quelques secondes ; le parcours complet ajoute le choix du concours et la confirmation du découpage.
 - La date de clôture est encore écrite en dur ailleurs que dans `session.ts` : accueil, vérificateur, page des règles, checklist. À rattacher avant la session 2028.
 
 **Fixtures à ajouter** (voir `tests/fixtures/README.md`)
@@ -740,6 +755,5 @@ Lancement visé sous 48 heures : pas de formulaire natif, le lien vers le formul
 
 1. Premier passage de la CI après le push du 11 novembre, avec WebKit pour la première fois, puis premier déploiement.
 2. Domaine personnalisé, `www`, règles de redirection (http vers https, www vers le domaine), variable `PRODUCTION_ACTIVE`, puis `npm run test:prod`.
-3. Web Analytics : jeton de la balise à reporter dans `src/content/site.ts` (pas encore fourni).
-4. Vérifications à la main : Safari, Lighthouse, Search Console, e-mails, statistiques côté serveur.
-5. Après le lancement : campagne de rappel du 1er décembre, guide de l'oral en janvier, formulaire natif, renouvellement du jeton avant le 30 juin 2027.
+3. Vérifications à la main : Safari, Lighthouse, Search Console, e-mails, statistiques côté serveur.
+4. Après le lancement : campagne de rappel du 1er décembre à 18 h et retrait de la liste « Rappel » du formulaire Brevo, guide de l'oral en janvier, formulaire natif, renouvellement du jeton avant le 30 juin 2027.

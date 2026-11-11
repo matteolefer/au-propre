@@ -9,7 +9,7 @@ import type { CleGroupe } from '../checker/report';
 import type { ErreurDecoupage, Section } from '../checker/split';
 import type { Gravite, Plage } from '../checker/types';
 import { nPages, plageEnTexte } from './rules.fr';
-import { SESSION } from './session';
+import { rappelEnvoye, SESSION } from './session';
 
 const ESP = ' ';
 const FINE = ' ';
@@ -250,19 +250,45 @@ export const RAPPORT = {
   },
 } as const;
 
+/** Textes de l'encart d'inscription pour l'une de ses deux périodes. */
+export interface TextesInscription {
+  titre: string;
+  texte: string;
+  /** Liste proposée en plus, cochée ou non dans le formulaire. */
+  option: string | null;
+  bouton: string;
+  note: (service: string) => string;
+}
+
 /**
  * Inscription facultative par e-mail, affichée si l'adresse du formulaire est renseignée :
- * encart juste après le rapport, version compacte sur la page des règles. Le formulaire
- * Brevo propose deux listes à cocher : le rappel avant la clôture et les nouveautés.
+ * encart juste après le rapport, version compacte sur la page des règles. Jusqu'à l'envoi
+ * du rappel (SESSION.rappel), le formulaire Brevo propose deux listes à cocher : le rappel
+ * avant la clôture et les nouveautés. Ensuite, seulement les nouveautés.
  */
 export const INSCRIPTION = {
-  titre: 'Recevez un rappel avant la clôture',
-  texte: `Le dépôt dans Cyclades ferme le ${SESSION.cloture.date} à ${SESSION.cloture.heure}. Nous vous envoyons un e-mail de rappel avant cette date.`,
-  option: `En option${ESP}: les nouveautés d’Au propre, dont un guide pour préparer l’oral, envoyé en janvier.`,
-  bouton: 'M’inscrire au rappel',
+  avantRappel: {
+    titre: 'Recevez un rappel avant la clôture',
+    texte: `Le dépôt dans Cyclades ferme le ${SESSION.cloture.date} à ${SESSION.cloture.heure}. Nous vous envoyons un e-mail de rappel avant cette date.`,
+    option: `En option${ESP}: les nouveautés d’Au propre, dont un guide pour préparer l’oral, envoyé en janvier.`,
+    bouton: 'M’inscrire au rappel',
+    note: (service: string) =>
+      `Le formulaire, hébergé par ${service}, vous laisse cocher le rappel, les nouveautés ou les deux, puis vous demande de confirmer votre adresse. Désinscription en un clic dans chaque e-mail.`,
+  },
+  apresRappel: {
+    titre: 'Recevez les nouveautés d’Au propre',
+    texte: 'Dont un guide pour préparer l’oral, envoyé en janvier.',
+    option: null,
+    bouton: 'M’inscrire',
+    note: (service: string) =>
+      `Le formulaire, hébergé par ${service}, vous demande de confirmer votre adresse. Désinscription en un clic dans chaque e-mail.`,
+  },
   nouvelOnglet: '(nouvel onglet)',
   independance: 'Votre e-mail n’est jamais lié à votre dossier.',
-  note: (service: string) =>
-    `Le formulaire, hébergé par ${service}, vous laisse cocher le rappel, les nouveautés ou les deux, puis vous demande de confirmer votre adresse. Désinscription en un clic dans chaque e-mail.`,
   confidentialite: 'Politique de confidentialité',
 } as const;
+
+/** Textes de l'encart à un instant donné : le rappel n'est plus proposé une fois envoyé. */
+export function textesInscription(maintenant: Date = new Date()): TextesInscription {
+  return rappelEnvoye(maintenant) ? INSCRIPTION.apresRappel : INSCRIPTION.avantRappel;
+}

@@ -28,7 +28,12 @@ export type ReponseExtraction =
       /** Aperçu de chaque page (PNG), ou null si le dessin a échoué. Absent si le navigateur ne sait pas les dessiner. */
       miniatures?: (Blob | null)[];
     }
-  | { ok: false; raison: RaisonEchec };
+  | {
+      ok: false;
+      raison: RaisonEchec;
+      /** Erreur d'origine d'un échec « inconnue » (nom et message) : écrite dans la console, jamais affichée ni envoyée. */
+      diagnostic?: string;
+    };
 
 function estObjet(valeur: unknown): valeur is Record<string, unknown> {
   return typeof valeur === 'object' && valeur !== null;

@@ -147,6 +147,8 @@ export function Verificateur() {
           setEtat((actuel) => (actuel.etape === 'lecture' ? { etape: 'lecture', progression } : actuel)),
       });
       if (!reponse.ok) {
+        // Reste sur l'ordinateur : aide à comprendre une erreur propre à un navigateur.
+        if (reponse.diagnostic) console.error(`Lecture du PDF impossible : ${reponse.diagnostic}`);
         setEtat({ etape: 'parametres', echec: ECHECS.lecture[reponse.raison] });
         return;
       }

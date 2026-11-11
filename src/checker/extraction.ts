@@ -43,7 +43,11 @@ export async function extraireDansWorker(fichier: File, options: OptionsLecture 
       if (estReponseExtraction(evenement.data)) terminer(evenement.data);
       else if (estProgressionExtraction(evenement.data)) progression?.(evenement.data);
     });
-    worker.addEventListener('error', () => terminer({ ok: false, raison: 'inconnue' }));
+    // Worker arrêté par une erreur (script non chargé, fonction absente du navigateur…) : la cause va dans la console.
+    worker.addEventListener('error', (evenement: ErrorEvent) => {
+      const lieu = evenement.filename ? ` (${evenement.filename}:${evenement.lineno})` : '';
+      terminer({ ok: false, raison: 'inconnue', diagnostic: `${evenement.message || 'erreur du Worker'}${lieu}` });
+    });
     const message: MessageExtraction = { donnees };
     // Transfert sans copie : le tampon passe au Worker.
     worker.postMessage(message, [donnees]);

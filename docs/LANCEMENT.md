@@ -38,8 +38,8 @@ S’ils sont retrouvés plus tard :
 
 **Statistiques** (Web Analytics)
 
-- [ ] Add site `au-propre.fr`, puis Manage site › Enable with JS Snippet installation (pas la configuration automatique).
-- [ ] Jeton de la balise reporté dans `SITE.statistiques.jeton` (`src/content/site.ts`). Il est public : il figure dans le HTML de chaque page.
+- [x] Add site `au-propre.fr`, en installation par extrait JS (JS Snippet), pas la configuration automatique (11/11/2026). Le test de production le vérifie : une seule balise par page, aucune sur le vérificateur.
+- [x] Jeton de la balise reporté dans `SITE.statistiques.jeton` (`src/content/site.ts`) le 11/11/2026. Il est public : il figure dans le HTML de chaque page. La balise reste celle du site (`defer`), et non la variante `type="module"` du tableau de bord : même script, même jeton.
 
 ## 2. Premier déploiement et domaine
 
@@ -112,8 +112,9 @@ Le SEO des mentions légales et de la 404 est bas exprès : ces pages sont en `n
 
 ## 4. Après le lancement
 
-- [ ] Programmer dans Brevo la campagne de rappel du 1er décembre (liste « Rappel 3 décembre »).
-  - Après l’envoi, l’encart promet encore un rappel avant la clôture : reformuler ou retirer `INSCRIPTION` (`src/content/interface.fr.ts`), puis déployer.
+- [ ] Programmer dans Brevo la campagne de rappel du 1er décembre 2026 à 18 h (liste « Rappel 3 décembre »).
+  - À cette heure-là, `SESSION.rappel` (`src/content/session.ts`), l’encart ne propose plus le rappel, seulement les nouveautés, avec le bouton « M’inscrire ». Le changement est automatique, sans déploiement : sous le rapport, le texte suit l’heure de l’ordinateur ; sur la page des règles, un petit script choisit la variante.
+  - [ ] Le même jour, retirer la liste « Rappel 3 décembre » du formulaire Brevo, pour qu’il ne propose plus que « Nouveautés Au propre ».
 - [ ] Guide de l’oral, envoyé en janvier (liste « Nouveautés Au propre »), comme l’annoncent l’encart et la politique de confidentialité.
 - [ ] Formulaire natif dans la page, après le lancement, à la place du lien vers le formulaire hébergé par Brevo. À prévoir : `form-action` dans la politique de sécurité (`astro.config.mjs`), politique de confidentialité, tests réseau.
 - [ ] Renouveler le jeton d’API Cloudflare avant le 30 juin 2027, date de son expiration, puis remplacer le secret GitHub `CLOUDFLARE_API_TOKEN`. Sans cela, le déploiement échoue.
@@ -125,3 +126,4 @@ Le SEO des mentions légales et de la 404 est bas exprès : ces pages sont en `n
 | 01/11/2026 | Code de l’étape 6, tests locaux | 523 tests Vitest ; 209 tests Playwright passent, 4 ignorés exprès en mobile |
 | 11/11/2026 | Jeton, secrets GitHub, profil Cloudflare (étapes 1 à 8) | Faits par l’éditeur ; réglages de la zone introuvables |
 | 11/11/2026 | Rappel et nouveautés par e-mail, politique de confidentialité, site robuste sans réglages de zone, accueil | 527 tests Vitest ; 215 tests Playwright passent, 4 ignorés exprès en mobile ; commit et push sur `main` |
+| 11/11/2026 | Jeton Web Analytics ; encart sans rappel à partir du 1er décembre 18 h | Voir le journal de la CI et `docs/AVANCEMENT.md` |

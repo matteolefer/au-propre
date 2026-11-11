@@ -30,11 +30,14 @@ describe('page des règles', () => {
       ...IDS.flatMap((id) => [LIBELLES_REGLES[id] ?? '', ...Object.values(EXPLICATIONS[id])]),
       ...GROUPES_REGLES.flatMap((groupe) => [groupe.titre, groupe.intro]),
       ...pointsChecklist({ sansDiscipline: false, pagesAnnexesEnImage: [] }).map((point) => point.texte),
-      INSCRIPTION.titre,
-      INSCRIPTION.texte,
-      INSCRIPTION.option,
+      ...[INSCRIPTION.avantRappel, INSCRIPTION.apresRappel].flatMap((textes) => [
+        textes.titre,
+        textes.texte,
+        textes.option ?? '',
+        textes.bouton,
+        textes.note('Brevo'),
+      ]),
       INSCRIPTION.independance,
-      INSCRIPTION.note('Brevo'),
     ];
     expect(textes.flatMap(erreursTypographiques)).toEqual([]);
   });

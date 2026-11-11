@@ -49,7 +49,7 @@ export const SITE = {
    */
   statistiques: {
     service: 'Cloudflare Web Analytics',
-    jeton: '',
+    jeton: '42a7dd94deb04527989900a0eb42748f',
     script: 'https://static.cloudflareinsights.com/beacon.min.js',
     /** Page de Cloudflare qui décrit la mesure sans cookie ni stockage dans le navigateur. */
     sourceUrl: 'https://www.cloudflare.com/web-analytics/',

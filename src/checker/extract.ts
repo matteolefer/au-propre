@@ -386,6 +386,13 @@ export async function traiterMessage(message: MessageExtraction, options: Option
   try {
     return { ok: true, document: await extraireDocument(new Uint8Array(message.donnees), options) };
   } catch (erreur) {
-    return { ok: false, raison: erreur instanceof ErreurExtraction ? erreur.raison : 'inconnue' };
+    const raison = erreur instanceof ErreurExtraction ? erreur.raison : 'inconnue';
+    return raison === 'inconnue' ? { ok: false, raison, diagnostic: diagnosticDe(erreur) } : { ok: false, raison };
   }
+}
+
+/** Nom et message de l'erreur d'origine, pour comprendre un échec propre à un navigateur. */
+function diagnosticDe(erreur: unknown): string {
+  const origine = erreur instanceof ErreurExtraction && erreur.cause !== undefined ? erreur.cause : erreur;
+  return origine instanceof Error ? `${origine.name}: ${origine.message}` : String(origine);
 }

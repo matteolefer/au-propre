@@ -192,7 +192,12 @@ test('adresses e-mail protégées de l’obfuscation de Cloudflare dans le HTML 
   }
 });
 
+/** Juste avant et juste à l'heure de l'envoi du rappel (SESSION.rappel : 1er décembre 2026, 18 h à Paris). */
+const AVANT_ENVOI = new Date('2026-12-01T16:59:00Z');
+const ENVOI = new Date('2026-12-01T17:00:00Z');
+
 test('encart d’inscription : absent sans adresse de formulaire, sinon lien direct sans paramètre', async ({ page }) => {
+  await page.clock.setFixedTime(AVANT_ENVOI);
   await allerAuRapport(page, { fichier: cheminFixture('01_conforme_word.pdf') });
   const titre = page.getByRole('heading', { name: 'Recevez un rappel avant la clôture' });
   if (!inscriptionActive()) {
@@ -216,21 +221,55 @@ test('encart d’inscription : absent sans adresse de formulaire, sinon lien dir
   await expect(page.locator('.v-checklist + .v-inscription, .v-checklist ~ .v-inscription')).toHaveCount(1);
 });
 
+test('encart d’inscription après l’envoi du rappel : seulement les nouveautés, bouton « M’inscrire »', async ({ page }) => {
+  test.skip(!inscriptionActive(), 'Adresse du formulaire non renseignée');
+  await page.clock.setFixedTime(ENVOI);
+  await allerAuRapport(page, { fichier: cheminFixture('01_conforme_word.pdf') });
+  const encart = page.locator('.v-inscription');
+  await expect(encart.getByRole('heading', { name: 'Recevez les nouveautés d’Au propre' })).toBeVisible();
+  await expect(encart).toContainText('Dont un guide pour préparer l’oral, envoyé en janvier.');
+  await expect(encart).not.toContainText(/rappel|clôture/);
+  const lien = encart.getByRole('link', { name: 'M’inscrire (nouvel onglet)', exact: true });
+  await expect(lien).toHaveAttribute('href', SITE.inscription.formulaireUrl);
+  await expect(lien).toHaveAttribute('rel', 'noopener noreferrer');
+});
+
 test('page des règles : version compacte de l’encart, même lien sans référent', async ({ page }) => {
+  await page.clock.setFixedTime(AVANT_ENVOI);
   await page.goto('/regles/');
-  const encart = page.getByRole('complementary', { name: 'Recevez un rappel avant la clôture' });
+  const encart = page.getByRole('complementary', { name: 'Inscription par e-mail' });
   if (!inscriptionActive()) {
     await expect(encart).toHaveCount(0);
     return;
   }
   await expect(encart).toBeVisible();
-  await expect(encart).toContainText('Le dépôt dans Cyclades ferme le jeudi 3\u00A0décembre 2026 à 23\u00A0h\u00A059.');
-  await expect(encart).toContainText('dont un guide pour préparer l’oral, envoyé en janvier.');
+  await expect(encart.getByText('Recevez un rappel avant la clôture')).toBeVisible();
+  await expect(encart.getByText('Le dépôt dans Cyclades ferme le jeudi 3\u00A0décembre 2026 à 23\u00A0h\u00A059.')).toBeVisible();
+  await expect(encart.getByText(/dont un guide pour préparer l’oral, envoyé en janvier\./)).toBeVisible();
+  await expect(encart.getByText('Recevez les nouveautés d’Au propre')).toBeHidden();
   const lien = encart.getByRole('link', { name: /M’inscrire au rappel/ });
   await expect(lien).toHaveAttribute('href', SITE.inscription.formulaireUrl);
   await expect(lien).toHaveAttribute('target', '_blank');
   await expect(lien).toHaveAttribute('rel', 'noopener noreferrer');
   await expect(encart.getByRole('link', { name: 'Politique de confidentialité' })).toHaveAttribute('href', '/confidentialite/#inscription');
+});
+
+test('page des règles après l’envoi du rappel : le script ne montre plus que les nouveautés', async ({ page }) => {
+  test.skip(!inscriptionActive(), 'Adresse du formulaire non renseignée');
+  // La page est construite avant l'envoi : c'est le script qui change la variante, sans nouveau déploiement.
+  await page.clock.setFixedTime(ENVOI);
+  await page.goto('/regles/');
+  const encart = page.getByRole('complementary', { name: 'Inscription par e-mail' });
+  const nouveautes = encart.locator('[data-variante="nouveautes"]');
+  await expect(nouveautes).toBeVisible();
+  await expect(nouveautes).toContainText('Recevez les nouveautés d’Au propre');
+  await expect(nouveautes).toContainText('Dont un guide pour préparer l’oral, envoyé en janvier.');
+  await expect(nouveautes).not.toContainText(/rappel|clôture/);
+  await expect(encart.locator('[data-variante="rappel"]')).toBeHidden();
+  const visibles = encart.getByRole('link', { name: /^M’inscrire/ });
+  await expect(visibles).toHaveCount(1);
+  await expect(visibles).toHaveAccessibleName('M’inscrire (nouvel onglet)');
+  await expect(visibles).toHaveAttribute('href', SITE.inscription.formulaireUrl);
 });
 
 test('bouton principal : variante de survol et anneau de focus visible', async ({ page, isMobile }) => {
