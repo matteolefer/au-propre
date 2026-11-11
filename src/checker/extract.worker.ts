@@ -9,10 +9,13 @@
  */
 import * as pdfjsWorker from 'pdfjs-dist/legacy/build/pdf.worker.mjs';
 import { traiterMessage } from './extract';
+import { rendreFluxIterables } from './flux-iterables';
 import { dessinerMiniatures, FabriqueCanvasHorsEcran, miniaturesPossibles } from './miniatures';
 import { estMessageExtraction, type ProgressionExtraction, type ReponseExtraction } from './protocole';
 
 (globalThis as typeof globalThis & { pdfjsWorker?: unknown }).pdfjsWorker = pdfjsWorker;
+// Safari 18 et antérieurs : pdf.js parcourt des ReadableStream avec `for await`.
+rendreFluxIterables();
 
 declare const self: DedicatedWorkerGlobalScope;
 

@@ -4,7 +4,7 @@ Mis à jour le 11 novembre 2026. Objectif : V1 en ligne sous 48 heures (prévue 
 
 **Où en est le projet** : les 20 règles (R00 à R19), le vérificateur complet, les pages du site et l'identité Au propre sont faits. Toutes les pages suivent l'échelle de l'accueil (validé le 31 octobre). Version `v0.9.0` étiquetée sur GitHub. L'étape 6, la mise en ligne sur https://au-propre.fr, est codée, avec les derniers changements demandés avant le lancement (11 novembre). Le jeton, les secrets GitHub et le profil Cloudflare sont faits ; le code est poussé sur `main`. Restent le domaine personnalisé, les redirections et les vérifications en ligne : voir la checklist `docs/LANCEMENT.md`.
 
-**Tests** : 529 tests Vitest, 221 tests Playwright (4 ignorés exprès en mobile), tous au vert en local. En CI, WebKit s'y ajoute. 12 tests de production (`npm run test:prod`, Chromium et Firefox), à lancer une fois le domaine rattaché.
+**Tests** : 531 tests Vitest, 221 tests Playwright (4 ignorés exprès en mobile), tous au vert en local. En CI, WebKit s'y ajoute. 12 tests de production (`npm run test:prod`, Chromium et Firefox), à lancer une fois le domaine rattaché.
 
 ## Étape 1 : terminée
 
@@ -621,6 +621,18 @@ Lancement visé sous 48 heures : pas de formulaire natif, le lien vers le formul
   - tests : Vitest à la seconde près, Playwright avec une horloge fixée avant et après l'envoi.
 - Bot Fight Mode : le test de production tranchera.
 
+**Safari 18 : la lecture du PDF échouait** (trouvé par le premier passage de WebKit en CI)
+
+- Les 25 tests WebKit qui lisent un PDF échouaient : « La lecture du PDF a échoué ». Le déploiement a été bloqué, comme prévu.
+- Diagnostic : la cause d'un échec inattendu est désormais écrite dans la console (`diagnostic`, jamais affiché ni envoyé). Une branche temporaire a lancé un seul test WebKit en CI : `TypeError: undefined is not a function (near '...e of t...')`.
+- Cause : pdf.js 6 parcourt des `ReadableStream` avec `for await` :
+  - pour lire le texte (`getTextContent`) ;
+  - pour décompresser certains flux.
+  
+  Safari 18.4 ne le permet pas, et le build « legacy » de pdf.js ne le complète pas. Les autres fonctions récentes absentes de Safari 18.4 (`Map.prototype.getOrInsertComputed`, `Math.sumPrecise`) sont bien complétées par core-js dans le build.
+- Correction : `src/checker/flux-iterables.ts` ajoute cet itérateur dans le Worker, seulement s'il manque. Il est testé sur un flux sans itérateur, comme dans Safari.
+- Sans le premier passage de WebKit, le vérificateur n'aurait pas fonctionné dans Safari 18 et antérieurs (Mac, iPhone).
+
 ## Décisions prises
 
 | Date | Décision | Raison |
@@ -694,6 +706,7 @@ Lancement visé sous 48 heures : pas de formulaire natif, le lien vers le formul
 | 11/11/2026 | Site indépendant des réglages de la zone : adresses en `<!--email_off-->`, redirection http vers https par règle, robots.txt comparé au nôtre en production (demandé) | Les réglages de la zone sont introuvables dans le tableau de bord ; l'obfuscation des e-mails est active par défaut selon la doc de Cloudflare |
 | 11/11/2026 | Accueil : bénéfice d'abord, confidentialité sans le mot « navigateur » (demandé) | Langage courant pour des candidats non techniciens |
 | 11/11/2026 | Après l'envoi du rappel (1er décembre 2026, 18 h), l'encart ne propose plus que les nouveautés, bouton « M’inscrire » ; changement automatique (demandé) | Une inscription tardive ne doit pas attendre un rappel déjà parti. Calculé dans le navigateur : rien à redéployer à heure fixe |
+| 11/11/2026 | Complément `for await` sur `ReadableStream` dans le Worker (`flux-iterables.ts`), et cause des échecs inattendus écrite dans la console | Safari 18 ne parcourt pas les flux ; pdf.js 6 le suppose. La console reste sur l'ordinateur et aide à comprendre une erreur propre à un navigateur |
 | 11/11/2026 | Jeton Web Analytics renseigné ; balise du site en `defer` (demandé) | Le tableau de bord propose `type="module"` : même script et même jeton, la balise déjà testée est gardée |
 
 **Couleurs ajustées** (30/10). *En partie remplacé le 31/10 : le bleu de DESIGN.md (`#0075de`, `#005fb8`, `#e6f3fe`) a laissé la place au bleu encre `#1E4A9A` et à sa teinte `#E8EEF8`, et le fond `#f6f5f4` au papier `#FBFAF7` (voir « Identité visuelle » et « Un site plus chaleureux »). Le texte secondaire `#615d59` et les couleurs d'état restent en vigueur.*
